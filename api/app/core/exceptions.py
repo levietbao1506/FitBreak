@@ -16,8 +16,10 @@ class AIModelOfflineException(Exception):
 
 
 class InvalidUserInformationError(ValueError):
+      # Bắt lỗi sai thông tin người dùng
       pass
 
 
 class NoMatchingFoodsError(ValueError):
+      # Bắt lỗi món ăn không có
       pass
