@@ -1,0 +1,37 @@
+type,exercise,level of physical activity,time_need,body_part
+cardio,HIIT,heavy,10,full_body
+cardio,LISS,medium,20,full_body
+cardio,Walking,light,30,full_body
+resistance_training,Standard Push-Up,heavy,8,chest
+resistance_training,Incline Push-Up,medium,6,chest
+resistance_training,Knee Push-Up,light,4,chest
+resistance_training,Dumbbell Row,heavy,8,back
+resistance_training,Resistance Band Row,medium,6,back
+resistance_training,Prone Cobra Pose,light,4,back
+resistance_training,Goblet Squat,heavy,8,quads
+resistance_training,Bodyweight Squat,medium,6,quads
+resistance_training,Chair Squat,light,4,quads
+resistance_training,Dumbbell Romanian Deadlift,heavy,8,hamstrings_glutes
+resistance_training,Banded Glute Bridge,medium,6,hamstrings_glutes
+resistance_training,Bodyweight Glute Bridge,light,4,hamstrings_glutes
+resistance_training,Dumbbell Overhead Press,heavy,8,shoulders
+resistance_training,Dumbbell Lateral Raise,medium,6,shoulders
+resistance_training,Band Pull-Apart,light,4,shoulders
+resistance_training,Hanging Knee Raise,heavy,8,core
+resistance_training,Forearm Plank,medium,5,core
+resistance_training,Dead Bug,light,4,core
+pilates,The Teaser,heavy,4,core
+pilates,Pilates Push-Up to Pike,heavy,4,chest
+pilates,Side Plank with Leg Lift,heavy,4,hamstrings_glutes
+pilates,Advanced Swimming,heavy,4,back
+pilates,The Hundred,heavy,4,full_body
+pilates,Pilates Roll-Up,medium,4,core
+pilates,Prone Swan Dive Prep,medium,3,back
+pilates,Side Kick Series,medium,4,hamstrings_glutes
+pilates,Kneeling Arm & Leg Reach,medium,3,full_body
+pilates,Double Leg Stretch,medium,3,core
+pilates,Toe Taps,light,3,core
+pilates,Cat-Cow Stretch,light,3,back
+pilates,Clamshell,light,3,glutes
+pilates,Pelvic Curl,light,3,hamstrings_glutes
+pilates,Bird-Dog,light,3,full_body
