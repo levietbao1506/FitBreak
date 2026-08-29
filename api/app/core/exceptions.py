@@ -23,3 +23,7 @@ class InvalidUserInformationError(ValueError):
 class NoMatchingFoodsError(ValueError):
       # Bắt lỗi món ăn không có
       pass
+
+class InvalidSchedule(Exception):
+      # Bắt lỗi lịch chưa đảm bảo
+      pass

@@ -36,6 +36,7 @@ async def generate_chat(prompt: str) -> str:
             response = await client.chat(
                   model=OLLAMA_CHAT_MODEL,
                   messages=messages,
+                  format="json",
                   options={"temperature": 0.0},
             )
       except ResponseError as exc:
