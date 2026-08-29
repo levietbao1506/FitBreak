@@ -15,7 +15,7 @@ from api.app.services.prompt_builder import prompt_builder
 #####
 
 # DATABASE #
-DATA_PATH = Path(__file__).resolve().parents[1] / "core" / "database" / "vietnamese_food_100.csv"
+DATA_PATH = Path(__file__).resolve().parents[1] / "core" / "database" / "Vietnamese_Food_Database.csv"
 DF_FOODS = pd.read_csv(DATA_PATH)
 DF_FOODS["allergens"] = DF_FOODS["allergens"].fillna("")
 
