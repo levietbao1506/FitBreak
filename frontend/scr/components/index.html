@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Pomodoro Active Break</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 40px; }
+    .timer { font-size: 48px; font-weight: bold; margin: 20px 0; }
+    .status { font-size: 20px; color: #555; }
+    button { padding: 10px 20px; font-size: 16px; cursor: pointer; margin: 5px; }
+  </style>
+</head>
+<body>
+  <div class="status" id="status-label">Sẵn sàng</div>
+  <div class="timer" id="timer-display">25:00</div>
+  <button id="btn-start" onclick="startShift()">Bắt đầu ca làm việc</button>
+  <button id="btn-stop" onclick="stopShift()" disabled>Kết thúc ca làm việc</button>
+
+  <!-- Nhúng file JS vào đây -->
+  <script src="pomodoro_timer.js"></script>
+</body>
+</html>
