@@ -2,19 +2,175 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pomodoro Active Break</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 40px; }
-    .timer { font-size: 48px; font-weight: bold; margin: 20px 0; }
-    .status { font-size: 20px; color: #555; }
-    button { padding: 10px 20px; font-size: 16px; cursor: pointer; margin: 5px; }
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6; /* Blue for work */
+      --primary-hover: #2563eb;
+      --break-color: #10b981; /* Green for break */
+      --danger: #ef4444;
+      --disabled: #475569;
+      --theme-color: var(--primary);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      transition: background-color 0.5s ease;
+    }
+
+    .container {
+      background-color: var(--card-bg);
+      padding: 3rem 4rem;
+      border-radius: 1.5rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      text-align: center;
+      max-width: 450px;
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .header-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .status { 
+      font-size: 1.1rem; 
+      color: var(--theme-color); 
+      font-weight: 500;
+      margin-bottom: 2.5rem;
+      min-height: 1.5rem;
+      transition: color 0.3s ease;
+    }
+
+    .timer-wrapper {
+      position: relative;
+      width: 250px;
+      height: 250px;
+      margin: 0 auto 3rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 50%;
+      background: conic-gradient(var(--theme-color) var(--progress, 100%), #2a3b52 var(--progress, 100%));
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .timer-wrapper::before {
+      content: '';
+      position: absolute;
+      inset: 8px; /* Thickness of the ring */
+      background-color: var(--card-bg);
+      border-radius: 50%;
+      z-index: 1;
+    }
+
+    .timer { 
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 4.5rem; 
+      font-weight: 700; 
+      color: var(--text-main);
+      letter-spacing: -2px;
+      z-index: 10;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    button { 
+      padding: 0.875rem 1.5rem; 
+      font-size: 1rem; 
+      font-weight: 600;
+      font-family: inherit;
+      border: none;
+      border-radius: 0.75rem;
+      cursor: pointer; 
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+    }
+
+    #btn-start {
+      background-color: var(--theme-color);
+      color: white;
+      box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.2);
+    }
+
+    #btn-start:hover:not(:disabled) {
+      transform: translateY(-2px);
+      filter: brightness(1.1);
+    }
+
+    #btn-stop {
+      background-color: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--text-muted);
+    }
+
+    #btn-stop:hover:not(:disabled) {
+      color: var(--danger);
+      border-color: var(--danger);
+      background-color: rgba(239, 68, 68, 0.05);
+    }
+
+    button:disabled {
+      background-color: var(--disabled);
+      color: #94a3b8;
+      cursor: not-allowed;
+      box-shadow: none;
+      border: none;
+      opacity: 0.6;
+    }
+
+    #btn-stop:disabled {
+      background-color: transparent;
+      border: 1px solid var(--disabled);
+      opacity: 0.3;
+    }
   </style>
 </head>
 <body>
-  <div class="status" id="status-label">Sẵn sàng</div>
-  <div class="timer" id="timer-display">25:00</div>
-  <button id="btn-start" onclick="startShift()">Bắt đầu ca làm việc</button>
-  <button id="btn-stop" onclick="stopShift()" disabled>Kết thúc ca làm việc</button>
+  <div class="container">
+    <div class="header-title">FitBreak</div>
+    <div class="status" id="status-label">Sẵn sàng</div>
+    
+    <div class="timer-wrapper" id="timer-wrapper">
+      <div class="timer" id="timer-display">25:00</div>
+    </div>
+
+    <div class="controls">
+      <button id="btn-start" onclick="startShift()">Bắt đầu</button>
+      <button id="btn-stop" onclick="stopShift()" disabled>Kết thúc</button>
+    </div>
+  </div>
 
   <!-- Nhúng file JS vào đây -->
   <script src="pomodoro_timer.js"></script>

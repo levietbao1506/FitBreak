@@ -26,19 +26,26 @@ function updateDisplay() {
   document.getElementById("timer-display").textContent = `${minutes}:${seconds}`;
   
   const label = currentMode === "WORK" ? "Đang làm việc (Tập trung)" : 
-                currentMode === "BREAK" ? "Nghỉ ngơi - Đi bộ / Vận động nhẹ" : "Đã dừng";
+                currentMode === "BREAK" ? "Nghỉ ngơi - Đi bộ / Vận động nhẹ" : "Sẵn sàng";
   document.getElementById("status-label").textContent = label;
   document.title = `(${minutes}:${seconds}) ${label}`;
+
+  // Calculate progress percentage
+  const totalTime = currentMode === "WORK" ? WORK_TIME : (currentMode === "BREAK" ? BREAK_TIME : WORK_TIME);
+  const progressPercent = (timeLeft / totalTime) * 100;
+  document.getElementById("timer-wrapper").style.setProperty('--progress', `${progressPercent}%`);
 }
 
 function switchCycle() {
   if (currentMode === "WORK") {
     currentMode = "BREAK";
     timeLeft = BREAK_TIME;
+    document.documentElement.style.setProperty('--theme-color', 'var(--break-color)');
     sendNotification("Hết giờ làm việc! 🚶‍♂️", "Hãy đứng dậy đi bộ, làm cardio nhẹ trong 5 phút nhé.");
   } else if (currentMode === "BREAK") {
     currentMode = "WORK";
     timeLeft = WORK_TIME;
+    document.documentElement.style.setProperty('--theme-color', 'var(--primary)');
     sendNotification("Hết giờ nghỉ ngơi! 💻", "Quay trở lại làm việc tập trung nào.");
   }
   updateDisplay();
@@ -48,6 +55,7 @@ function startShift() {
   requestNotification();
   currentMode = "WORK";
   timeLeft = WORK_TIME;
+  document.documentElement.style.setProperty('--theme-color', 'var(--primary)');
   
   document.getElementById("btn-start").disabled = true;
   document.getElementById("btn-stop").disabled = false;
@@ -68,10 +76,12 @@ function stopShift() {
   clearInterval(timerInterval);
   currentMode = "IDLE";
   timeLeft = WORK_TIME;
+  document.documentElement.style.setProperty('--theme-color', 'var(--primary)');
   
   document.getElementById("btn-start").disabled = false;
   document.getElementById("btn-stop").disabled = true;
   document.getElementById("status-label").textContent = "Ca làm việc đã kết thúc";
   document.getElementById("timer-display").textContent = "25:00";
+  document.getElementById("timer-wrapper").style.setProperty('--progress', '100%');
   document.title = "Pomodoro";
 }
