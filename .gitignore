@@ -9,5 +9,8 @@ wheels/
 # Virtual environments
 .venv
 .python-version
-main.py
 pyproject.toml
+
+# Node
+node_modules/
+package-lock.json
