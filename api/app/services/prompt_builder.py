@@ -39,22 +39,22 @@ async def prompt_builder(
 - Dị ứng: {allergen_display}
 
 === QUY ƯỚC DINH DƯỠNG CỦA CƠM (TÍNH TRÊN 100G) ===
-- Calo: 130 kcal | Protein: 2.7g | Chi phí: 2,000 VNĐ
+- Calo: 130 kcal | Protein: 2.7g | Chi phí: 1,500 VNĐ
 
 === NGUYÊN TẮC KIỂM SOÁT NGÂN SÁCH (BẮT BUỘC TUÂN THỦ) ===
 1. TỔNG CHI PHÍ 3 BỮA + TIỀN CƠM PHẢI <= {daily_budget:,} VNĐ. Tuyệt đối không được vượt quá dù chỉ 1 đồng.
 2. Hướng dẫn phân bổ chi phí để không bị lố:
    - Bữa sáng: Chọn món dưới {est_breakfast_max:,} VNĐ.
-   - Bữa trưa (Món chính + Rau + Cơm): Tổng dưới {est_meal_max:,} VNĐ.
-   - Bữa tối (Món chính + Rau + Cơm): Tổng dưới {est_meal_max:,} VNĐ.
-   - Nếu ngân sách thấp, ưu tiên các món chính và rau/canh bình dân giá rẻ trong danh sách.
+   - Bữa trưa (Món chính + Cơm): Tổng dưới {est_meal_max:,} VNĐ.
+   - Bữa tối (Món chính + Cơm): Tổng dưới {est_meal_max:,} VNĐ.
+   - Nếu ngân sách thấp, ưu tiên các món bình dân giá rẻ trong danh sách.
 
-=== QUY TẮC CHỌN MÓN ===
-1. CHỈ ĐƯỢC CHỌN tên món có trong [DANH SÁCH MÓN ĂN HỢP LỆ]. Không tự chế tên món.
+=== QUY TẮC CHỌN MÓN BẮT BUỘC ===
+1. CHỈ ĐƯỢC CHỌN TÊN MÓN XUẤT HIỆN TRONG [DANH SÁCH MÓN ĂN HỢP LỆ TRONG DATABASE]. TUYỆT ĐỐI KHÔNG TỰ BỊA RA TÊN MÓN NÀO KHÁC. COPY CHÍNH XÁC 100% TỪNG CHỮ CỦA TÊN MÓN.
 2. Cấu trúc thực đơn:
-   - Bữa sáng: 1 món (loại breakfast).
-   - Bữa trưa: 1 món chính (main) + 1 món rau/canh (side) + lượng cơm (`rice_grams`).
-   - Bữa tối: 1 món chính (main) + 1 món rau/canh (side) + lượng cơm (`rice_grams`).
+   - Bữa sáng: 1 món (phù hợp cho bữa sáng).
+   - Bữa trưa: 1 món chính (main_dish) + Điều chỉnh lượng cơm (`rice_grams`) sao cho (Tổng Calo 3 bữa + Cơm) ~ {calories_need} kcal (sai số cho phép +- 10%). Tối đa 300g cơm mỗi bữa.
+   - Bữa tối: 1 món chính (main_dish) + Điều chỉnh lượng cơm (`rice_grams`) sao cho (Tổng Calo 3 bữa + Cơm) ~ {calories_need} kcal (sai số cho phép +- 10%). Tối đa 300g cơm mỗi bữa.
 
 === FORMAT JSON BẮT BUỘC (Chỉ xuất duy nhất block JSON, không kèm lời giải thích bên ngoài) ===
 ```json
@@ -62,16 +62,14 @@ async def prompt_builder(
       "estimated_total_cost": [Tổng chi phí bạn nhẩm tính của 3 bữa và cơm, phải nhỏ hơn hoặc bằng {daily_budget}],
       "meals": {{
       "breakfast": {{
-            "dish_name": "Tên món ăn sáng chính xác từ database"
+            "dish_name": "Copy chính xác tên món từ danh sách"
       }},
       "lunch": {{
-            "main_dish": "Tên món chính chính xác từ database",
-            "side_dish": "Tên món rau/canh chính xác từ database",
+            "main_dish": "Copy chính xác tên món từ danh sách",
             "rice_grams": 150
       }},
       "dinner": {{
-            "main_dish": "Tên món chính chính xác từ database",
-            "side_dish": "Tên món rau/canh chính xác từ database",
+            "main_dish": "Copy chính xác tên món từ danh sách",
             "rice_grams": 150
       }}
       }}
