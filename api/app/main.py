@@ -27,9 +27,9 @@ from api.app.core.exceptions import (
 async def lifespan(app: FastAPI):
     try:
         await check_ollama()
-        print("✅ Ollama connection OK")
+        print("[OK] Ollama connection OK")
     except AIModelOfflineException as e:
-        print(f"⚠️  Ollama chưa sẵn sàng: {e}")
+        print(f"[WARN] Ollama chua san sang: {e}")
     yield
 
 
@@ -98,4 +98,10 @@ async def health_check():
         return {"status": "ok", "ollama": "connected"}
     except Exception as e:
         return {"status": "degraded", "ollama": str(e)}
+
+
+# ── Root endpoint ──
+@app.get("/")
+async def root():
+    return {"message": "Welcome to FitBreak API! Go to /docs for API documentation."}
 
