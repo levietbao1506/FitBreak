@@ -1145,7 +1145,7 @@
         API_BASE: 'http://localhost:8000',
         ENDPOINT: '/api/food-suggest',
         HEALTH_ENDPOINT: '/api/health',
-        TIMEOUT_MS: 60000, // Ollama có thể chậm
+        TIMEOUT_MS: 300000, // Tăng lên 5 phút vì Ollama load lâu
       };
 
       // ============================================
@@ -1407,7 +1407,7 @@
         } catch (err) {
           clearTimeout(timeoutId);
           if (err.name === 'AbortError') {
-            throw new Error('Yêu cầu hết thời gian chờ (60s). Ollama có thể đang quá tải.');
+            throw new Error('Yêu cầu hết thời gian chờ (5 phút). Máy tính của bạn đang load quá tải.');
           }
           throw err;
         }
@@ -1451,12 +1451,12 @@
         const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
 
         const parseMealLine = (line) => {
-          const match = line.match(/^Bữa \w+:\s*(.+?)\s*\((\d+(?:\.\d+)?)\s*kcal\s*\/\s*(\d+(?:\.\d+)?)g\s*protein\s*\/\s*([\d,.]+)đ\)/);
+          const match = line.match(/^Bữa [^:]+:\s*(.+?)\s*\(\s*([\d,.]+)\s*kcal\s*\/\s*([\d,.]+)\s*g\s*protein\s*\/\s*([\d,.]+)\s*đ\s*\)/i);
           if (match) {
             return {
               name: match[1].trim(),
-              calories: parseFloat(match[2]),
-              protein: parseFloat(match[3]),
+              calories: parseFloat(match[2].replace(/,/g, '')),
+              protein: parseFloat(match[3].replace(/,/g, '')),
               cost: parseFloat(match[4].replace(/,/g, '')),
             };
           }
@@ -1694,6 +1694,7 @@
 
         } catch (apiError) {
           console.warn('API call failed, falling back to mock data:', apiError.message);
+          alert("Lỗi từ AI: " + apiError.message + "\n\n(Hệ thống sẽ tạm hiển thị thực đơn giả lập - Mock Data)");
 
           // Fallback to mock data
           const mockPlan = generateMockPlan();
@@ -1738,6 +1739,7 @@
           renderMeals(meals);
         } catch (apiError) {
           console.warn('Refresh API failed, using mock:', apiError.message);
+          alert("Lỗi từ AI: " + apiError.message + "\n\n(Hệ thống sẽ tạm hiển thị thực đơn giả lập - Mock Data)");
           const mockPlan = generateMockPlan();
           if (mockPlan) {
             const totals = {
