@@ -12,7 +12,7 @@ from api.app.core.exceptions import (
 
 
 client = AsyncClient()
-OLLAMA_CHAT_MODEL = os.getenv("OLLAMA_CHAT_MODEL", "llama3.2")
+OLLAMA_CHAT_MODEL = os.getenv("OLLAMA_CHAT_MODEL", "llama3.2:1b")
 
 async def chat() -> None:
       """Check whether the configured Ollama server is reachable."""
