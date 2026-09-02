@@ -163,7 +163,7 @@ def format_meal_summary(response: str, df_pool: pd.DataFrame, user_information: 
       target_pro = get_user_value(user_information, "protein_need")
       budget = get_user_value(user_information, "daily_budget")
 
-      budget_tolerance = budget * 1.05  # cho phép lố tối đa 5%
+      budget_tolerance = budget * 0.95  # Để chi phí khoảng 95% phòng trường hợp LLM chọn lố
       if total_cost > budget_tolerance:
             raise InvalidResponseError(f"Thực đơn vượt quá ngân sách: {total_cost:,.0f}đ > {budget:,.0f}đ")
 
