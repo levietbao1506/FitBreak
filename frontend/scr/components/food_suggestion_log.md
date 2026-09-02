@@ -144,3 +144,9 @@
 - `index.html`: Giao dien Quiz & Goi y thuc don AI (Dark/Light mode, ket noi Ollama qua FastAPI)
 - `pomodoro.html`: Pomodoro Timer cu (luu tru doc lap)
 - `food_suggestion_log.md`: Nhat ky theo doi qua trinh phat trien
+
+## 2026-09-02 09:53 - Fix loi UnicodeEncodeError khi start server
+- **Van de**: Chay `npm run dev` thi server Python bao loi `UnicodeEncodeError: 'charmap' codec can't encode character '\u2705'`.
+- **Nguyen nhan**: Console cua Windows mac dinh (cp1252) khong the encode cac ki tu emoji nhu `✅` hoac `⚠️` ma toi da de trong file `api/app/main.py`.
+- **Giai phap**: Xoa bo emoji va su dung cac ki tu ASCII thong thuong (Vi du: thay bang `[OK]` va `[WARN]`) trong cac lenh print.
+- **Ket qua**: Ung dung FastAPI khoi dong thanh cong, loi khong con tai dien.
