@@ -10,4 +10,8 @@ wheels/
 .venv
 .python-version
 pyproject.toml
+
+# Node
+node_modules/
+package-lock.json
 uv.lock

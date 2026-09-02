@@ -1,4 +1,1844 @@
 <!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitBreak - Gợi Ý Thực Đơn AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       CSS - Food Suggestion Feature
+       Prefix: food-*
+       Style: Minimalism with Dark/Light theme
+       ============================================ */
+
+    /* ── THEME VARIABLES ── */
+    :root {
+      /* Shared */
+      --food-primary: #3b82f6;
+      --food-primary-hover: #2563eb;
+      --food-primary-soft: rgba(59, 130, 246, 0.12);
+      --food-success: #10b981;
+      --food-success-soft: rgba(16, 185, 129, 0.12);
+      --food-warning: #f59e0b;
+      --food-warning-soft: rgba(245, 158, 11, 0.12);
+      --food-danger: #ef4444;
+      --food-danger-soft: rgba(239, 68, 68, 0.12);
+      --food-radius: 1rem;
+      --food-radius-sm: 0.625rem;
+      --food-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ── DARK THEME (Default) ── */
+    [data-theme="dark"] {
+      --food-bg: #0f172a;
+      --food-card-bg: #1e293b;
+      --food-card-bg-hover: #253449;
+      --food-text-main: #f1f5f9;
+      --food-text-secondary: #94a3b8;
+      --food-text-muted: #64748b;
+      --food-border: rgba(255, 255, 255, 0.06);
+      --food-border-active: rgba(59, 130, 246, 0.5);
+      --food-input-bg: #0f172a;
+      --food-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+      --food-toggle-bg: #334155;
+      --food-toggle-knob: #f1f5f9;
+      --food-toggle-icon-sun: 0.4;
+      --food-toggle-icon-moon: 1;
+    }
+
+    /* ── LIGHT THEME ── */
+    [data-theme="light"] {
+      --food-bg: #f8fafc;
+      --food-card-bg: #ffffff;
+      --food-card-bg-hover: #f1f5f9;
+      --food-text-main: #0f172a;
+      --food-text-secondary: #475569;
+      --food-text-muted: #94a3b8;
+      --food-border: rgba(0, 0, 0, 0.08);
+      --food-border-active: rgba(59, 130, 246, 0.5);
+      --food-input-bg: #f1f5f9;
+      --food-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+      --food-toggle-bg: #e2e8f0;
+      --food-toggle-knob: #0f172a;
+      --food-toggle-icon-sun: 1;
+      --food-toggle-icon-moon: 0.35;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--food-bg);
+      color: var(--food-text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 2rem 1rem;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color var(--food-transition), color var(--food-transition);
+    }
+
+    /* === Layout Container === */
+    .food-container {
+      max-width: 720px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* ============================================
+       THEME TOGGLE
+       ============================================ */
+    .food-theme-toggle-wrapper {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 1rem;
+    }
+
+    .food-theme-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: var(--food-card-bg);
+      border: 1px solid var(--food-border);
+      border-radius: 2rem;
+      padding: 0.4rem 0.85rem;
+      cursor: pointer;
+      transition: all var(--food-transition);
+      user-select: none;
+    }
+
+    .food-theme-toggle:hover {
+      border-color: var(--food-text-muted);
+    }
+
+    .food-theme-icon {
+      font-size: 1rem;
+      transition: opacity var(--food-transition);
+    }
+
+    .food-theme-icon--sun {
+      opacity: var(--food-toggle-icon-sun);
+    }
+
+    .food-theme-icon--moon {
+      opacity: var(--food-toggle-icon-moon);
+    }
+
+    .food-theme-switch {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      background: var(--food-toggle-bg);
+      border-radius: 11px;
+      transition: background var(--food-transition);
+    }
+
+    .food-theme-switch::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 16px;
+      height: 16px;
+      background: var(--food-toggle-knob);
+      border-radius: 50%;
+      transition: transform var(--food-transition), background var(--food-transition);
+    }
+
+    [data-theme="light"] .food-theme-switch::after {
+      transform: translateX(18px);
+    }
+
+    /* === Header === */
+    .food-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .food-header-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    .food-header-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.5rem;
+    }
+
+    .food-header-subtitle {
+      color: var(--food-text-secondary);
+      font-size: 0.95rem;
+      font-weight: 400;
+    }
+
+    .food-header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      background: var(--food-primary-soft);
+      color: var(--food-primary);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 1rem;
+      margin-top: 0.6rem;
+      letter-spacing: 0.02em;
+    }
+
+    /* ============================================
+       QUIZ SECTION
+       ============================================ */
+    .food-quiz-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .food-quiz-wrapper.food-hidden {
+      display: none;
+    }
+
+    /* === Quiz Group === */
+    .food-quiz-group {
+      background: var(--food-card-bg);
+      border: 1px solid var(--food-border);
+      border-radius: var(--food-radius);
+      padding: 1.75rem;
+      transition: background var(--food-transition), border-color var(--food-transition);
+    }
+
+    .food-quiz-label {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .food-quiz-label-icon {
+      font-size: 1.15rem;
+    }
+
+    .food-quiz-hint {
+      font-size: 0.8rem;
+      color: var(--food-text-muted);
+      margin-bottom: 1.25rem;
+    }
+
+    /* === Budget Input === */
+    .food-budget-input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .food-budget-input {
+      flex: 1;
+      min-width: 150px;
+      padding: 0.75rem 1rem;
+      background: var(--food-input-bg);
+      border: 1px solid var(--food-border);
+      border-radius: var(--food-radius-sm);
+      color: var(--food-text-main);
+      font-size: 1rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color var(--food-transition), background var(--food-transition);
+    }
+
+    .food-budget-input:focus {
+      border-color: var(--food-border-active);
+    }
+
+    .food-budget-input::placeholder {
+      color: var(--food-text-muted);
+    }
+
+    .food-budget-unit {
+      color: var(--food-text-secondary);
+      font-size: 0.85rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    /* === Budget Presets === */
+    .food-budget-presets {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .food-budget-preset {
+      padding: 0.5rem 1rem;
+      background: var(--food-input-bg);
+      border: 1px solid var(--food-border);
+      border-radius: 2rem;
+      color: var(--food-text-secondary);
+      font-size: 0.8rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all var(--food-transition);
+    }
+
+    .food-budget-preset:hover {
+      border-color: var(--food-text-muted);
+      color: var(--food-text-main);
+    }
+
+    .food-budget-preset.food-active {
+      background: var(--food-primary-soft);
+      border-color: var(--food-primary);
+      color: var(--food-primary);
+    }
+
+    /* === Option Items (Chip selector) === */
+    .food-option-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .food-option-item {
+      position: relative;
+    }
+
+    .food-option-item input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+      pointer-events: none;
+    }
+
+    .food-option-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.6rem 1.15rem;
+      background: var(--food-input-bg);
+      border: 1px solid var(--food-border);
+      border-radius: 2rem;
+      color: var(--food-text-secondary);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--food-transition);
+      user-select: none;
+    }
+
+    .food-option-chip:hover {
+      border-color: var(--food-text-muted);
+      color: var(--food-text-main);
+      background: var(--food-card-bg-hover);
+    }
+
+    .food-option-item input:checked + .food-option-chip {
+      background: var(--food-primary-soft);
+      border-color: var(--food-primary);
+      color: var(--food-primary);
+    }
+
+    .food-option-chip-icon {
+      font-size: 1rem;
+    }
+
+    /* === Checkbox style for allergy items === */
+    .food-option-item input[type="checkbox"] + .food-option-chip::before {
+      content: '';
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid var(--food-text-muted);
+      border-radius: 4px;
+      display: inline-block;
+      transition: all var(--food-transition);
+      flex-shrink: 0;
+    }
+
+    .food-option-item input[type="checkbox"]:checked + .food-option-chip::before {
+      background: var(--food-primary);
+      border-color: var(--food-primary);
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
+      background-size: 12px;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+    /* === Submit Button === */
+    .food-btn-submit {
+      width: 100%;
+      padding: 1rem 2rem;
+      background: var(--food-primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--food-radius);
+      font-size: 1.05rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all var(--food-transition);
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .food-btn-submit:hover:not(:disabled) {
+      background: var(--food-primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+    }
+
+    .food-btn-submit:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .food-btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    /* === Validation Error === */
+    .food-quiz-group.food-error {
+      border-color: var(--food-danger);
+      animation: food-shake 0.4s ease;
+    }
+
+    @keyframes food-shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-4px); }
+      40%, 80% { transform: translateX(4px); }
+    }
+
+    .food-error-message {
+      color: var(--food-danger);
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
+
+    .food-quiz-group.food-error .food-error-message {
+      display: block;
+    }
+
+    /* ============================================
+       LOADING STATE
+       ============================================ */
+    .food-loading-wrapper {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+
+    .food-loading-wrapper.food-visible {
+      display: flex;
+    }
+
+    .food-loading-spinner {
+      width: 56px;
+      height: 56px;
+      border: 3px solid var(--food-border);
+      border-top-color: var(--food-primary);
+      border-radius: 50%;
+      animation: food-spin 0.8s linear infinite;
+      margin-bottom: 1.5rem;
+    }
+
+    @keyframes food-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .food-loading-text {
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: var(--food-text-secondary);
+      margin-bottom: 0.35rem;
+    }
+
+    .food-loading-subtext {
+      font-size: 0.82rem;
+      color: var(--food-text-muted);
+    }
+
+    /* ============================================
+       ERROR STATE
+       ============================================ */
+    .food-error-wrapper {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+      text-align: center;
+      background: var(--food-card-bg);
+      border: 1px solid var(--food-danger);
+      border-radius: var(--food-radius);
+    }
+
+    .food-error-wrapper.food-visible {
+      display: flex;
+    }
+
+    .food-error-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .food-error-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .food-error-detail {
+      font-size: 0.85rem;
+      color: var(--food-text-secondary);
+      margin-bottom: 1.5rem;
+      max-width: 400px;
+      line-height: 1.5;
+    }
+
+    .food-btn-retry {
+      padding: 0.75rem 1.5rem;
+      background: var(--food-danger);
+      color: #fff;
+      border: none;
+      border-radius: var(--food-radius-sm);
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all var(--food-transition);
+    }
+
+    .food-btn-retry:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    /* ============================================
+       RESULT SECTION
+       ============================================ */
+    .food-result-wrapper {
+      display: none;
+    }
+
+    .food-result-wrapper.food-visible {
+      display: block;
+    }
+
+    /* === Result Summary === */
+    .food-result-summary {
+      background: var(--food-card-bg);
+      border: 1px solid var(--food-border);
+      border-radius: var(--food-radius);
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.75rem;
+      transition: background var(--food-transition), border-color var(--food-transition);
+    }
+
+    .food-result-summary-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .food-result-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .food-result-tag {
+      padding: 0.35rem 0.85rem;
+      border-radius: 2rem;
+      font-size: 0.78rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .food-result-tag--goal {
+      background: var(--food-primary-soft);
+      color: var(--food-primary);
+    }
+
+    .food-result-tag--diet {
+      background: var(--food-success-soft);
+      color: var(--food-success);
+    }
+
+    .food-result-tag--budget {
+      background: var(--food-warning-soft);
+      color: var(--food-warning);
+    }
+
+    .food-result-tag--allergy {
+      background: var(--food-danger-soft);
+      color: var(--food-danger);
+    }
+
+    /* === Daily Total Stats === */
+    .food-daily-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .food-stat-card {
+      background: var(--food-card-bg);
+      border: 1px solid var(--food-border);
+      border-radius: var(--food-radius-sm);
+      padding: 1rem;
+      text-align: center;
+      transition: background var(--food-transition), border-color var(--food-transition);
+    }
+
+    .food-stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--food-primary);
+      line-height: 1.2;
+    }
+
+    .food-stat-label {
+      font-size: 0.75rem;
+      color: var(--food-text-muted);
+      margin-top: 0.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* === Meal Cards === */
+    .food-meals-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .food-meal-card {
+      background: var(--food-card-bg);
+      border: 1px solid var(--food-border);
+      border-radius: var(--food-radius);
+      overflow: hidden;
+      transition: border-color var(--food-transition), background var(--food-transition);
+    }
+
+    .food-meal-card:hover {
+      border-color: rgba(59, 130, 246, 0.15);
+    }
+
+    .food-meal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--food-border);
+    }
+
+    .food-meal-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      font-size: 1.05rem;
+    }
+
+    .food-meal-title-icon {
+      font-size: 1.25rem;
+    }
+
+    .food-meal-time {
+      font-size: 0.8rem;
+      color: var(--food-text-muted);
+      font-weight: 400;
+    }
+
+    .food-meal-body {
+      padding: 1.25rem 1.5rem;
+    }
+
+    .food-meal-name {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .food-meal-description {
+      font-size: 0.85rem;
+      color: var(--food-text-secondary);
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
+
+    .food-meal-meta {
+      display: flex;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .food-meal-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.82rem;
+    }
+
+    .food-meal-meta-icon {
+      font-size: 0.95rem;
+    }
+
+    .food-meal-meta-value {
+      color: var(--food-text-main);
+      font-weight: 600;
+    }
+
+    .food-meal-meta-label {
+      color: var(--food-text-muted);
+    }
+
+    /* === Nutrition Breakdown (mini bar) === */
+    .food-meal-nutrition {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--food-border);
+    }
+
+    .food-nutrition-item {
+      flex: 1;
+      text-align: center;
+    }
+
+    .food-nutrition-value {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .food-nutrition-label {
+      font-size: 0.7rem;
+      color: var(--food-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .food-nutrition-bar {
+      height: 3px;
+      background: var(--food-input-bg);
+      border-radius: 2px;
+      margin-top: 0.3rem;
+      overflow: hidden;
+    }
+
+    .food-nutrition-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.6s ease;
+    }
+
+    .food-nutrition-fill--protein { background: var(--food-primary); }
+    .food-nutrition-fill--carb    { background: var(--food-warning); }
+    .food-nutrition-fill--fat     { background: var(--food-success); }
+
+    /* === Ingredients === */
+    .food-meal-ingredients {
+      font-size: 0.78rem;
+      color: var(--food-text-muted);
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--food-border);
+      line-height: 1.5;
+    }
+
+    .food-meal-ingredients strong {
+      color: var(--food-text-secondary);
+    }
+
+    /* === Action Buttons === */
+    .food-result-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .food-btn-refresh,
+    .food-btn-reset {
+      flex: 1;
+      padding: 0.875rem 1.5rem;
+      border-radius: var(--food-radius-sm);
+      font-size: 0.95rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all var(--food-transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+
+    .food-btn-refresh {
+      background: var(--food-primary);
+      color: #fff;
+      border: none;
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
+    }
+
+    .food-btn-refresh:hover:not(:disabled) {
+      background: var(--food-primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .food-btn-refresh:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .food-btn-reset {
+      background: transparent;
+      color: var(--food-text-secondary);
+      border: 1px solid var(--food-border);
+    }
+
+    .food-btn-reset:hover {
+      border-color: var(--food-text-muted);
+      color: var(--food-text-main);
+    }
+
+    /* === AI Source Badge === */
+    .food-ai-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      font-size: 0.72rem;
+      color: var(--food-text-muted);
+      margin-top: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--food-border);
+    }
+
+    /* === Page Transition === */
+    .food-fade-in {
+      animation: food-fadeIn 0.4s ease forwards;
+    }
+
+    @keyframes food-fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 600px) {
+      body {
+        padding: 1rem 0.75rem;
+      }
+
+      .food-header-title {
+        font-size: 1.4rem;
+      }
+
+      .food-quiz-group {
+        padding: 1.25rem;
+      }
+
+      .food-daily-stats {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+      }
+
+      .food-stat-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        text-align: left;
+        padding: 0.85rem 1rem;
+      }
+
+      .food-stat-value {
+        font-size: 1.25rem;
+        order: 2;
+      }
+
+      .food-stat-label {
+        margin-top: 0;
+        order: 1;
+      }
+
+      .food-meal-header {
+        padding: 1rem 1.15rem;
+      }
+
+      .food-meal-body {
+        padding: 1rem 1.15rem;
+      }
+
+      .food-meal-meta {
+        gap: 0.75rem;
+      }
+
+      .food-result-actions {
+        flex-direction: column;
+      }
+
+      .food-meal-nutrition {
+        gap: 0.5rem;
+      }
+    }
+
+    @media (min-width: 601px) and (max-width: 900px) {
+      .food-container {
+        max-width: 600px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="food-container">
+
+    <!-- ===== THEME TOGGLE ===== -->
+    <div class="food-theme-toggle-wrapper">
+      <div class="food-theme-toggle" id="foodThemeToggle" role="button" tabindex="0" aria-label="Chuyển đổi giao diện sáng/tối">
+        <span class="food-theme-icon food-theme-icon--sun">☀️</span>
+        <div class="food-theme-switch"></div>
+        <span class="food-theme-icon food-theme-icon--moon">🌙</span>
+      </div>
+    </div>
+
+    <!-- ===== HEADER ===== -->
+    <header class="food-header">
+      <span class="food-header-icon">🍱</span>
+      <h1 class="food-header-title">Gợi Ý Thực Đơn AI</h1>
+      <p class="food-header-subtitle">Thực đơn cá nhân hóa theo mục tiêu & ngân sách của bạn</p>
+      <div class="food-header-badge">
+        <span>🤖</span>
+        Powered by Ollama AI
+      </div>
+    </header>
+
+    <!-- ===== QUIZ SECTION ===== -->
+    <form class="food-quiz-wrapper" id="foodQuizForm" novalidate>
+
+      <!-- 1. Budget -->
+      <div class="food-quiz-group" id="foodGroupBudget">
+        <div class="food-quiz-label">
+          <span class="food-quiz-label-icon">💰</span>
+          Ngân sách mỗi ngày
+        </div>
+        <div class="food-quiz-hint">Nhập số tiền hoặc chọn mức sẵn có</div>
+        <div class="food-budget-input-wrapper">
+          <input
+            type="number"
+            class="food-budget-input"
+            id="foodBudgetInput"
+            placeholder="Ví dụ: 80000"
+            min="0"
+            step="1000"
+          >
+          <span class="food-budget-unit">VNĐ / ngày</span>
+        </div>
+        <div class="food-budget-presets">
+          <button type="button" class="food-budget-preset" data-value="50000">50K</button>
+          <button type="button" class="food-budget-preset" data-value="80000">80K</button>
+          <button type="button" class="food-budget-preset" data-value="120000">120K</button>
+          <button type="button" class="food-budget-preset" data-value="200000">200K</button>
+        </div>
+        <div class="food-error-message">Vui lòng nhập ngân sách hợp lệ (tối thiểu 10,000đ)</div>
+      </div>
+
+      <!-- 2. Goal (aim) -->
+      <div class="food-quiz-group" id="foodGroupGoal">
+        <div class="food-quiz-label">
+          <span class="food-quiz-label-icon">🎯</span>
+          Mục tiêu của bạn
+        </div>
+        <div class="food-quiz-hint">Chọn một mục tiêu</div>
+        <div class="food-option-list">
+          <label class="food-option-item">
+            <input type="radio" name="goal" value="Tăng cơ">
+            <span class="food-option-chip">
+              <span class="food-option-chip-icon">💪</span>
+              Tăng cơ
+            </span>
+          </label>
+          <label class="food-option-item">
+            <input type="radio" name="goal" value="Giảm cân">
+            <span class="food-option-chip">
+              <span class="food-option-chip-icon">🏃</span>
+              Giảm cân
+            </span>
+          </label>
+          <label class="food-option-item">
+            <input type="radio" name="goal" value="Cân bằng">
+            <span class="food-option-chip">
+              <span class="food-option-chip-icon">⚖️</span>
+              Cân bằng
+            </span>
+          </label>
+        </div>
+        <div class="food-error-message">Vui lòng chọn mục tiêu</div>
+      </div>
+
+      <!-- 3. Diet -->
+      <div class="food-quiz-group" id="foodGroupDiet">
+        <div class="food-quiz-label">
+          <span class="food-quiz-label-icon">🥗</span>
+          Chế độ ăn
+        </div>
+        <div class="food-quiz-hint">Chọn chế độ phù hợp với bạn</div>
+        <div class="food-option-list">
+          <label class="food-option-item">
+            <input type="radio" name="diet" value="vegetarian">
+            <span class="food-option-chip">
+              <span class="food-option-chip-icon">🌱</span>
+              Ăn chay
+            </span>
+          </label>
+          <label class="food-option-item">
+            <input type="radio" name="diet" value="eatclean">
+            <span class="food-option-chip">
+              <span class="food-option-chip-icon">🥦</span>
+              Eat clean
+            </span>
+          </label>
+          <label class="food-option-item">
+            <input type="radio" name="diet" value="home_cooked">
+            <span class="food-option-chip">
+              <span class="food-option-chip-icon">🍽️</span>
+              Không kiêng
+            </span>
+          </label>
+        </div>
+        <div class="food-error-message">Vui lòng chọn chế độ ăn</div>
+      </div>
+
+      <!-- 4. Allergies -->
+      <div class="food-quiz-group" id="foodGroupAllergy">
+        <div class="food-quiz-label">
+          <span class="food-quiz-label-icon">⚠️</span>
+          Dị ứng thực phẩm
+        </div>
+        <div class="food-quiz-hint">Chọn các loại thực phẩm bạn dị ứng (nếu có)</div>
+        <div class="food-option-list">
+          <label class="food-option-item">
+            <input type="checkbox" name="allergy" value="soy">
+            <span class="food-option-chip">Đậu nành</span>
+          </label>
+          <label class="food-option-item">
+            <input type="checkbox" name="allergy" value="lactose">
+            <span class="food-option-chip">Lactose</span>
+          </label>
+          <label class="food-option-item">
+            <input type="checkbox" name="allergy" value="seafood">
+            <span class="food-option-chip">Hải sản</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="food-btn-submit" id="foodBtnSubmit">
+        <span>✨</span>
+        Gợi ý thực đơn
+      </button>
+
+    </form>
+
+    <!-- ===== LOADING STATE ===== -->
+    <div class="food-loading-wrapper" id="foodLoadingWrapper">
+      <div class="food-loading-spinner"></div>
+      <div class="food-loading-text">AI đang phân tích...</div>
+      <div class="food-loading-subtext">Ollama đang tạo thực đơn phù hợp cho bạn</div>
+    </div>
+
+    <!-- ===== ERROR STATE ===== -->
+    <div class="food-error-wrapper" id="foodErrorWrapper">
+      <div class="food-error-icon">😥</div>
+      <div class="food-error-title">Không thể tạo thực đơn</div>
+      <div class="food-error-detail" id="foodErrorDetail">Đã xảy ra lỗi khi kết nối với AI.</div>
+      <button class="food-btn-retry" id="foodBtnRetry">Thử lại</button>
+    </div>
+
+    <!-- ===== RESULT SECTION ===== -->
+    <div class="food-result-wrapper" id="foodResultWrapper">
+
+      <!-- Summary Tags -->
+      <div class="food-result-summary">
+        <div class="food-result-summary-title">
+          <span>📋</span>
+          Thực đơn của bạn
+        </div>
+        <div class="food-result-tags" id="foodResultTags"></div>
+      </div>
+
+      <!-- Daily Stats -->
+      <div class="food-daily-stats" id="foodDailyStats"></div>
+
+      <!-- Meals Grid -->
+      <div class="food-meals-grid" id="foodMealsGrid"></div>
+
+      <!-- Action Buttons -->
+      <div class="food-result-actions">
+        <button class="food-btn-refresh" id="foodBtnRefresh">
+          <span>🔄</span>
+          Đổi thực đơn khác
+        </button>
+        <button class="food-btn-reset" id="foodBtnReset">
+          <span>↩️</span>
+          Làm lại quiz
+        </button>
+      </div>
+
+      <!-- AI Badge -->
+      <div class="food-ai-badge">
+        <span>🤖</span>
+        Thực đơn được tạo bởi Ollama AI • Dựa trên database 100+ món Việt
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ============================================
+       JAVASCRIPT
+       ============================================ -->
+  <script>
+    /**
+     * FoodSuggestionApp - AI-Powered Meal Suggestion
+     *
+     * Kết nối với FastAPI backend → Ollama RAG pipeline
+     * Fallback: Mock data khi API không khả dụng
+     */
+    const FoodSuggestionApp = (() => {
+
+      // ============================================
+      // CONFIGURATION
+      // ============================================
+      const CONFIG = {
+        API_BASE: 'http://localhost:8000',
+        ENDPOINT: '/api/food-suggest',
+        HEALTH_ENDPOINT: '/api/health',
+        TIMEOUT_MS: 300000, // Tăng lên 5 phút vì Ollama load lâu
+      };
+
+      // ============================================
+      // APPLICATION STATE
+      // ============================================
+      const state = {
+        budget: 0,
+        goal: '',        // 'Tăng cơ' | 'Giảm cân' | 'Cân bằng'
+        diet: '',        // 'vegetarian' | 'eatclean' | 'home_cooked'
+        allergies: [],   // ['soy', 'lactose', 'seafood']
+        theme: 'dark',
+        isLoading: false,
+        isApiAvailable: null, // null = chưa check, true/false
+      };
+
+      // ============================================
+      // LABEL MAPS
+      // ============================================
+      const LABELS = {
+        goal: {
+          'Tăng cơ': '💪 Tăng cơ',
+          'Giảm cân': '🏃 Giảm cân',
+          'Cân bằng': '⚖️ Cân bằng',
+        },
+        diet: {
+          vegetarian: '🌱 Ăn chay',
+          eatclean: '🥦 Eat clean',
+          home_cooked: '🍽️ Không kiêng',
+        },
+        allergy: {
+          soy: 'Đậu nành',
+          lactose: 'Lactose',
+          seafood: 'Hải sản',
+        },
+      };
+
+      // ============================================
+      // CALORIE/PROTEIN ESTIMATION
+      // Tính toán mục tiêu calo & protein dựa trên aim
+      // ============================================
+      const GOAL_NUTRITION = {
+        'Tăng cơ':  { calories: 2500, protein: 140 },
+        'Giảm cân': { calories: 1600, protein: 90 },
+        'Cân bằng': { calories: 2000, protein: 110 },
+      };
+
+      // ============================================
+      // MOCK DATA (FALLBACK khi API offline)
+      // ============================================
+      const MOCK_MEALS = {
+        'Tăng cơ': {
+          vegetarian: {
+            breakfast: [
+              { name: 'Bánh mì nguyên cám bơ đậu phộng & chuối', description: 'Bánh mì nguyên cám phết bơ đậu phộng tự nhiên, kèm chuối lát và mật ong.', calories: 520, protein: 22, carbs: 65, fat: 18, cost: 25000, ingredients: 'Bánh mì nguyên cám, bơ đậu phộng, chuối, mật ong' },
+              { name: 'Smoothie protein đậu xanh & yến mạch', description: 'Sinh tố đậu xanh xay mịn với yến mạch, sữa hạnh nhân và hạt chia.', calories: 480, protein: 25, carbs: 58, fat: 14, cost: 30000, ingredients: 'Đậu xanh, yến mạch, sữa hạnh nhân, hạt chia' },
+            ],
+            lunch: [
+              { name: 'Cơm gạo lứt đậu hũ sốt teriyaki', description: 'Cơm gạo lứt với đậu hũ chiên giòn sốt teriyaki, rau xanh hấp.', calories: 650, protein: 35, carbs: 72, fat: 20, cost: 40000, ingredients: 'Gạo lứt, đậu hũ, nước tương, rau xanh' },
+            ],
+            dinner: [
+              { name: 'Mì ý sốt nấm & rau bina', description: 'Mì spaghetti nguyên cám sốt nấm với rau bina, phô mai thực vật.', calories: 580, protein: 24, carbs: 64, fat: 22, cost: 35000, ingredients: 'Mì spaghetti, nấm, rau bina, phô mai thực vật' },
+            ],
+          },
+          eatclean: {
+            breakfast: [
+              { name: 'Trứng ốp la & bơ avocado toast', description: '2 trứng ốp la với bánh mì nguyên cám phết avocado.', calories: 500, protein: 28, carbs: 35, fat: 25, cost: 30000, ingredients: 'Trứng gà, bánh mì nguyên cám, avocado, hạt chia' },
+            ],
+            lunch: [
+              { name: 'Ức gà nướng & khoai lang', description: 'Ức gà nướng herbs, khoai lang luộc, salad rau xanh.', calories: 650, protein: 45, carbs: 55, fat: 18, cost: 45000, ingredients: 'Ức gà, khoai lang, rau xanh, dầu olive' },
+            ],
+            dinner: [
+              { name: 'Bò bít tết & rau hấp', description: 'Thịt bò thăn áp chảo, bông cải, đậu Hà Lan.', calories: 620, protein: 48, carbs: 35, fat: 28, cost: 55000, ingredients: 'Thịt bò thăn, bông cải, đậu Hà Lan, khoai tây' },
+            ],
+          },
+          home_cooked: {
+            breakfast: [
+              { name: 'Phở bò tái lăn', description: 'Phở bò tái lăn thêm gân, rau sống, giá đỗ.', calories: 580, protein: 35, carbs: 55, fat: 22, cost: 40000, ingredients: 'Bánh phở, thịt bò, nước dùng xương, rau thơm' },
+            ],
+            lunch: [
+              { name: 'Cơm tấm sườn nướng', description: 'Cơm tấm sườn heo nướng than, trứng ốp la, bì, chả.', calories: 750, protein: 40, carbs: 70, fat: 30, cost: 40000, ingredients: 'Cơm tấm, sườn heo, trứng, bì, chả, mỡ hành' },
+            ],
+            dinner: [
+              { name: 'Cơm gà Hải Nam', description: 'Cơm gà Hải Nam da giòn, nước chấm gừng.', calories: 650, protein: 38, carbs: 60, fat: 25, cost: 40000, ingredients: 'Gà, gạo, gừng, hành lá, dưa leo' },
+            ],
+          },
+        },
+        'Giảm cân': {
+          vegetarian: {
+            breakfast: [{ name: 'Sinh tố xanh detox', description: 'Cải xoăn, dưa chuột, táo xanh, gừng.', calories: 180, protein: 5, carbs: 38, fat: 3, cost: 20000, ingredients: 'Cải xoăn, dưa chuột, táo xanh, gừng, chanh' }],
+            lunch: [{ name: 'Salad đậu hũ nướng rau củ', description: 'Đậu hũ nướng trên salad rau xanh.', calories: 380, protein: 20, carbs: 30, fat: 18, cost: 30000, ingredients: 'Đậu hũ, rau xanh, cà chua bi, dưa chuột' }],
+            dinner: [{ name: 'Canh rau củ quinoa', description: 'Canh rau củ hỗn hợp nấu cùng quinoa.', calories: 300, protein: 14, carbs: 42, fat: 8, cost: 30000, ingredients: 'Bí đỏ, cà rốt, bắp cải, quinoa' }],
+          },
+          eatclean: {
+            breakfast: [{ name: 'Greek yogurt & granola', description: 'Sữa chua Hy Lạp không đường, granola ít calo.', calories: 280, protein: 20, carbs: 30, fat: 10, cost: 30000, ingredients: 'Yogurt Hy Lạp, granola, kiwi, hạnh nhân' }],
+            lunch: [{ name: 'Salad ức gà nướng sốt chanh', description: 'Ức gà nướng lát, rau xanh, cherry tomato.', calories: 420, protein: 38, carbs: 12, fat: 24, cost: 40000, ingredients: 'Ức gà, rau xanh, cà chua bi, sốt chanh olive' }],
+            dinner: [{ name: 'Soup gà rau củ low-carb', description: 'Soup gà nấm, bắp cải, cà rốt.', calories: 300, protein: 28, carbs: 20, fat: 12, cost: 30000, ingredients: 'Gà, nấm, bắp cải, cà rốt, hành tây' }],
+          },
+          home_cooked: {
+            breakfast: [{ name: 'Bánh cuốn chả lụa', description: 'Bánh cuốn nóng, chả lụa, hành phi.', calories: 350, protein: 15, carbs: 45, fat: 12, cost: 25000, ingredients: 'Bột gạo, chả lụa, hành phi, nước mắm' }],
+            lunch: [{ name: 'Bún thịt nướng (phần nhỏ)', description: 'Bún thịt nướng ít bún, nhiều rau sống.', calories: 450, protein: 25, carbs: 48, fat: 16, cost: 30000, ingredients: 'Bún tươi, thịt heo, rau sống, nước mắm pha' }],
+            dinner: [{ name: 'Gỏi cuốn tôm thịt', description: '3 cuốn gỏi cuốn tôm thịt, rau sống.', calories: 350, protein: 20, carbs: 38, fat: 10, cost: 25000, ingredients: 'Bánh tráng, tôm, thịt heo, rau sống, bún' }],
+          },
+        },
+        'Cân bằng': {
+          vegetarian: {
+            breakfast: [{ name: 'Cháo nấm & đậu hũ non', description: 'Cháo gạo trắng nấu nấm rơm, đậu hũ non.', calories: 320, protein: 14, carbs: 50, fat: 8, cost: 20000, ingredients: 'Gạo, nấm rơm, đậu hũ non, hành lá, gừng' }],
+            lunch: [{ name: 'Cơm chiên rau củ nấm', description: 'Cơm chiên dầu ít với nấm đông cô, rau củ.', calories: 500, protein: 16, carbs: 65, fat: 18, cost: 25000, ingredients: 'Cơm trắng, nấm đông cô, cà rốt, đậu Hà Lan' }],
+            dinner: [{ name: 'Lẩu nấm chay', description: 'Lẩu nấm hỗn hợp với đậu hũ và rau.', calories: 400, protein: 18, carbs: 40, fat: 16, cost: 35000, ingredients: 'Nấm kim châm, nấm bào ngư, đậu hũ, rau xanh' }],
+          },
+          eatclean: {
+            breakfast: [{ name: 'Pancake chuối yến mạch', description: 'Pancake chuối chín yến mạch, mật ong.', calories: 380, protein: 12, carbs: 52, fat: 14, cost: 25000, ingredients: 'Chuối chín, yến mạch, mật ong, hạt óc chó' }],
+            lunch: [{ name: 'Bowl gạo lứt thịt gà & rau', description: 'Cơm gạo lứt, ức gà luộc xé sợi, rau xanh.', calories: 550, protein: 35, carbs: 55, fat: 18, cost: 40000, ingredients: 'Gạo lứt, ức gà, edamame, bắp cải tím, sốt mè' }],
+            dinner: [{ name: 'Cá phi lê sốt chanh dây', description: 'Cá trắng áp chảo sốt chanh dây, khoai tây nướng.', calories: 480, protein: 32, carbs: 38, fat: 18, cost: 45000, ingredients: 'Cá phi lê, chanh dây, khoai tây, rau xanh' }],
+          },
+          home_cooked: {
+            breakfast: [{ name: 'Bún riêu cua', description: 'Bún riêu cua nước lèo cà chua đậm đà.', calories: 420, protein: 20, carbs: 52, fat: 14, cost: 30000, ingredients: 'Bún tươi, cua, cà chua, đậu hũ, rau sống' }],
+            lunch: [{ name: 'Cơm văn phòng 3 món', description: 'Thịt kho trứng, canh chua, rau xào.', calories: 580, protein: 28, carbs: 65, fat: 20, cost: 35000, ingredients: 'Cơm, thịt heo, trứng, cá lóc, rau xào' }],
+            dinner: [{ name: 'Bún chả Hà Nội', description: 'Bún chả nướng than, nem rán, rau sống.', calories: 520, protein: 28, carbs: 52, fat: 20, cost: 35000, ingredients: 'Bún tươi, chả nướng, nem rán, rau sống' }],
+          },
+        },
+      };
+
+      // ============================================
+      // DOM REFERENCES
+      // ============================================
+      const DOM = {
+        html:           () => document.documentElement,
+        quizForm:       () => document.getElementById('foodQuizForm'),
+        resultWrapper:  () => document.getElementById('foodResultWrapper'),
+        loadingWrapper: () => document.getElementById('foodLoadingWrapper'),
+        errorWrapper:   () => document.getElementById('foodErrorWrapper'),
+        errorDetail:    () => document.getElementById('foodErrorDetail'),
+        budgetInput:    () => document.getElementById('foodBudgetInput'),
+        resultTags:     () => document.getElementById('foodResultTags'),
+        dailyStats:     () => document.getElementById('foodDailyStats'),
+        mealsGrid:      () => document.getElementById('foodMealsGrid'),
+        btnSubmit:      () => document.getElementById('foodBtnSubmit'),
+        btnRefresh:     () => document.getElementById('foodBtnRefresh'),
+        btnReset:       () => document.getElementById('foodBtnReset'),
+        btnRetry:       () => document.getElementById('foodBtnRetry'),
+        themeToggle:    () => document.getElementById('foodThemeToggle'),
+        groupBudget:    () => document.getElementById('foodGroupBudget'),
+        groupGoal:      () => document.getElementById('foodGroupGoal'),
+        groupDiet:      () => document.getElementById('foodGroupDiet'),
+      };
+
+      // ============================================
+      // THEME MANAGEMENT
+      // ============================================
+      const initTheme = () => {
+        const saved = localStorage.getItem('food-theme');
+        if (saved === 'light' || saved === 'dark') {
+          state.theme = saved;
+        }
+        DOM.html().setAttribute('data-theme', state.theme);
+      };
+
+      const toggleTheme = () => {
+        state.theme = state.theme === 'dark' ? 'light' : 'dark';
+        DOM.html().setAttribute('data-theme', state.theme);
+        localStorage.setItem('food-theme', state.theme);
+      };
+
+      // ============================================
+      // UTILITIES
+      // ============================================
+      const formatCurrency = (amount) => new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
+
+      const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+      const clearErrors = () => {
+        document.querySelectorAll('.food-quiz-group').forEach(g => g.classList.remove('food-error'));
+      };
+
+      // ============================================
+      // FORM MANAGEMENT
+      // ============================================
+      const readFormState = () => {
+        state.budget = parseInt(DOM.budgetInput().value, 10) || 0;
+
+        const goalRadio = document.querySelector('input[name="goal"]:checked');
+        state.goal = goalRadio ? goalRadio.value : '';
+
+        const dietRadio = document.querySelector('input[name="diet"]:checked');
+        state.diet = dietRadio ? dietRadio.value : '';
+
+        const allergyChecks = document.querySelectorAll('input[name="allergy"]:checked');
+        state.allergies = Array.from(allergyChecks).map(cb => cb.value);
+      };
+
+      const validateForm = () => {
+        clearErrors();
+        let valid = true;
+
+        if (!state.budget || state.budget < 10000) {
+          DOM.groupBudget().classList.add('food-error');
+          valid = false;
+        }
+        if (!state.goal) {
+          DOM.groupGoal().classList.add('food-error');
+          valid = false;
+        }
+        if (!state.diet) {
+          DOM.groupDiet().classList.add('food-error');
+          valid = false;
+        }
+
+        return valid;
+      };
+
+      // ============================================
+      // API COMMUNICATION
+      // ============================================
+
+      /**
+       * Build API request payload from state
+       */
+      const buildApiPayload = () => {
+        const nutrition = GOAL_NUTRITION[state.goal] || GOAL_NUTRITION['Cân bằng'];
+        return {
+          calories_need: nutrition.calories,
+          protein_need: nutrition.protein,
+          daily_budget: state.budget,
+          aim: state.goal,
+          diet_type: state.diet,
+          allergen: state.allergies.join(';'),
+        };
+      };
+
+      /**
+       * Call the FastAPI backend
+       * @returns {Promise<string>} Formatted meal summary text
+       */
+      const callApi = async (payload) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), CONFIG.TIMEOUT_MS);
+
+        try {
+          const res = await fetch(`${CONFIG.API_BASE}${CONFIG.ENDPOINT}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+            signal: controller.signal,
+          });
+
+          clearTimeout(timeoutId);
+
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.detail || `HTTP ${res.status}`);
+          }
+
+          const data = await res.json();
+          if (!data.success) {
+            throw new Error(data.error || 'API trả về lỗi không xác định');
+          }
+
+          return data.result;
+        } catch (err) {
+          clearTimeout(timeoutId);
+          if (err.name === 'AbortError') {
+            throw new Error('Yêu cầu hết thời gian chờ (5 phút). Máy tính của bạn đang load quá tải.');
+          }
+          throw err;
+        }
+      };
+
+      /**
+       * Check if API is available
+       */
+      const checkApiHealth = async () => {
+        try {
+          const res = await fetch(`${CONFIG.API_BASE}${CONFIG.HEALTH_ENDPOINT}`, {
+            signal: AbortSignal.timeout(5000),
+          });
+          const data = await res.json();
+          state.isApiAvailable = data.status === 'ok';
+        } catch {
+          state.isApiAvailable = false;
+        }
+        return state.isApiAvailable;
+      };
+
+      // ============================================
+      // PARSE API RESPONSE → Structured Data
+      // ============================================
+
+      /**
+       * Parse the text response from rag_service into structured meal objects
+       * Format from rag_service.format_meal_summary():
+       *   Bữa sáng: <name> (<cal> kcal / <protein>g protein / <cost>đ)
+       *   Nguyên liệu: <ingredients>
+       *
+       *   Bữa trưa: <main> + <side> + <rice>g cơm (<cal> kcal / <protein>g protein / <cost>đ)
+       *   Nguyên liệu: <ingredients>
+       *   ...
+       *   Tổng kết ngày:
+       *       Tổng Calo: <x> / <target> kcal
+       *       Tổng Protein: <x> / <target> g
+       *       Tổng Chi phí: <x> / <budget> đ
+       */
+      const parseApiResponse = (text) => {
+        const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+
+        const parseMealLine = (line) => {
+          const match = line.match(/^Bữa [^:]+:\s*(.+?)\s*\(\s*([\d,.]+)\s*kcal\s*\/\s*([\d,.]+)\s*g\s*protein\s*\/\s*([\d,.]+)\s*đ\s*\)/i);
+          if (match) {
+            return {
+              name: match[1].trim(),
+              calories: parseFloat(match[2].replace(/,/g, '')),
+              protein: parseFloat(match[3].replace(/,/g, '')),
+              cost: parseFloat(match[4].replace(/,/g, '')),
+            };
+          }
+          return null;
+        };
+
+        const meals = { breakfast: null, lunch: null, dinner: null };
+        const totals = { calories: 0, protein: 0, cost: 0 };
+        let currentMeal = null;
+
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+
+          if (line.startsWith('Bữa sáng:')) {
+            currentMeal = 'breakfast';
+            meals.breakfast = parseMealLine(line) || { name: line.replace('Bữa sáng:', '').trim(), calories: 0, protein: 0, cost: 0 };
+          } else if (line.startsWith('Bữa trưa:')) {
+            currentMeal = 'lunch';
+            meals.lunch = parseMealLine(line) || { name: line.replace('Bữa trưa:', '').trim(), calories: 0, protein: 0, cost: 0 };
+          } else if (line.startsWith('Bữa tối:')) {
+            currentMeal = 'dinner';
+            meals.dinner = parseMealLine(line) || { name: line.replace('Bữa tối:', '').trim(), calories: 0, protein: 0, cost: 0 };
+          } else if (line.startsWith('Nguyên liệu:') && currentMeal && meals[currentMeal]) {
+            meals[currentMeal].ingredients = line.replace('Nguyên liệu:', '').trim();
+          } else if (line.startsWith('Tổng Calo:')) {
+            const m = line.match(/([\d,.]+)/);
+            if (m) totals.calories = parseFloat(m[1].replace(/,/g, ''));
+          } else if (line.startsWith('Tổng Protein:')) {
+            const m = line.match(/([\d,.]+)/);
+            if (m) totals.protein = parseFloat(m[1].replace(/,/g, ''));
+          } else if (line.startsWith('Tổng Chi phí:')) {
+            const m = line.match(/([\d,.]+)/);
+            if (m) totals.cost = parseFloat(m[1].replace(/,/g, ''));
+          }
+        }
+
+        // Fill defaults
+        ['breakfast', 'lunch', 'dinner'].forEach(type => {
+          if (!meals[type]) {
+            meals[type] = { name: 'Không xác định', calories: 0, protein: 0, cost: 0, carbs: 0, fat: 0, ingredients: '' };
+          }
+          meals[type].carbs = meals[type].carbs || Math.round(meals[type].calories * 0.45 / 4);
+          meals[type].fat = meals[type].fat || Math.round(meals[type].calories * 0.25 / 9);
+          meals[type].description = meals[type].description || meals[type].ingredients || '';
+          meals[type].ingredients = meals[type].ingredients || '';
+        });
+
+        return { meals, totals };
+      };
+
+      // ============================================
+      // MOCK DATA FALLBACK
+      // ============================================
+      const generateMockPlan = () => {
+        const goalMeals = MOCK_MEALS[state.goal];
+        if (!goalMeals) return null;
+
+        const dietMeals = goalMeals[state.diet];
+        if (!dietMeals) return null;
+
+        const plan = {};
+        for (const type of ['breakfast', 'lunch', 'dinner']) {
+          plan[type] = pickRandom(dietMeals[type]);
+        }
+
+        return plan;
+      };
+
+      // ============================================
+      // VIEW TRANSITIONS
+      // ============================================
+      const showView = (viewName) => {
+        // Hide all views
+        DOM.quizForm().classList.add('food-hidden');
+        DOM.loadingWrapper().classList.remove('food-visible');
+        DOM.errorWrapper().classList.remove('food-visible');
+        DOM.resultWrapper().classList.remove('food-visible');
+
+        switch (viewName) {
+          case 'quiz':
+            DOM.quizForm().classList.remove('food-hidden');
+            break;
+          case 'loading':
+            DOM.loadingWrapper().classList.add('food-visible');
+            break;
+          case 'error':
+            DOM.errorWrapper().classList.add('food-visible');
+            DOM.errorWrapper().classList.add('food-fade-in');
+            break;
+          case 'result':
+            DOM.resultWrapper().classList.add('food-visible');
+            DOM.resultWrapper().classList.add('food-fade-in');
+            break;
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      // ============================================
+      // RENDERING
+      // ============================================
+      const renderResultTags = () => {
+        const tags = [];
+        if (state.goal) {
+          tags.push(`<span class="food-result-tag food-result-tag--goal">${LABELS.goal[state.goal]}</span>`);
+        }
+        if (state.diet) {
+          tags.push(`<span class="food-result-tag food-result-tag--diet">${LABELS.diet[state.diet]}</span>`);
+        }
+        tags.push(`<span class="food-result-tag food-result-tag--budget">💰 ${formatCurrency(state.budget)}/ngày</span>`);
+        state.allergies.forEach(a => {
+          tags.push(`<span class="food-result-tag food-result-tag--allergy">⚠️ ${LABELS.allergy[a]}</span>`);
+        });
+        DOM.resultTags().innerHTML = tags.join('');
+      };
+
+      const renderDailyStats = (totals) => {
+        DOM.dailyStats().innerHTML = `
+          <div class="food-stat-card">
+            <div class="food-stat-value">${Math.round(totals.calories).toLocaleString()}</div>
+            <div class="food-stat-label">Kcal / ngày</div>
+          </div>
+          <div class="food-stat-card">
+            <div class="food-stat-value">${Math.round(totals.protein)}g</div>
+            <div class="food-stat-label">Protein</div>
+          </div>
+          <div class="food-stat-card">
+            <div class="food-stat-value">${formatCurrency(Math.round(totals.cost))}</div>
+            <div class="food-stat-label">Chi phí</div>
+          </div>
+        `;
+      };
+
+      const renderMealCard = (type, meal) => {
+        const config = {
+          breakfast: { icon: '🌅', label: 'Bữa sáng', time: '7:00 – 8:00' },
+          lunch:     { icon: '☀️', label: 'Bữa trưa', time: '12:00 – 13:00' },
+          dinner:    { icon: '🌙', label: 'Bữa tối',  time: '18:30 – 19:30' },
+        };
+
+        const c = config[type];
+        const maxMacro = Math.max(meal.protein || 1, meal.carbs || 1, meal.fat || 1);
+
+        const ingredientsHtml = meal.ingredients
+          ? `<div class="food-meal-ingredients"><strong>Nguyên liệu:</strong> ${meal.ingredients}</div>`
+          : '';
+
+        return `
+          <div class="food-meal-card food-fade-in">
+            <div class="food-meal-header">
+              <div class="food-meal-title">
+                <span class="food-meal-title-icon">${c.icon}</span>
+                ${c.label}
+              </div>
+              <span class="food-meal-time">${c.time}</span>
+            </div>
+            <div class="food-meal-body">
+              <div class="food-meal-name">${meal.name}</div>
+              <p class="food-meal-description">${meal.description || ''}</p>
+              <div class="food-meal-meta">
+                <div class="food-meal-meta-item">
+                  <span class="food-meal-meta-icon">🔥</span>
+                  <span class="food-meal-meta-value">${Math.round(meal.calories)}</span>
+                  <span class="food-meal-meta-label">kcal</span>
+                </div>
+                <div class="food-meal-meta-item">
+                  <span class="food-meal-meta-icon">💵</span>
+                  <span class="food-meal-meta-value">${formatCurrency(Math.round(meal.cost))}</span>
+                </div>
+              </div>
+              <div class="food-meal-nutrition">
+                <div class="food-nutrition-item">
+                  <div class="food-nutrition-value">${Math.round(meal.protein)}g</div>
+                  <div class="food-nutrition-label">Protein</div>
+                  <div class="food-nutrition-bar">
+                    <div class="food-nutrition-fill food-nutrition-fill--protein" style="width:${((meal.protein || 0) / maxMacro) * 100}%"></div>
+                  </div>
+                </div>
+                <div class="food-nutrition-item">
+                  <div class="food-nutrition-value">${Math.round(meal.carbs || 0)}g</div>
+                  <div class="food-nutrition-label">Carbs</div>
+                  <div class="food-nutrition-bar">
+                    <div class="food-nutrition-fill food-nutrition-fill--carb" style="width:${((meal.carbs || 0) / maxMacro) * 100}%"></div>
+                  </div>
+                </div>
+                <div class="food-nutrition-item">
+                  <div class="food-nutrition-value">${Math.round(meal.fat || 0)}g</div>
+                  <div class="food-nutrition-label">Fat</div>
+                  <div class="food-nutrition-bar">
+                    <div class="food-nutrition-fill food-nutrition-fill--fat" style="width:${((meal.fat || 0) / maxMacro) * 100}%"></div>
+                  </div>
+                </div>
+              </div>
+              ${ingredientsHtml}
+            </div>
+          </div>
+        `;
+      };
+
+      const renderMeals = (meals) => {
+        DOM.mealsGrid().innerHTML = ['breakfast', 'lunch', 'dinner']
+          .map(type => renderMealCard(type, meals[type]))
+          .join('');
+      };
+
+      const renderResult = (meals, totals) => {
+        renderResultTags();
+        renderDailyStats(totals);
+        renderMeals(meals);
+        showView('result');
+      };
+
+      // ============================================
+      // MAIN FLOW
+      // ============================================
+
+      /**
+       * Submit handler – tries API first, falls back to mock data
+       */
+      const handleSubmit = async () => {
+        if (state.isLoading) return;
+        state.isLoading = true;
+        DOM.btnSubmit().disabled = true;
+
+        showView('loading');
+
+        try {
+          // Try API first
+          const payload = buildApiPayload();
+          const resultText = await callApi(payload);
+
+          // Parse the text response from rag_service
+          const { meals, totals } = parseApiResponse(resultText);
+          renderResult(meals, totals);
+
+        } catch (apiError) {
+          console.warn('API call failed, falling back to mock data:', apiError.message);
+          alert("Lỗi từ AI: " + apiError.message + "\n\n(Hệ thống sẽ tạm hiển thị thực đơn giả lập - Mock Data)");
+
+          // Fallback to mock data
+          const mockPlan = generateMockPlan();
+          if (mockPlan) {
+            const totals = {
+              calories: mockPlan.breakfast.calories + mockPlan.lunch.calories + mockPlan.dinner.calories,
+              protein: mockPlan.breakfast.protein + mockPlan.lunch.protein + mockPlan.dinner.protein,
+              cost: mockPlan.breakfast.cost + mockPlan.lunch.cost + mockPlan.dinner.cost,
+            };
+            renderResult(mockPlan, totals);
+          } else {
+            DOM.errorDetail().textContent = apiError.message || 'Không thể tạo thực đơn.';
+            showView('error');
+          }
+        } finally {
+          state.isLoading = false;
+          DOM.btnSubmit().disabled = false;
+        }
+      };
+
+      /**
+       * Refresh handler – call API again with same settings
+       */
+      const handleRefresh = async () => {
+        if (state.isLoading) return;
+        state.isLoading = true;
+        DOM.btnRefresh().disabled = true;
+
+        // Show loading inline
+        DOM.mealsGrid().innerHTML = `
+          <div style="text-align:center;padding:2rem;">
+            <div class="food-loading-spinner" style="margin:0 auto 1rem;"></div>
+            <div style="color:var(--food-text-secondary);font-size:0.9rem;">Đang tạo thực đơn mới...</div>
+          </div>
+        `;
+
+        try {
+          const payload = buildApiPayload();
+          const resultText = await callApi(payload);
+          const { meals, totals } = parseApiResponse(resultText);
+          renderDailyStats(totals);
+          renderMeals(meals);
+        } catch (apiError) {
+          console.warn('Refresh API failed, using mock:', apiError.message);
+          alert("Lỗi từ AI: " + apiError.message + "\n\n(Hệ thống sẽ tạm hiển thị thực đơn giả lập - Mock Data)");
+          const mockPlan = generateMockPlan();
+          if (mockPlan) {
+            const totals = {
+              calories: mockPlan.breakfast.calories + mockPlan.lunch.calories + mockPlan.dinner.calories,
+              protein: mockPlan.breakfast.protein + mockPlan.lunch.protein + mockPlan.dinner.protein,
+              cost: mockPlan.breakfast.cost + mockPlan.lunch.cost + mockPlan.dinner.cost,
+            };
+            renderDailyStats(totals);
+            renderMeals(mockPlan);
+          }
+        } finally {
+          state.isLoading = false;
+          DOM.btnRefresh().disabled = false;
+        }
+      };
+
+      const resetQuiz = () => {
+        DOM.quizForm().reset();
+        document.querySelectorAll('.food-budget-preset').forEach(b => b.classList.remove('food-active'));
+        state.budget = 0;
+        state.goal = '';
+        state.diet = '';
+        state.allergies = [];
+        showView('quiz');
+        clearErrors();
+      };
+
+      // ============================================
+      // EVENT BINDING
+      // ============================================
+      const init = () => {
+        // Theme
+        initTheme();
+        DOM.themeToggle().addEventListener('click', toggleTheme);
+        DOM.themeToggle().addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleTheme(); }
+        });
+
+        // Budget preset buttons
+        document.querySelectorAll('.food-budget-preset').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const value = btn.dataset.value;
+            DOM.budgetInput().value = value;
+            document.querySelectorAll('.food-budget-preset').forEach(b => b.classList.remove('food-active'));
+            btn.classList.add('food-active');
+          });
+        });
+
+        // Budget input sync
+        DOM.budgetInput().addEventListener('input', () => {
+          const val = DOM.budgetInput().value;
+          document.querySelectorAll('.food-budget-preset').forEach(b => {
+            b.classList.toggle('food-active', b.dataset.value === val);
+          });
+        });
+
+        // Clear errors on interaction
+        document.querySelectorAll('input[name="goal"]').forEach(r => {
+          r.addEventListener('change', () => DOM.groupGoal().classList.remove('food-error'));
+        });
+        document.querySelectorAll('input[name="diet"]').forEach(r => {
+          r.addEventListener('change', () => DOM.groupDiet().classList.remove('food-error'));
+        });
+        DOM.budgetInput().addEventListener('input', () => DOM.groupBudget().classList.remove('food-error'));
+
+        // Submit
+        DOM.quizForm().addEventListener('submit', (e) => {
+          e.preventDefault();
+          readFormState();
+          if (!validateForm()) return;
+          handleSubmit();
+        });
+
+        // Actions
+        DOM.btnRefresh().addEventListener('click', handleRefresh);
+        DOM.btnReset().addEventListener('click', resetQuiz);
+        DOM.btnRetry().addEventListener('click', () => {
+          showView('quiz');
+        });
+
+        // Async health check
+        checkApiHealth().then(available => {
+          console.log(`[FoodSuggestion] API available: ${available}`);
+        });
+      };
+
+      // ============================================
+      // BOOTSTRAP
+      // ============================================
+      document.addEventListener('DOMContentLoaded', init);
+
+      return { getState: () => ({ ...state }) };
+
+    })();
+  </script>
+
+</body>
+</html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">

@@ -12,7 +12,7 @@ from api.app.core.exceptions import (
 
 
 client = AsyncClient()
-OLLAMA_CHAT_MODEL = os.getenv("OLLAMA_CHAT_MODEL", "llama3.2")
+OLLAMA_CHAT_MODEL = os.getenv("OLLAMA_CHAT_MODEL", "llama3.2:1b")
 
 async def chat() -> None:
       """Check whether the configured Ollama server is reachable."""
@@ -29,14 +29,14 @@ async def chat() -> None:
                   "Lỗi không xác định khi kết nối Ollama"
             ) from exc
 
-async def generate_chat(prompt: str) -> str:
+async def generate_chat(prompt: str, response_format=None) -> str:
       """Generate a deterministic RAG answer with the configured chat model."""
       messages = [{"role": "user", "content": prompt}]
       try:
             response = await client.chat(
                   model=OLLAMA_CHAT_MODEL,
                   messages=messages,
-                  format="json",
+                  format=response_format if response_format else "json",
                   options={"temperature": 0.0},
             )
       except ResponseError as exc:
