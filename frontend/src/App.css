@@ -1,0 +1,107 @@
+/* Reset cơ bản */
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+body { background-color: #2c2b2b; color: #333; }
+
+/* Header */
+.header {
+  display: flex; justify-content: space-between; align-items: center;
+  background-color: #000000; color: white; padding: 10px 20px;
+}
+.header-nav { display: flex; gap: 20px; }
+.header-nav a { color: #ccc; text-decoration: none; font-weight: bold; }
+.header-nav a.active { color: white; border-bottom: 2px solid white; padding-bottom: 5px; }
+.header-stats { display: flex; gap: 15px; align-items: center; }
+
+/* Profile Banner */
+.profile-banner {
+  background-color: #151515; 
+  color: white; 
+  padding: 20px 40px; 
+  display: flex; 
+  gap: 20px; 
+  align-items: center;
+  justify-content: space-between;
+}
+.avatar-box { width: 100px; height: 100px; background-color: #fdfdfd; border-radius: 8px; }
+.user-info { flex: 1; }
+.progress-bars { margin-top: 10px; width: 300px;}
+.bar-container { display: flex; align-items: center; gap: 10px; margin-bottom: 5px;}
+.bar { flex: 1; height: 10px; background: #e1da07; border-radius: 5px; overflow: hidden; }
+.bg-red .fill { background: #f04e4e; height: 100%; }
+.bg-yellow .fill { background: #ffc107; height: 100%; }
+.party-promo { text-align: right; }
+.btn-start { background-color: #b33333; color: white; border: none; padding: 8px 16px; border-radius: 4px; margin-top: 10px; cursor: pointer;}
+
+/* Task Board (4 Cột) */
+.main-content { padding: 20px; max-width: 1400px; margin: 0 auto; }
+.task-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* Task Column */
+.task-column { background: transparent; }
+.column-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;}
+.column-header h2 { font-size: 1.2rem; display: flex; align-items: center; gap: 8px;}
+.badge { background: #8a63d2; color: white; border-radius: 50%; padding: 2px 8px; font-size: 0.8rem; }
+.add-task-input input {
+  width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px;
+  background-color: #eaeaea; margin-bottom: 10px;
+}
+.task-list { display: flex; flex-direction: column; gap: 10px; }
+
+/* Task Card */
+.task-card {
+  display: flex; align-items: stretch; background: white;
+  border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;
+}
+.task-card.habit { border-left: 5px solid #ffb03a; }
+.task-card.daily, .task-card.todo { border-left: 5px solid #ffb03a; }
+.habit-controls button {
+  background: #ffb03a; border: none; color: white; width: 40px; cursor: pointer; font-size: 1.2rem;
+}
+.checkbox { width: 30px; background: #f4d07b; }
+.task-content { flex: 1; padding: 10px; }
+.sub-text { font-size: 0.8rem; color: #888; }
+.reward-cost { padding: 10px; background: #fff3cd; font-weight: bold; display: flex; align-items: center;}
+
+/* 1. Xóa lề và reset căn giữa mặc định của Vite */
+#root {
+  max-width: 100% !important;
+  width: 100%;
+  padding: 0 !important;
+  margin: 0 !important;
+  text-align: left !important;
+}
+
+/* 2. Sửa lỗi tiêu đề cột bị màu trắng (tàng hình) */
+.column-header h2 { 
+  font-size: 1.2rem; 
+  display: flex; 
+  align-items: center; 
+  gap: 8px;
+  color: #333 !important; /* Ép màu chữ thành xám đậm */
+}
+
+/* 3. Sửa chữ All Active bị dính vào nhau */
+.filters {
+  display: flex;
+  gap: 15px; /* Tạo khoảng cách giữa các chữ */
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* 4. Ép chữ trong các thẻ Task căn trái */
+.task-content { 
+  flex: 1; 
+  padding: 10px; 
+  text-align: left; /* Đảm bảo chữ luôn căn trái */
+}
+
+/* 5. Tinh chỉnh lại Banner để phần "Get Started" dạt hẳn sang mép phải */
+
+/* Kéo dãn Header ra sát mép */
+.header {
+  padding: 10px 40px;
+}

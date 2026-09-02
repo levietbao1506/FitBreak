@@ -2,12 +2,12 @@ users
   │
   └── profiles
         │
+        ├── name
         ├── age
         ├── gender
         ├── height
         ├── weight
         ├── goal
-        ├── activity_level
         ├── bmi
         ├── bmr
         └── tdee
@@ -18,7 +18,6 @@ users
         │
         ├── exercise_id
         ├── completed_at
-        ├── xp
         └── coins
 
 users
