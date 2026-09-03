@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import "../style/logIn.css"
 
 const LogIn = ({ onLoginSuccess, onGoToSignUp }) => {
   const [formData, setFormData] = useState({
@@ -48,32 +49,32 @@ const LogIn = ({ onLoginSuccess, onGoToSignUp }) => {
   };
 
   return (
-    <div className="fitbreak-login-page">
-      <div className="fitbreak-logo-section">
-        <h1 className="fitbreak-logo">FitBreak</h1>
+    <div className="login-fitbreak-login-page">
+      <div className="login-fitbreak-logo-section">
+        <h1 className="login-fitbreak-logo">FitBreak</h1>
       </div>
 
       <div className="login-form-container">
         <form className="login-form" onSubmit={handleSubmit}>
           {error && <p style={{ color: '#ff4d4d', fontSize: '0.85rem', marginBottom: '10px' }}>{error}</p>}
-          <div className="form-group">
-            <label htmlFor="email" className="form-label">Email</label>
+          <div className="login-form-group">
+            <label htmlFor="email" className="login-form-label">Email</label>
             <input 
               type="email" 
               id="email" 
-              className="form-input" 
+              className="login-form-input" 
               placeholder=""
               value={formData.email}
               onChange={handleChange}
               required
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="password" className="form-label">Password</label>
+          <div className="login-form-group">
+            <label htmlFor="password" className="login-form-label">Password</label>
             <input 
               type="password" 
               id="password" 
-              className="form-input" 
+              className="login-form-input" 
               placeholder=""
               value={formData.password}
               onChange={handleChange}
@@ -81,12 +82,12 @@ const LogIn = ({ onLoginSuccess, onGoToSignUp }) => {
             />
           </div>
           
-          <div className="form-actions">
-            <button type="submit" className="text-button log-in-btn" disabled={loading}>
+          <div className="login-form-actions">
+            <button type="submit" className="login-text-button log-in-btn" disabled={loading}>
                 {loading ? 'Processing...' : 'Log In'}
             </button>
-            <hr className="divider" />
-            <button type="button" className="text-button sign-up-btn" onClick={onGoToSignUp}>
+            <hr className="login-divider" />
+            <button type="button" className="login-text-button sign-up-btn" onClick={onGoToSignUp}>
               Sign Up
             </button>
           </div>

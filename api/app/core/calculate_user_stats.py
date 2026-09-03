@@ -16,16 +16,18 @@ def calculateBMR(weight: float, height: int, age: int, gender: bool):
 
 # activity frequency:
 # 1 : it hoat dong / lau lau moi hoat dong -> R = 1.2
-# 2 : hoat dong 1 - 4 buoi 1 tuan -> R = 1.375
-# 3 : hoat dong 5 - 6 buoi 1 tuan -> R = 1.638
+# 2 : hoat dong 1 - 3 buoi 1 tuan -> R = 1.375
+# 3 : hoat dong 4 - 5 buoi 1 tuan -> R = 1.55
+# 4 : hoat dong 6 - 7 buoi 1 tuan -> R = 1.725
 def calculateTDEE(bmr: int, activity_frequency: int):
     r = None
     if activity_frequency == 1:
         r = 1.2
     elif activity_frequency == 2:
         r = 1.375
-    else:
-        r = 1.638
+    elif activity_frequency == 3:
+        r = 1.55
+    else: r = 1.725
 
     tdee = bmr * r
     result = ceil(tdee)
