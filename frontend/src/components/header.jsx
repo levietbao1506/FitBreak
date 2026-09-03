@@ -1,13 +1,25 @@
 import React from 'react';
 import LogOut from "./logOut";
 
-const Header = ({ user, onLogout }) => {
+const Header = ({ user, onLogout, activeTab, onSelectTab }) => {
   return (
     <header className="header">
       <div className="header-logo">🐉</div>
       <nav className="header-nav">
-        <a href="#" className="active">Tasks</a>
-        <a href="#">Profile</a>
+        <a 
+          href="#tasks" 
+          className={activeTab === 'tasks' ? 'active' : ''}
+          onClick={(e) => { e.preventDefault(); onSelectTab('tasks'); }}
+        >
+          Tasks
+        </a>
+        <a 
+          href="#profile" 
+          className={activeTab === 'profile' ? 'active' : ''}
+          onClick={(e) => { e.preventDefault(); onSelectTab('profile'); }}
+        >
+          Profile
+        </a>
         <a href="#">Shops</a>
         <a href="#">Party</a>
         <a href="#">Group</a>

@@ -6,7 +6,7 @@ body, html, #root {
   background-color: #000016;
 }
 
-.fitbreak-login-page {
+.login-fitbreak-login-page {
   width: 100%;
   height: 100vh;
   display: flex;
@@ -17,11 +17,11 @@ body, html, #root {
   padding: 24px 28px;
 }
 
-.fitbreak-logo-section {
+.login-fitbreak-logo-section {
   padding-right: 300px; 
 }
 
-.fitbreak-logo {
+.login-fitbreak-logo {
   font-size: 3.5rem;
   font-weight: 700;
   color: #fff;
@@ -39,20 +39,20 @@ body, html, #root {
   margin-right: -50vh;
 }
 
-.form-group {
+.login-form-group {
   margin-bottom: 25px;
   display: flex;
   flex-direction: column;
 }
 
-.form-label {
+.login-form-label {
   font-size: 1.1rem;
   margin-bottom: 10px;
   color: #f7f6f8;
   font-weight: bold;
 }
 
-.form-input {
+.login-form-input {
   background-color: #070707; 
   border: none;
   padding: 12px;
@@ -64,13 +64,13 @@ body, html, #root {
 }
 
 
-.form-actions {
+.login-form-actions {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.text-button {
+.login-text-button {
   background: rgb(245, 244, 244);
   border-radius: 10px;
   border: none;
@@ -84,11 +84,11 @@ body, html, #root {
   margin-top: 20px;
 }
 
-.text-button:hover {
+.login-text-button:hover {
   opacity: 0.8;
 }
 
-.divider {
+.login-divider {
   border: none;
   border-top: 5px solid #807d7d; 
   width: 100%;
