@@ -1,17 +1,48 @@
-# Python-generated files
+# Python
 __pycache__/
-*.py[oc]
+*.py[cod]
+*$py.class
+*.so
 build/
 dist/
 wheels/
-*.egg-info
+*.egg-info/
+.pytest_cache/
 
 # Virtual environments
-.venv
+.venv/
+venv/
+env/
+ENV/
 .python-version
-pyproject.toml
 
-# Node
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# Node & Frontend
 node_modules/
+<<<<<<< HEAD
 package-lock.json
 uv.lock
+=======
+frontend/node_modules/
+dist/
+frontend/dist/
+package-lock.json
+.npm/
+
+# IDE & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+>>>>>>> e38ab7c (feat: add dockerfile)
