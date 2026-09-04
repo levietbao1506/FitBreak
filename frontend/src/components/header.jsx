@@ -20,7 +20,13 @@ const Header = ({ user, onLogout, activeTab, onSelectTab }) => {
         >
           Profile
         </a>
-        <a href="#">Shops</a>
+        <a 
+          href="#food" 
+          className={activeTab === 'food' ? 'active' : ''}
+          onClick={(e) => { e.preventDefault(); onSelectTab('food'); }}
+        >
+          Food
+        </a>
         <a href="#">Party</a>
         <a href="#">Group</a>
         <a href="#">Challenges</a>

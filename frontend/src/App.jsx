@@ -6,6 +6,7 @@ import LogIn from "./components/logIn";
 import SignUp from "./components/signUp";
 import UpdateProfile from './components/updateProfile';
 import CreateProfile from "./components/createProfile";
+import FoodSuggest from "./components/foodSuggest";
 import './App.css';
 
 function App() {
@@ -133,12 +134,14 @@ function App() {
           {activeTab === 'profile' && (
             <UpdateProfile onUpdateProfileSuccess={handleUpdateProfileSuccess} />
           )}
+          {activeTab === 'food' && <FoodSuggest />}
         </div>
         {showCreateProfileModal && (
           <CreateProfile 
             user={user}
             onCreateProfileSuccess={handleCreateProfileSuccess}
           />
+
         )}
       </div>
     );
