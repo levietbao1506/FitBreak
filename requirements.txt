@@ -1,3 +1,10 @@
-pandas>=2.0
-httpx>=0.24
-ollama>=0.4
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+pydantic>=2.6.0
+python-multipart>=0.0.9
+pandas>=2.0.0
+httpx>=0.24.0
+ollama>=0.4.0
+supabase>=2.0.0
+python-dotenv>=1.0.0
+pyjwt>=2.8.0

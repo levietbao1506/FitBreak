@@ -1,0 +1,17 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fitbreak-api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # Kết nối tới Ollama đang chạy trên máy chủ (host machine)
+      - OLLAMA_HOST=http://host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
