@@ -1821,9 +1821,7 @@
         });
 
         // Async health check
-        checkApiHealth().then(available => {
-          console.log(`[FoodSuggestion] API available: ${available}`);
-        });
+        checkApiHealth();
       };
 
       // ============================================

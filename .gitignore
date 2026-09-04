@@ -15,18 +15,17 @@ venv/
 env/
 ENV/
 .python-version
+uv.lock
 
 # Environment variables & secrets
 .env
+**/.env
 .env.*
+**/api/app/.env
 !.env.example
 
 # Node & Frontend
 node_modules/
-<<<<<<< HEAD
-package-lock.json
-uv.lock
-=======
 frontend/node_modules/
 dist/
 frontend/dist/
@@ -45,4 +44,3 @@ Thumbs.db
 
 # Logs
 *.log
->>>>>>> e38ab7c (feat: add dockerfile)

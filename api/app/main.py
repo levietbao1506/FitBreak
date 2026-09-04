@@ -38,16 +38,21 @@ except ImportError:
     from api.app.services.rag_service import process_rag_pipeline
 
 
+import logging
+
+logger = logging.getLogger("fitbreak.api")
+
+
 # ── Lifespan: kiểm tra kết nối Ollama khi start ──
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     try:
         await check_ollama()
-        print("[OK] Ollama connection OK")
+        logger.info("Ollama connection OK")
     except AIModelOfflineException as e:
-        print(f"[WARN] Ollama chưa sẵn sàng: {e}")
+        logger.warning("Ollama chưa sẵn sàng: %s", e)
     except Exception as e:
-        print(f"[WARN] Không thể kiểm tra Ollama lúc khởi động: {e}")
+        logger.warning("Không thể kiểm tra Ollama lúc khởi động: %s", e)
     yield
 
 

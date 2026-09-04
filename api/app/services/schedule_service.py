@@ -1,6 +1,10 @@
 import pandas as pd
 from pathlib import Path
-from api.app.core.exceptions import InvalidSchedule
+
+try:
+    from app.core.exceptions import InvalidSchedule
+except ImportError:
+    from api.app.core.exceptions import InvalidSchedule
 
 # Load database cache 1 lần duy nhất ở cấp module
 DATA_PATH = Path(__file__).resolve().parents[1] / "core" / "database" / "Exercise_Database.csv"

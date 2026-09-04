@@ -39,7 +39,7 @@ async def prompt_builder(
 - Dị ứng: {allergen_display}
 
 === QUY ƯỚC DINH DƯỠNG CỦA CƠM (TÍNH TRÊN 100G) ===
-- Calo: 130 kcal | Protein: 2.7g | Chi phí: 1,500 VNĐ
+- Calo: 130 kcal | Protein: 2.7g | Chi phí: 2,000 VNĐ
 
 === NGUYÊN TẮC KIỂM SOÁT NGÂN SÁCH (BẮT BUỘC TUÂN THỦ) ===
 1. TỔNG CHI PHÍ 3 BỮA + TIỀN CƠM PHẢI <= {daily_budget:,} VNĐ. Tuyệt đối không được vượt quá dù chỉ 1 đồng.
