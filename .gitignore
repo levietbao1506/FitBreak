@@ -17,7 +17,7 @@ ENV/
 .python-version
 
 # Environment variables & secrets
-.env
+**/.env
 .env.*
 !.env.example
 
@@ -26,7 +26,10 @@ node_modules/
 <<<<<<< HEAD
 package-lock.json
 uv.lock
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> fe702e8f463e7e374b6fb60a7591608056122b38
 frontend/node_modules/
 dist/
 frontend/dist/
@@ -45,6 +48,11 @@ Thumbs.db
 
 # Logs
 *.log
+<<<<<<< HEAD
+
+pyproject.toml
+=======
 >>>>>>> e38ab7c (feat: add dockerfile)
 
 pyproject.toml
+>>>>>>> fe702e8f463e7e374b6fb60a7591608056122b38
