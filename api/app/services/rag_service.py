@@ -28,8 +28,8 @@ DATA_PATH = Path(__file__).resolve().parents[1] / "core" / "database" / "Vietnam
 DF_FOODS = pd.read_csv(DATA_PATH)
 DF_FOODS["allergens"] = DF_FOODS["allergens"].fillna("")
 
-# Dùng cơm trắng 100g làm chuẩn tính toán calo/protein/giá
-RICE_NUTRIENTS_PER_100G = {"calories": 130, "protein": 2.7, "price": 2000}
+# Dùng cơm trắng 100g làm chuẩn tính toán calo/protein/carbs/fat/giá
+RICE_NUTRIENTS_PER_100G = {"calories": 130, "protein": 2.7, "carbs": 28.0, "fat": 0.3, "price": 2000}
 
 
 def get_user_value(user_information: dict, field: str, default=None):
@@ -97,6 +97,8 @@ def get_dish_info(dish_name: str, df: pd.DataFrame) -> dict:
         return {
             "calories": float(row.get("calories", 0)),
             "protein": float(row.get("protein_g", 0)),
+            "carbs": float(row.get("carbs_g", 0)),
+            "fat": float(row.get("fat_g", 0)),
             "price": float(row.get("cost_vnd", 0)),
             "ingredients": str(ingredients_val) if pd.notna(ingredients_val) else row["name"],
             "real_name": row["name"],
@@ -156,51 +158,90 @@ def validate_user_information(user_information: dict) -> None:
             raise InvalidUserInformationError(f"{field} phải là số không âm")
 
 
-def format_meal_summary(response: str, df_pool: pd.DataFrame, user_information: dict) -> str:
+def is_carb_heavy_dish(dish_name: str) -> bool:
+    name_lower = str(dish_name).lower()
+    carb_keywords = [
+        "bún", "phở", "mì", "miến", "hủ tiếu", "bánh mì",
+        "cơm tấm", "cơm chiên", "cơm gà", "cháo", "bánh cuốn", "bánh canh", "xôi"
+    ]
+    return any(kw in name_lower for kw in carb_keywords)
+
+
+def generate_meal_data(response: str, df_pool: pd.DataFrame, user_information: dict) -> dict:
     meal_plan = parse_llm_meal_response(response)
 
     # 1. Bữa sáng
     bf_name_llm = meal_plan.meals.breakfast.dish_name
     bf_info = get_dish_info(bf_name_llm, df_pool)
-    bf_name = bf_info["real_name"]
+    used_names = {bf_info["real_name"].lower()}
 
-    # 2. Bữa trưa
+    # 2. Bữa trưa (chống trùng với bữa sáng)
     lu = meal_plan.meals.lunch
     lu_main = get_dish_info(lu.main_dish, df_pool)
-    lu_rice_cal = (lu.rice_grams / 100) * RICE_NUTRIENTS_PER_100G["calories"]
-    lu_rice_pro = (lu.rice_grams / 100) * RICE_NUTRIENTS_PER_100G["protein"]
-    lu_rice_cost = (lu.rice_grams / 100) * RICE_NUTRIENTS_PER_100G["price"]
+    if lu_main["real_name"].lower() in used_names:
+        fallback_lunch = df_pool[~df_pool["name"].str.lower().isin(used_names)]
+        if not fallback_lunch.empty:
+            lu_main = get_dish_info(fallback_lunch.iloc[0]["name"], df_pool)
+    used_names.add(lu_main["real_name"].lower())
+
+    # Quy tắc cơm: món đã có sẵn tinh bột thì rice_grams = 0
+    lu_rice_grams = 0 if is_carb_heavy_dish(lu_main["real_name"]) else lu.rice_grams
+
+    lu_rice_cal = (lu_rice_grams / 100) * RICE_NUTRIENTS_PER_100G["calories"]
+    lu_rice_pro = (lu_rice_grams / 100) * RICE_NUTRIENTS_PER_100G["protein"]
+    lu_rice_carb = (lu_rice_grams / 100) * RICE_NUTRIENTS_PER_100G.get("carbs", 28.0)
+    lu_rice_fat = (lu_rice_grams / 100) * RICE_NUTRIENTS_PER_100G.get("fat", 0.3)
+    lu_rice_cost = (lu_rice_grams / 100) * RICE_NUTRIENTS_PER_100G["price"]
 
     lu_total_cal = lu_main["calories"] + lu_rice_cal
     lu_total_pro = lu_main["protein"] + lu_rice_pro
+    lu_total_carb = lu_main["carbs"] + lu_rice_carb
+    lu_total_fat = lu_main["fat"] + lu_rice_fat
     lu_total_cost = lu_main["price"] + lu_rice_cost
 
-    # 3. Bữa tối
+    # 3. Bữa tối (chống trùng với bữa sáng và trưa)
     dn = meal_plan.meals.dinner
     dn_main = get_dish_info(dn.main_dish, df_pool)
-    dn_rice_cal = (dn.rice_grams / 100) * RICE_NUTRIENTS_PER_100G["calories"]
-    dn_rice_pro = (dn.rice_grams / 100) * RICE_NUTRIENTS_PER_100G["protein"]
-    dn_rice_cost = (dn.rice_grams / 100) * RICE_NUTRIENTS_PER_100G["price"]
+    if dn_main["real_name"].lower() in used_names:
+        fallback_dinner = df_pool[~df_pool["name"].str.lower().isin(used_names)]
+        if not fallback_dinner.empty:
+            dn_main = get_dish_info(fallback_dinner.iloc[0]["name"], df_pool)
+
+    dn_rice_grams = 0 if is_carb_heavy_dish(dn_main["real_name"]) else dn.rice_grams
+
+    dn_rice_cal = (dn_rice_grams / 100) * RICE_NUTRIENTS_PER_100G["calories"]
+    dn_rice_pro = (dn_rice_grams / 100) * RICE_NUTRIENTS_PER_100G["protein"]
+    dn_rice_carb = (dn_rice_grams / 100) * RICE_NUTRIENTS_PER_100G.get("carbs", 28.0)
+    dn_rice_fat = (dn_rice_grams / 100) * RICE_NUTRIENTS_PER_100G.get("fat", 0.3)
+    dn_rice_cost = (dn_rice_grams / 100) * RICE_NUTRIENTS_PER_100G["price"]
 
     dn_total_cal = dn_main["calories"] + dn_rice_cal
     dn_total_pro = dn_main["protein"] + dn_rice_pro
+    dn_total_carb = dn_main["carbs"] + dn_rice_carb
+    dn_total_fat = dn_main["fat"] + dn_rice_fat
     dn_total_cost = dn_main["price"] + dn_rice_cost
 
     # Tổng kết
     total_cal = bf_info["calories"] + lu_total_cal + dn_total_cal
     total_pro = bf_info["protein"] + lu_total_pro + dn_total_pro
+    total_carb = bf_info["carbs"] + lu_total_carb + dn_total_carb
+    total_fat = bf_info["fat"] + lu_total_fat + dn_total_fat
     total_cost = bf_info["price"] + lu_total_cost + dn_total_cost
 
     target_cal = get_user_value(user_information, "calories_need")
     target_pro = get_user_value(user_information, "protein_need")
     budget = get_user_value(user_information, "daily_budget")
 
-    return (
-        f"Bữa sáng: {bf_name} ({bf_info['calories']} kcal / {bf_info['protein']}g protein / {bf_info['price']:,.0f}đ)\n"
+    # Tên món hiển thị (chỉ kèm cơm nếu có ăn thêm cơm)
+    lu_display = f"{lu_main['real_name']} + {lu_rice_grams}g cơm" if lu_rice_grams > 0 else lu_main["real_name"]
+    dn_display = f"{dn_main['real_name']} + {dn_rice_grams}g cơm" if dn_rice_grams > 0 else dn_main["real_name"]
+
+    summary_text = (
+        f"Bữa sáng: {bf_info['real_name']} ({bf_info['calories']:.0f} kcal / {bf_info['protein']:.1f}g protein / {bf_info['price']:,.0f}đ)\n"
         f"Nguyên liệu: {bf_info['ingredients']}\n\n"
-        f"Bữa trưa: {lu_main['real_name']} + {lu.rice_grams}g cơm ({lu_total_cal:.0f} kcal / {lu_total_pro:.1f}g protein / {lu_total_cost:,.0f}đ)\n"
+        f"Bữa trưa: {lu_display} ({lu_total_cal:.0f} kcal / {lu_total_pro:.1f}g protein / {lu_total_cost:,.0f}đ)\n"
         f"Nguyên liệu: {lu_main['ingredients']}\n\n"
-        f"Bữa tối: {dn_main['real_name']} + {dn.rice_grams}g cơm ({dn_total_cal:.0f} kcal / {dn_total_pro:.1f}g protein / {dn_total_cost:,.0f}đ)\n"
+        f"Bữa tối: {dn_display} ({dn_total_cal:.0f} kcal / {dn_total_pro:.1f}g protein / {dn_total_cost:,.0f}đ)\n"
         f"Nguyên liệu: {dn_main['ingredients']}\n\n"
         f"Tổng kết ngày:\n"
         f"    Tổng Calo: {total_cal:.0f} / {target_cal} kcal\n"
@@ -208,20 +249,75 @@ def format_meal_summary(response: str, df_pool: pd.DataFrame, user_information: 
         f"    Tổng Chi phí: {total_cost:,.0f} / {budget:,.0f} đ"
     )
 
+    structured_plan = {
+        "meals": {
+            "breakfast": {
+                "name": bf_info["real_name"],
+                "calories": round(bf_info["calories"]),
+                "protein": round(bf_info["protein"], 1),
+                "carbs": round(bf_info["carbs"], 1),
+                "fat": round(bf_info["fat"], 1),
+                "cost": round(bf_info["price"]),
+                "ingredients": bf_info["ingredients"],
+                "rice_grams": 0,
+            },
+            "lunch": {
+                "name": lu_display,
+                "calories": round(lu_total_cal),
+                "protein": round(lu_total_pro, 1),
+                "carbs": round(lu_total_carb, 1),
+                "fat": round(lu_total_fat, 1),
+                "cost": round(lu_total_cost),
+                "ingredients": lu_main["ingredients"],
+                "rice_grams": lu.rice_grams,
+            },
+            "dinner": {
+                "name": dn_display,
+                "calories": round(dn_total_cal),
+                "protein": round(dn_total_pro, 1),
+                "carbs": round(dn_total_carb, 1),
+                "fat": round(dn_total_fat, 1),
+                "cost": round(dn_total_cost),
+                "ingredients": dn_main["ingredients"],
+                "rice_grams": dn.rice_grams,
+            },
+        },
+        "totals": {
+            "calories": round(total_cal),
+            "protein": round(total_pro, 1),
+            "carbs": round(total_carb, 1),
+            "fat": round(total_fat, 1),
+            "cost": round(total_cost),
+        },
+        "is_ai": True,
+    }
+
+    return {
+        "summary": summary_text,
+        "structured_plan": structured_plan,
+    }
+
+
+def format_meal_summary(response: str, df_pool: pd.DataFrame, user_information: dict) -> str:
+    """Giữ hàm này để đảm bảo tương thích ngược."""
+    data = generate_meal_data(response, df_pool, user_information)
+    return data["summary"]
+
 
 # MAIN RAG #
-async def process_rag_pipeline(user_information: dict) -> str:
+async def process_rag_pipeline(user_information: dict) -> dict:
     validate_user_information(user_information)
 
     diet_type = get_user_value(user_information, "diet_type")
     allergen = get_user_value(user_information, "allergen", "")
+    exclude_dishes = get_user_value(user_information, "exclude_dishes", [])
 
     # Retrieval: Lọc danh sách món hợp lệ từ CSV
     filtered_df = filter_foods(DF_FOODS, diet_type, allergen)
     if filtered_df.empty:
         raise NoMatchingFoodsError("Không tìm thấy món ăn phù hợp với chế độ ăn và dị ứng.")
 
-    # Truyền filtered_df vào prompt_builder để LLM chỉ chọn trong danh sách này
+    # Truyền filtered_df vào prompt_builder để LLM chọn món
     prompt = await prompt_builder(
         calories_need=get_user_value(user_information, "calories_need"),
         daily_budget=get_user_value(user_information, "daily_budget"),
@@ -230,7 +326,8 @@ async def process_rag_pipeline(user_information: dict) -> str:
         diet_type=diet_type,
         allergen=allergen,
         filtered_food=filtered_df,
+        exclude_dishes=exclude_dishes,
     )
 
     response = await generate_chat(prompt, response_format=LLMMealResponse.model_json_schema())
-    return format_meal_summary(response, filtered_df, user_information)
+    return generate_meal_data(response, filtered_df, user_information)

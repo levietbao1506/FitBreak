@@ -47,7 +47,7 @@ async def generate_chat(prompt: str, response_format=None) -> str:
             model=OLLAMA_CHAT_MODEL,
             messages=messages,
             format=response_format if response_format else "json",
-            options={"temperature": 0.0},
+            options={"temperature": 0.7, "top_p": 0.9},
         )
     except ResponseError as exc:
         if exc.status_code == 404:

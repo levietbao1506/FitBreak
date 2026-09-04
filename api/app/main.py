@@ -74,6 +74,7 @@ origins = [
     "http://127.0.0.1:5500",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "null",
 ]
 
 app.add_middleware(
@@ -94,26 +95,36 @@ class FoodSuggestRequest(BaseModel):
     aim: str = Field(..., description="Mục tiêu: Tăng cơ / Giảm cân / Cân bằng")
     diet_type: str = Field(..., description="Chế độ ăn: vegetarian / eatclean / home_cooked")
     allergen: Optional[str] = Field("", description="Dị ứng, phân cách bằng ;")
+    exclude_dishes: Optional[list[str]] = Field(default_factory=list, description="Danh sách món muốn loại trừ để đổi món")
 
 
 class FoodSuggestResponse(BaseModel):
     success: bool
     result: Optional[str] = None
+    structured_plan: Optional[dict] = None
+    is_ai: bool = True
     error: Optional[str] = None
 
 
-# ── Endpoint gợi ý món ăn (RAG + LLM) có Rate Limit nghiêm ngặt (5 lần / phút) ──
+# ── Endpoint gợi ý món ăn (RAG + LLM) có Rate Limit (30 lần / phút) ──
 @app.post(
     "/api/food-suggest",
     response_model=FoodSuggestResponse,
-    dependencies=[Depends(RateLimiter(times=5, seconds=60, scope="food-suggest"))],
+    dependencies=[Depends(RateLimiter(times=30, seconds=60, scope="food-suggest"))],
 )
 async def food_suggest(req: FoodSuggestRequest):
     """Gọi RAG pipeline để gợi ý thực đơn 3 bữa dựa trên thông tin người dùng."""
     try:
         user_info = req.model_dump()
-        result = await process_rag_pipeline(user_info)
-        return FoodSuggestResponse(success=True, result=result)
+        rag_output = await process_rag_pipeline(user_info)
+        if isinstance(rag_output, dict):
+            return FoodSuggestResponse(
+                success=True,
+                result=rag_output.get("summary"),
+                structured_plan=rag_output.get("structured_plan"),
+                is_ai=True,
+            )
+        return FoodSuggestResponse(success=True, result=str(rag_output), is_ai=True)
 
     except AIModelOfflineException as e:
         raise HTTPException(status_code=503, detail=f"Ollama offline: {e}")

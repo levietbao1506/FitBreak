@@ -1,79 +1,102 @@
+from typing import List, Optional
 import pandas as pd
 
+
 async def prompt_builder(
-      calories_need: int,
-      daily_budget: int,
-      protein_need: int,
-      aim: str,
-      diet_type: str,
-      allergen: str,
-      filtered_food: pd.DataFrame,
+    calories_need: int,
+    daily_budget: int,
+    protein_need: int,
+    aim: str,
+    diet_type: str,
+    allergen: str,
+    filtered_food: pd.DataFrame,
+    exclude_dishes: Optional[List[str]] = None,
 ) -> str:
-      # 1. Format danh sách món ăn từ DataFrame
-      food_items_list = []
-      for _, row in filtered_food.iterrows():
-            food_items_list.append(
-                  f"- {row['name']} | Bữa: {row['meal_type']} | Calo: {row['calories']} kcal | "
-                  f"Protein: {row['protein_g']}g | Giá: {int(row['cost_vnd']):,}đ"
-            )
-      food_context = "\n".join(food_items_list)
+    # 1. Loại bỏ các món đã ăn trước đó nếu còn đủ lựa chọn
+    candidates_df = filtered_food.copy()
+    if exclude_dishes:
+        clean_exclude = {d.strip().lower() for d in exclude_dishes if d and d.strip()}
+        remaining = candidates_df[~candidates_df["name"].str.strip().str.lower().isin(clean_exclude)]
+        # Chỉ loại bỏ nếu còn ít nhất 6 món để chọn
+        if len(remaining) >= 6:
+            candidates_df = remaining
 
-      allergen_display = allergen if allergen else "Không có"
+    # 2. Phân chia ứng viên cho bữa sáng và bữa chính (trưa/tối)
+    bf_candidates = candidates_df[candidates_df["meal_type"].str.contains("breakfast", case=False, na=False)]
+    main_candidates = candidates_df[candidates_df["meal_type"].str.contains("lunch|dinner", case=False, na=False)]
 
-      # 2. Xây dựng prompt
-      # Phân bổ trần chi phí cho từng bữa để LLM dễ kiểm soát
-      est_breakfast_max = int(daily_budget * 0.25)
-      est_meal_max = int(daily_budget * 0.35)
+    # Xáo trộn và lấy mẫu đa dạng
+    shuffled_bf = bf_candidates.sample(frac=1).head(6) if not bf_candidates.empty else candidates_df.head(4)
+    shuffled_main = main_candidates.sample(frac=1).head(10) if not main_candidates.empty else candidates_df.tail(8)
 
-      prompt = f"""Bạn là một chuyên gia dinh dưỡng và lập kế hoạch bữa ăn. Hãy gợi ý thực đơn 3 bữa trong ngày dựa trên dữ liệu và thông tin người dùng dưới đây.
+    bf_items = []
+    for _, row in shuffled_bf.iterrows():
+        bf_items.append(
+            f"- {row['name']} | Calo: {row['calories']} kcal | Protein: {row['protein_g']}g | Giá: {int(row['cost_vnd']):,}đ"
+        )
+    bf_context = "\n".join(bf_items)
 
-=== DANH SÁCH MÓN ĂN HỢP LỆ TRONG DATABASE ===
-{food_context}
+    main_items = []
+    for _, row in shuffled_main.iterrows():
+        main_items.append(
+            f"- {row['name']} | Calo: {row['calories']} kcal | Protein: {row['protein_g']}g | Giá: {int(row['cost_vnd']):,}đ"
+        )
+    main_context = "\n".join(main_items)
 
+    allergen_display = allergen if allergen else "Không có"
+    exclude_text = ""
+    if exclude_dishes:
+        valid_exclude = [d for d in exclude_dishes if d and d.strip()]
+        if valid_exclude:
+            exclude_text = f"\n=== YÊU CẦU ĐỔI MỚI THỰC ĐƠN ===\n- TUYỆT ĐỐI KHÔNG CHỌN LẠI các món sau đây: {', '.join(valid_exclude)}. Hãy chọn các món hoàn toàn khác.\n"
+
+    est_breakfast_max = int(daily_budget * 0.25)
+    est_meal_max = int(daily_budget * 0.35)
+
+    prompt = f"""Bạn là chuyên gia dinh dưỡng lập kế hoạch bữa ăn. Hãy chọn thực đơn 3 bữa trong ngày từ danh sách dưới đây.
+
+=== DANH SÁCH MÓN CHO BỮA SÁNG (Chỉ chọn 1 món từ đây cho breakfast) ===
+{bf_context}
+
+=== DANH SÁCH MÓN CHO BỮA TRƯA & TỐI (Chỉ chọn 2 món khác nhau từ đây cho lunch và dinner) ===
+{main_context}
+{exclude_text}
 === THÔNG TIN NGƯỜI DÙNG ===
 - Mục tiêu calo: {calories_need} kcal
 - Mục tiêu protein: {protein_need} g
-- Ngân sách tối đa mỗi ngày: {daily_budget:,} VNĐ
-- Mục tiêu thể hình: {aim}
-- Chế độ ăn: {diet_type}
-- Dị ứng: {allergen_display}
+- Ngân sách tối đa: {daily_budget:,} VNĐ
+- Chế độ: {diet_type} | Thể hình: {aim} | Dị ứng: {allergen_display}
 
-=== QUY ƯỚC DINH DƯỠNG CỦA CƠM (TÍNH TRÊN 100G) ===
-- Calo: 130 kcal | Protein: 2.7g | Chi phí: 2,000 VNĐ
+=== QUY ƯỚC DINH DƯỠNG CỦA CƠM (100G) ===
+- Calo: 130 kcal | Protein: 2.7g | Giá: 2,000 VNĐ
 
-=== NGUYÊN TẮC KIỂM SOÁT NGÂN SÁCH (BẮT BUỘC TUÂN THỦ) ===
-1. TỔNG CHI PHÍ 3 BỮA + TIỀN CƠM PHẢI <= {daily_budget:,} VNĐ. Tuyệt đối không được vượt quá dù chỉ 1 đồng.
-2. Hướng dẫn phân bổ chi phí để không bị lố:
-   - Bữa sáng: Chọn món dưới {est_breakfast_max:,} VNĐ.
-   - Bữa trưa (Món chính + Cơm): Tổng dưới {est_meal_max:,} VNĐ.
-   - Bữa tối (Món chính + Cơm): Tổng dưới {est_meal_max:,} VNĐ.
-   - Nếu ngân sách thấp, ưu tiên các món bình dân giá rẻ trong danh sách.
+=== QUY TẮC BẮT BUỘC (TUÂN THỦ 100%) ===
+1. 3 BỮA SÁNG, TRƯA, TỐI PHẢI LÀ 3 MÓN HOÀN TOÀN KHÁC NHAU. TUYỆT ĐỐI KHÔNG TRÙNG MÓN.
+2. Bữa sáng: Chọn 1 món từ [DANH SÁCH MÓN CHO BỮA SÁNG].
+3. Bữa trưa và Bữa tối: Chọn 2 món khác nhau từ [DANH SÁCH MÓN CHO BỮA TRƯA & TỐI].
+4. Quy tắc cơm trắng (`rice_grams`):
+   - Món có sẵn tinh bột (Bún, Phở, Mì, Bánh mì, Cơm tấm, Hủ tiếu, Miến, Cháo): BẮT BUỘC đặt `rice_grams` = 0.
+   - Món mặn ăn với cơm (Thịt/cá kho, xào, luộc, canh): Đặt `rice_grams` từ 100 đến 200g.
+5. Tổng chi phí 3 bữa + tiền cơm <= {daily_budget:,} VNĐ.
 
-=== QUY TẮC CHỌN MÓN BẮT BUỘC ===
-1. CHỈ ĐƯỢC CHỌN TÊN MÓN XUẤT HIỆN TRONG [DANH SÁCH MÓN ĂN HỢP LỆ TRONG DATABASE]. TUYỆT ĐỐI KHÔNG TỰ BỊA RA TÊN MÓN NÀO KHÁC. COPY CHÍNH XÁC 100% TỪNG CHỮ CỦA TÊN MÓN.
-2. Cấu trúc thực đơn:
-   - Bữa sáng: 1 món (phù hợp cho bữa sáng).
-   - Bữa trưa: 1 món chính (main_dish) + Điều chỉnh lượng cơm (`rice_grams`) sao cho (Tổng Calo 3 bữa + Cơm) ~ {calories_need} kcal (sai số cho phép +- 10%). Tối đa 300g cơm mỗi bữa.
-   - Bữa tối: 1 món chính (main_dish) + Điều chỉnh lượng cơm (`rice_grams`) sao cho (Tổng Calo 3 bữa + Cơm) ~ {calories_need} kcal (sai số cho phép +- 10%). Tối đa 300g cơm mỗi bữa.
-
-=== FORMAT JSON BẮT BUỘC (Chỉ xuất duy nhất block JSON, không kèm lời giải thích bên ngoài) ===
+=== FORMAT JSON BẮT BUỘC (Chỉ xuất duy nhất block JSON) ===
 ```json
 {{
-      "estimated_total_cost": [Tổng chi phí bạn nhẩm tính của 3 bữa và cơm, phải nhỏ hơn hoặc bằng {daily_budget}],
-      "meals": {{
-      "breakfast": {{
-            "dish_name": "Copy chính xác tên món từ danh sách"
-      }},
-      "lunch": {{
-            "main_dish": "Copy chính xác tên món từ danh sách",
-            "rice_grams": 150
-      }},
-      "dinner": {{
-            "main_dish": "Copy chính xác tên món từ danh sách",
-            "rice_grams": 150
-      }}
-      }}
+  "estimated_total_cost": {daily_budget},
+  "meals": {{
+    "breakfast": {{
+      "dish_name": "Tên món chính xác từ danh sách bữa sáng"
+    }},
+    "lunch": {{
+      "main_dish": "Tên món chính xác từ danh sách trưa/tối",
+      "rice_grams": 0
+    }},
+    "dinner": {{
+      "main_dish": "Tên món chính xác khác từ danh sách trưa/tối",
+      "rice_grams": 150
+    }}
+  }}
 }}
 ```"""
 
-      return prompt
+    return prompt

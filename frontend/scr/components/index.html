@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FitBreak - Gợi Ý Thực Đơn AI</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <title>FitBreak - Gợi Ý Thực Đơn AI & Pomodoro Active Break</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
     /* ============================================
-       CSS - Food Suggestion Feature
-       Prefix: food-*
-       Style: Minimalism with Dark/Light theme
+       CSS - Food Suggestion & Pomodoro
+       Style: Clean Minimalism with Dark/Light theme
        ============================================ */
 
     /* ── THEME VARIABLES ── */
@@ -27,42 +26,50 @@
       --food-radius: 1rem;
       --food-radius-sm: 0.625rem;
       --food-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+      /* Pomodoro mappings */
+      --primary: var(--food-primary);
+      --primary-hover: var(--food-primary-hover);
+      --break-color: var(--food-success);
+      --theme-color: var(--primary);
     }
 
     /* ── DARK THEME (Default) ── */
     [data-theme="dark"] {
-      --food-bg: #0f172a;
+      --food-bg: #0b1329;
       --food-card-bg: #1e293b;
-      --food-card-bg-hover: #253449;
-      --food-text-main: #f1f5f9;
+      --food-card-bg-hover: #27354f;
+      --food-text-main: #f8fafc;
       --food-text-secondary: #94a3b8;
       --food-text-muted: #64748b;
-      --food-border: rgba(255, 255, 255, 0.06);
-      --food-border-active: rgba(59, 130, 246, 0.5);
+      --food-border: rgba(255, 255, 255, 0.08);
+      --food-border-active: rgba(59, 130, 246, 0.6);
       --food-input-bg: #0f172a;
-      --food-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+      --food-shadow: 0 10px 28px -4px rgba(0, 0, 0, 0.35);
       --food-toggle-bg: #334155;
       --food-toggle-knob: #f1f5f9;
       --food-toggle-icon-sun: 0.4;
       --food-toggle-icon-moon: 1;
+      --pomo-track: #2a3b52;
     }
 
     /* ── LIGHT THEME ── */
     [data-theme="light"] {
-      --food-bg: #f8fafc;
+      --food-bg: #f1f5f9;
       --food-card-bg: #ffffff;
-      --food-card-bg-hover: #f1f5f9;
+      --food-card-bg-hover: #f8fafc;
       --food-text-main: #0f172a;
       --food-text-secondary: #475569;
-      --food-text-muted: #94a3b8;
-      --food-border: rgba(0, 0, 0, 0.08);
-      --food-border-active: rgba(59, 130, 246, 0.5);
-      --food-input-bg: #f1f5f9;
-      --food-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-      --food-toggle-bg: #e2e8f0;
+      --food-text-muted: #64748b;
+      --food-border: #e2e8f0;
+      --food-border-active: rgba(59, 130, 246, 0.6);
+      --food-input-bg: #f8fafc;
+      --food-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.06);
+      --food-toggle-bg: #cbd5e1;
       --food-toggle-knob: #0f172a;
       --food-toggle-icon-sun: 1;
       --food-toggle-icon-moon: 0.35;
+      --pomo-track: #e2e8f0;
     }
 
     * {
@@ -77,9 +84,10 @@
       color: var(--food-text-main);
       min-height: 100vh;
       display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 2rem 1rem;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 2rem 1rem 4rem 1rem;
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
       transition: background-color var(--food-transition), color var(--food-transition);
@@ -918,6 +926,144 @@
         max-width: 600px;
       }
     }
+
+    /* === Pomodoro Active Break Section === */
+    .pomo-card {
+      background: var(--food-card-bg);
+      border: 1px solid var(--food-border);
+      border-radius: var(--food-radius);
+      padding: 2.25rem 2rem;
+      margin-top: 2.5rem;
+      box-shadow: var(--food-shadow);
+      text-align: center;
+      transition: background var(--food-transition), border-color var(--food-transition), box-shadow var(--food-transition);
+    }
+
+    .pomo-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .pomo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: var(--food-primary-soft);
+      color: var(--food-primary);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.3rem 0.75rem;
+      border-radius: 9999px;
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.03em;
+    }
+
+    .pomo-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--food-text-main);
+      margin-bottom: 0.35rem;
+    }
+
+    .status {
+      font-size: 1.05rem;
+      color: var(--theme-color);
+      font-weight: 600;
+      min-height: 1.5rem;
+      transition: color 0.3s ease;
+    }
+
+    .timer-wrapper {
+      position: relative;
+      width: 220px;
+      height: 220px;
+      margin: 0 auto 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 50%;
+      background: conic-gradient(var(--theme-color) var(--progress, 100%), var(--pomo-track) var(--progress, 100%));
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+      transition: background 0.3s ease;
+    }
+
+    .timer-wrapper::before {
+      content: '';
+      position: absolute;
+      inset: 8px; /* Độ dày vòng tròn */
+      background-color: var(--food-card-bg);
+      border-radius: 50%;
+      z-index: 1;
+      transition: background-color var(--food-transition);
+    }
+
+    .timer {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: var(--food-text-main);
+      letter-spacing: -2px;
+      z-index: 10;
+      user-select: none;
+      transition: color var(--food-transition);
+    }
+
+    .pomo-controls {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .pomo-btn {
+      padding: 0.75rem 2rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: var(--food-radius-sm);
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+      transition: all var(--food-transition);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #btn-start {
+      background-color: var(--food-primary);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+    }
+
+    #btn-start:hover:not(:disabled) {
+      background-color: var(--food-primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(59, 130, 246, 0.45);
+    }
+
+    #btn-stop {
+      background-color: transparent;
+      color: var(--food-text-muted);
+      border: 1px solid var(--food-border);
+    }
+
+    #btn-stop:hover:not(:disabled) {
+      color: var(--food-danger);
+      border-color: var(--food-danger);
+      background-color: var(--food-danger-soft);
+    }
+
+    .pomo-btn:disabled, #btn-start:disabled, #btn-stop:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .pomo-tip {
+      font-size: 0.8rem;
+      color: var(--food-text-muted);
+      margin-top: 0.5rem;
+    }
   </style>
 </head>
 <body>
@@ -1124,6 +1270,28 @@
 
     </div>
 
+    <!-- ============================================
+         POMODORO ACTIVE BREAK SECTION (BÊN DƯỚI)
+         ============================================ -->
+    <div class="pomo-card" id="pomodoroCard">
+      <div class="pomo-header">
+        <span class="pomo-badge">⏱️ Pomodoro Active Break</span>
+        <h2 class="pomo-title">Đồng hồ Tập trung & Nghỉ ngơi</h2>
+        <div class="status" id="status-label">Sẵn sàng</div>
+      </div>
+      
+      <div class="timer-wrapper" id="timer-wrapper">
+        <div class="timer" id="timer-display">25:00</div>
+      </div>
+
+      <div class="pomo-controls">
+        <button id="btn-start" class="pomo-btn" onclick="startShift()">Bắt đầu</button>
+        <button id="btn-stop" class="pomo-btn" onclick="stopShift()" disabled>Kết thúc</button>
+      </div>
+
+      <p class="pomo-tip">💡 25 phút tập trung làm việc • 5 phút nghỉ ngơi đi bộ / vận động nhẹ</p>
+    </div>
+
   </div>
 
   <!-- ============================================
@@ -1141,11 +1309,17 @@
       // ============================================
       // CONFIGURATION
       // ============================================
+      const getApiBase = () => {
+        if (window.location.protocol === 'file:') return 'http://127.0.0.1:8000';
+        const host = window.location.hostname || '127.0.0.1';
+        return `http://${host}:8000`;
+      };
+
       const CONFIG = {
-        API_BASE: 'http://localhost:8000',
+        API_BASE: getApiBase(),
         ENDPOINT: '/api/food-suggest',
         HEALTH_ENDPOINT: '/api/health',
-        TIMEOUT_MS: 300000, // Tăng lên 5 phút vì Ollama load lâu
+        TIMEOUT_MS: 300000, // 5 phút cho Ollama CPU inference
       };
 
       // ============================================
@@ -1159,6 +1333,8 @@
         theme: 'dark',
         isLoading: false,
         isApiAvailable: null, // null = chưa check, true/false
+        lastSuggestedDishes: [], // Danh sách món đã hiển thị để tránh lặp khi đổi món
+        isAiResult: false,      // Đánh dấu kết quả từ AI hay mock data
       };
 
       // ============================================
@@ -1362,8 +1538,9 @@
 
       /**
        * Build API request payload from state
+       * @param {boolean} isRefresh - Nếu true, gửi exclude_dishes để AI không chọn trùng món cũ
        */
-      const buildApiPayload = () => {
+      const buildApiPayload = (isRefresh = false) => {
         const nutrition = GOAL_NUTRITION[state.goal] || GOAL_NUTRITION['Cân bằng'];
         return {
           calories_need: nutrition.calories,
@@ -1372,12 +1549,13 @@
           aim: state.goal,
           diet_type: state.diet,
           allergen: state.allergies.join(';'),
+          exclude_dishes: isRefresh ? state.lastSuggestedDishes : [],
         };
       };
 
       /**
        * Call the FastAPI backend
-       * @returns {Promise<string>} Formatted meal summary text
+       * @returns {Promise<object>} API response object
        */
       const callApi = async (payload) => {
         const controller = new AbortController();
@@ -1403,7 +1581,7 @@
             throw new Error(data.error || 'API trả về lỗi không xác định');
           }
 
-          return data.result;
+          return data;
         } catch (err) {
           clearTimeout(timeoutId);
           if (err.name === 'AbortError') {
@@ -1560,6 +1738,11 @@
       // ============================================
       const renderResultTags = () => {
         const tags = [];
+        if (state.isAiResult) {
+          tags.push(`<span class="food-result-tag" style="background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3);font-weight:600;">🤖 Ollama AI</span>`);
+        } else {
+          tags.push(`<span class="food-result-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);font-weight:600;">⚠️ Mock Data (Offline)</span>`);
+        }
         if (state.goal) {
           tags.push(`<span class="food-result-tag food-result-tag--goal">${LABELS.goal[state.goal]}</span>`);
         }
@@ -1685,16 +1868,27 @@
 
         try {
           // Try API first
-          const payload = buildApiPayload();
-          const resultText = await callApi(payload);
+          const payload = buildApiPayload(false);
+          const apiData = await callApi(payload);
 
-          // Parse the text response from rag_service
-          const { meals, totals } = parseApiResponse(resultText);
+          let meals, totals;
+          if (apiData && apiData.structured_plan && apiData.structured_plan.meals) {
+            meals = apiData.structured_plan.meals;
+            totals = apiData.structured_plan.totals;
+          } else {
+            const parsed = parseApiResponse(apiData.result || '');
+            meals = parsed.meals;
+            totals = parsed.totals;
+          }
+
+          state.lastSuggestedDishes = [meals.breakfast.name, meals.lunch.name, meals.dinner.name];
+          state.isAiResult = true;
+
           renderResult(meals, totals);
 
         } catch (apiError) {
           console.warn('API call failed, falling back to mock data:', apiError.message);
-          alert("Lỗi từ AI: " + apiError.message + "\n\n(Hệ thống sẽ tạm hiển thị thực đơn giả lập - Mock Data)");
+          state.isAiResult = false;
 
           // Fallback to mock data
           const mockPlan = generateMockPlan();
@@ -1716,7 +1910,7 @@
       };
 
       /**
-       * Refresh handler – call API again with same settings
+       * Refresh handler – call API again with exclude_dishes to generate brand new meals
        */
       const handleRefresh = async () => {
         if (state.isLoading) return;
@@ -1727,19 +1921,33 @@
         DOM.mealsGrid().innerHTML = `
           <div style="text-align:center;padding:2rem;">
             <div class="food-loading-spinner" style="margin:0 auto 1rem;"></div>
-            <div style="color:var(--food-text-secondary);font-size:0.9rem;">Đang tạo thực đơn mới...</div>
+            <div style="color:var(--food-text-secondary);font-size:0.9rem;">Ollama AI đang tạo thực đơn hoàn toàn mới...</div>
           </div>
         `;
 
         try {
-          const payload = buildApiPayload();
-          const resultText = await callApi(payload);
-          const { meals, totals } = parseApiResponse(resultText);
+          const payload = buildApiPayload(true);
+          const apiData = await callApi(payload);
+
+          let meals, totals;
+          if (apiData && apiData.structured_plan && apiData.structured_plan.meals) {
+            meals = apiData.structured_plan.meals;
+            totals = apiData.structured_plan.totals;
+          } else {
+            const parsed = parseApiResponse(apiData.result || '');
+            meals = parsed.meals;
+            totals = parsed.totals;
+          }
+
+          state.lastSuggestedDishes = [meals.breakfast.name, meals.lunch.name, meals.dinner.name];
+          state.isAiResult = true;
+
+          renderResultTags();
           renderDailyStats(totals);
           renderMeals(meals);
         } catch (apiError) {
           console.warn('Refresh API failed, using mock:', apiError.message);
-          alert("Lỗi từ AI: " + apiError.message + "\n\n(Hệ thống sẽ tạm hiển thị thực đơn giả lập - Mock Data)");
+          state.isAiResult = false;
           const mockPlan = generateMockPlan();
           if (mockPlan) {
             const totals = {
@@ -1747,6 +1955,7 @@
               protein: mockPlan.breakfast.protein + mockPlan.lunch.protein + mockPlan.dinner.protein,
               cost: mockPlan.breakfast.cost + mockPlan.lunch.cost + mockPlan.dinner.cost,
             };
+            renderResultTags();
             renderDailyStats(totals);
             renderMeals(mockPlan);
           }
@@ -1833,184 +2042,7 @@
 
     })();
   </script>
-
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pomodoro Active Break</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-color: #0f172a;
-      --card-bg: #1e293b;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --primary: #3b82f6; /* Blue for work */
-      --primary-hover: #2563eb;
-      --break-color: #10b981; /* Green for break */
-      --danger: #ef4444;
-      --disabled: #475569;
-      --theme-color: var(--primary);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body { 
-      font-family: 'Inter', sans-serif; 
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      transition: background-color 0.5s ease;
-    }
-
-    .container {
-      background-color: var(--card-bg);
-      padding: 3rem 4rem;
-      border-radius: 1.5rem;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-      text-align: center;
-      max-width: 450px;
-      width: 100%;
-      border: 1px solid rgba(255,255,255,0.05);
-    }
-
-    .header-title {
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      margin-bottom: 0.5rem;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-    }
-
-    .status { 
-      font-size: 1.1rem; 
-      color: var(--theme-color); 
-      font-weight: 500;
-      margin-bottom: 2.5rem;
-      min-height: 1.5rem;
-      transition: color 0.3s ease;
-    }
-
-    .timer-wrapper {
-      position: relative;
-      width: 250px;
-      height: 250px;
-      margin: 0 auto 3rem;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border-radius: 50%;
-      background: conic-gradient(var(--theme-color) var(--progress, 100%), #2a3b52 var(--progress, 100%));
-      box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
-    }
-
-    .timer-wrapper::before {
-      content: '';
-      position: absolute;
-      inset: 8px; /* Thickness of the ring */
-      background-color: var(--card-bg);
-      border-radius: 50%;
-      z-index: 1;
-    }
-
-    .timer { 
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 4.5rem; 
-      font-weight: 700; 
-      color: var(--text-main);
-      letter-spacing: -2px;
-      z-index: 10;
-    }
-
-    .controls {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-    }
-
-    button { 
-      padding: 0.875rem 1.5rem; 
-      font-size: 1rem; 
-      font-weight: 600;
-      font-family: inherit;
-      border: none;
-      border-radius: 0.75rem;
-      cursor: pointer; 
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex: 1;
-    }
-
-    #btn-start {
-      background-color: var(--theme-color);
-      color: white;
-      box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.2);
-    }
-
-    #btn-start:hover:not(:disabled) {
-      transform: translateY(-2px);
-      filter: brightness(1.1);
-    }
-
-    #btn-stop {
-      background-color: transparent;
-      color: var(--text-muted);
-      border: 1px solid var(--text-muted);
-    }
-
-    #btn-stop:hover:not(:disabled) {
-      color: var(--danger);
-      border-color: var(--danger);
-      background-color: rgba(239, 68, 68, 0.05);
-    }
-
-    button:disabled {
-      background-color: var(--disabled);
-      color: #94a3b8;
-      cursor: not-allowed;
-      box-shadow: none;
-      border: none;
-      opacity: 0.6;
-    }
-
-    #btn-stop:disabled {
-      background-color: transparent;
-      border: 1px solid var(--disabled);
-      opacity: 0.3;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header-title">FitBreak</div>
-    <div class="status" id="status-label">Sẵn sàng</div>
-    
-    <div class="timer-wrapper" id="timer-wrapper">
-      <div class="timer" id="timer-display">25:00</div>
-    </div>
-
-    <div class="controls">
-      <button id="btn-start" onclick="startShift()">Bắt đầu</button>
-      <button id="btn-stop" onclick="stopShift()" disabled>Kết thúc</button>
-    </div>
-  </div>
-
-  <!-- Nhúng file JS vào đây -->
+  <!-- Nhúng file Pomodoro JS -->
   <script src="pomodoro_timer.js"></script>
 </body>
 </html>
