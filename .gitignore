@@ -15,3 +15,4 @@ pyproject.toml
 node_modules/
 package-lock.json
 uv.lock
+**/.env
