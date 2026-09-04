@@ -1,25 +1,41 @@
 """
-FastAPI application – FitBreak Food Suggestion API
-Endpoint: POST /api/food-suggest
+FastAPI application – FitBreak Food Suggestion API & Backend Services
 """
 import asyncio
 from contextlib import asynccontextmanager
-
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
 from typing import Optional
 
-from api.app.services.rag_service import process_rag_pipeline
-from api.app.core.ollama_client import chat as check_ollama
-from api.app.core.exceptions import (
-    AIModelOfflineException,
-    InvalidResponseError,
-    InvalidUserInformationError,
-    ModelNotFoundError,
-    NoMatchingFoodsError,
-    RequestTimeoutError,
-)
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+
+# Core & Services imports with fallback for both import styles
+try:
+    from app.core.exceptions import (
+        AIModelOfflineException,
+        InvalidResponseError,
+        InvalidUserInformationError,
+        ModelNotFoundError,
+        NoMatchingFoodsError,
+        RequestTimeoutError,
+    )
+    from app.core.ollama_client import chat as check_ollama
+    from app.core.rate_limiter import RateLimitMiddleware, RateLimiter
+    from app.router import auth_route, exercise, profile
+    from app.services.rag_service import process_rag_pipeline
+except ImportError:
+    from api.app.core.exceptions import (
+        AIModelOfflineException,
+        InvalidResponseError,
+        InvalidUserInformationError,
+        ModelNotFoundError,
+        NoMatchingFoodsError,
+        RequestTimeoutError,
+    )
+    from api.app.core.ollama_client import chat as check_ollama
+    from api.app.core.rate_limiter import RateLimitMiddleware, RateLimiter
+    from api.app.router import auth_route, exercise, profile
+    from api.app.services.rag_service import process_rag_pipeline
 
 
 # ── Lifespan: kiểm tra kết nối Ollama khi start ──
@@ -29,20 +45,36 @@ async def lifespan(app: FastAPI):
         await check_ollama()
         print("[OK] Ollama connection OK")
     except AIModelOfflineException as e:
-        print(f"[WARN] Ollama chua san sang: {e}")
+        print(f"[WARN] Ollama chưa sẵn sàng: {e}")
+    except Exception as e:
+        print(f"[WARN] Không thể kiểm tra Ollama lúc khởi động: {e}")
     yield
 
 
 app = FastAPI(
     title="FitBreak API",
+    description="FitBreak - Pomodoro Active Break & AI Food Suggestion API",
     version="1.0.0",
     lifespan=lifespan,
 )
 
-# ── CORS: cho phép frontend gọi từ localhost hoặc file:// ──
+# ── Rate Limiting: Middleware toàn cục (100 req / phút / IP) ──
+app.add_middleware(RateLimitMiddleware, max_requests=100, window_seconds=60)
+
+# ── CORS: cho phép frontend gọi từ localhost (Vite: 5173, live-server: 5500,...) ──
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -65,8 +97,12 @@ class FoodSuggestResponse(BaseModel):
     error: Optional[str] = None
 
 
-# ── Endpoint chính ──
-@app.post("/api/food-suggest", response_model=FoodSuggestResponse)
+# ── Endpoint gợi ý món ăn (RAG + LLM) có Rate Limit nghiêm ngặt (5 lần / phút) ──
+@app.post(
+    "/api/food-suggest",
+    response_model=FoodSuggestResponse,
+    dependencies=[Depends(RateLimiter(times=5, seconds=60, scope="food-suggest"))],
+)
 async def food_suggest(req: FoodSuggestRequest):
     """Gọi RAG pipeline để gợi ý thực đơn 3 bữa dựa trên thông tin người dùng."""
     try:
@@ -90,6 +126,12 @@ async def food_suggest(req: FoodSuggestRequest):
         raise HTTPException(status_code=500, detail=f"Lỗi không xác định: {e}")
 
 
+# ── Include các Sub-routers ──
+app.include_router(auth_route.router, tags=["Auth Routers"])
+app.include_router(profile.router, tags=["Create Profile Routers"])
+app.include_router(exercise.router, tags=["Exercise"])
+
+
 # ── Health check ──
 @app.get("/api/health")
 async def health_check():
@@ -104,29 +146,3 @@ async def health_check():
 @app.get("/")
 async def root():
     return {"message": "Welcome to FitBreak API! Go to /docs for API documentation."}
-
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from app.router import profile, auth_route, exercise
-
-app = FastAPI()
-
-origins = [
-    "http://localhost:5173" # doi dua tren local host cua frontend
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins = origins,
-    allow_credentials = True,
-    allow_methods = ["*"],
-    allow_headers = ["*"]
-)
-
-app.include_router(auth_route.router, tags=["Auth Routers"])
-app.include_router(profile.router, tags=["Create Profile Routers"])
-app.include_router(exercise.router, tags=["Exercise"])
-
-@app.get("/")
-async def home():
-    return {"message" : "Dang Nhap Thanh Cong"}
