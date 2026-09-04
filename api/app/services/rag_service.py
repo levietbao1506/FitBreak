@@ -57,12 +57,15 @@ def filter_foods(df: pd.DataFrame, user_diet: str, user_allergens) -> pd.DataFra
     # 1. Lọc dị ứng
     valid_df = df[~df["allergens"].apply(has_allergen)].copy()
 
-    # 2. Lọc chế độ ăn
+    # 2. Lọc chế độ ăn (chuẩn hóa loại bỏ gạch dưới để khớp cả eatclean lẫn eat_clean)
+    def clean_diet_tag(tag: str) -> str:
+        return str(tag).replace("_", "").replace("-", "").strip().lower()
+
     if user_diet:
-        normalized_diet = str(user_diet).strip().lower()
+        target_diet = clean_diet_tag(user_diet)
         valid_df = valid_df[
             valid_df["diet_type"].apply(
-                lambda diets: normalized_diet in {diet.strip().lower() for diet in str(diets).split(";")}
+                lambda diets: target_diet in {clean_diet_tag(d) for d in str(diets).split(";")}
             )
         ]
 
@@ -126,8 +129,11 @@ def parse_llm_meal_response(raw_text: str) -> LLMMealResponse:
     match = re.search(r"\{[\s\S]*\}", raw_text)
     if not match:
         raise InvalidResponseError("LLM không trả về JSON hợp lệ")
+    json_str = match.group(0)
+    # Loại bỏ trailing commas thường gặp khi LLM sinh JSON
+    cleaned_json = re.sub(r",\s*([\]}])", r"\1", json_str)
     try:
-        data = json.loads(match.group(0))
+        data = json.loads(cleaned_json)
         return LLMMealResponse(**data)
     except Exception as e:
         raise InvalidResponseError(f"Không thể parse JSON từ LLM: {str(e)}")
