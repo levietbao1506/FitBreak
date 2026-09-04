@@ -46,3 +46,5 @@ Thumbs.db
 # Logs
 *.log
 >>>>>>> e38ab7c (feat: add dockerfile)
+
+pyproject.toml
