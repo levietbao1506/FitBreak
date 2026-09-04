@@ -1,0 +1,274 @@
+/* Result Section Wrapper */
+.food-result-wrapper {
+    display: block;
+}
+
+/* Result Summary Tag List */
+.food-result-summary {
+    background: var(--food-card-bg);
+    border: 2px solid var(--food-border);
+    border-radius: var(--food-radius);
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 1.75rem;
+    transition: background var(--food-transition), border-color var(--food-transition);
+}
+
+.food-result-summary-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.food-result-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.food-result-tag {
+    padding: 0.35rem 0.85rem;
+    border-radius: 2rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.food-result-tag--goal { background: var(--food-primary-soft); color: var(--food-primary); }
+.food-result-tag--diet { background: var(--food-success-soft); color: var(--food-success); }
+.food-result-tag--budget { background: var(--food-warning-soft); color: var(--food-warning); }
+
+/* Daily Stats Grid */
+.food-daily-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.75rem;
+}
+
+.food-stat-card {
+    background: var(--food-card-bg);
+    border: 2px solid var(--food-border);
+    border-radius: var(--food-radius-sm);
+    padding: 1rem;
+    text-align: center;
+    transition: background var(--food-transition), border-color var(--food-transition);
+}
+
+.food-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--food-primary);
+    line-height: 1.2;
+}
+
+.food-stat-label {
+    font-size: 0.75rem;
+    color: var(--food-text-muted);
+    margin-top: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* Meal Cards */
+.food-meals-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-bottom: 1.75rem;
+}
+
+.food-meal-card {
+    background: var(--food-card-bg);
+    border: 2px solid var(--food-border);
+    border-radius: var(--food-radius);
+    overflow: hidden;
+    transition: border-color var(--food-transition), background var(--food-transition);
+}
+
+.food-meal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--food-border);
+}
+
+.food-meal-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+
+.food-meal-time {
+    font-size: 0.8rem;
+    color: var(--food-text-muted);
+}
+
+.food-meal-body {
+    padding: 1.25rem 1.5rem;
+}
+
+.food-meal-name {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.food-meal-description {
+    font-size: 0.85rem;
+    color: var(--food-text-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.food-meal-meta {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.food-meal-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.82rem;
+}
+
+.food-meal-meta-value {
+    color: var(--food-text-main);
+    font-weight: 600;
+}
+
+/* Nutrition Progress Bars */
+.food-meal-nutrition {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--food-border);
+}
+
+.food-nutrition-item {
+    flex: 1;
+    text-align: center;
+}
+
+.food-nutrition-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.food-nutrition-label {
+    font-size: 0.7rem;
+    color: var(--food-text-muted);
+    text-transform: uppercase;
+}
+
+.food-nutrition-bar {
+    height: 3px;
+    background: var(--food-input-bg);
+    border-radius: 2px;
+    margin-top: 0.3rem;
+    overflow: hidden;
+}
+
+.food-nutrition-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.6s ease;
+}
+
+.food-nutrition-fill--protein { background: var(--food-primary); }
+.food-nutrition-fill--carb    { background: var(--food-warning); }
+.food-nutrition-fill--fat     { background: var(--food-success); }
+
+.food-meal-ingredients {
+    font-size: 0.78rem;
+    color: var(--food-text-muted);
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--food-border);
+    line-height: 1.5;
+}
+
+.food-meal-ingredients strong {
+    color: var(--food-text-secondary);
+}
+
+/* Action Buttons */
+.food-result-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.food-btn-refresh, .food-btn-reset {
+    flex: 1;
+    padding: 0.875rem 1.5rem;
+    border-radius: var(--food-radius-sm);
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all var(--food-transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+}
+
+.food-btn-refresh {
+    background: var(--food-primary);
+    color: #fff;
+    border: none;
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
+}
+
+.food-btn-refresh:hover { background: var(--food-primary-hover); }
+
+.food-btn-reset {
+    background: transparent;
+    color: var(--food-text-secondary);
+    border: 1px solid var(--food-border);
+}
+
+.food-btn-reset:hover {
+    border-color: var(--food-text-muted);
+    color: var(--food-text-main);
+}
+
+.food-ai-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    font-size: 0.72rem;
+    color: var(--food-text-muted);
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--food-border);
+}
+
+/* Responsive Result View */
+@media (max-width: 600px) {
+    .food-daily-stats {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .food-stat-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.85rem 1rem;
+    }
+
+    .food-stat-value { font-size: 1.25rem; }
+    .food-result-actions { flex-direction: column; }
+}

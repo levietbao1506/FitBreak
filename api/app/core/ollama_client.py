@@ -3,7 +3,7 @@ import os
 import httpx
 from ollama import AsyncClient, ResponseError
 
-from api.app.core.exceptions import (
+from app.core.exceptions import (
     AIModelOfflineException,
     InvalidResponseError,
     ModelNotFoundError,

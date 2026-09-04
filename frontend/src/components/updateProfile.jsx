@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
-import "../style/updateProfile.css"
+import "../style/updateProfile.css";
 
 const UpdateProfile = ({ onUpdateProfileSuccess }) => {
-    const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState({
     name: '',
     age: '',
     gender: '',
     height: '',
     weight: '',
     goal: '',
-    activityFrequency: '',
+    activity_frequency: '',
   });
 
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(null)
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -25,8 +25,8 @@ const UpdateProfile = ({ onUpdateProfileSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null)
-    setLoading(null)
+    setError(null);
+    setLoading(true);
 
     const payload = {
       ...formData,
@@ -34,8 +34,8 @@ const UpdateProfile = ({ onUpdateProfileSuccess }) => {
       age: Number(formData.age),
       height: Number(formData.height),
       weight: Number(formData.weight),
-      activity_frequency: Number(formData.activity_frequency)
-    }
+      activity_frequency: Number(formData.activity_frequency),
+    };
 
     try {
       const response = await fetch('http://localhost:8000/profiles/update-profile', { 
@@ -66,12 +66,13 @@ const UpdateProfile = ({ onUpdateProfileSuccess }) => {
 
   return (
     <div className="update-profile-profile-form-container">
-        {error && <p style={{ color: 'red' }}>{error}</p>}
       <form onSubmit={handleSubmit} className="update-profile-profile-form">
-        <div className="update-profile-form-content">  
+        {error && <p style={{ color: '#ff4d4f', marginBottom: '16px' }}>{error}</p>}
+        
+        <div className="update-profile-form-content">
           <div className="update-profile-form-column">
             <div className="update-profile-form-group">
-              <label> Display Name :</label>
+              <label>Display Name :</label>
               <input
                 type="text"
                 name="name"
@@ -95,15 +96,15 @@ const UpdateProfile = ({ onUpdateProfileSuccess }) => {
             <div className="update-profile-form-group">
               <label>Gender :</label>
               <select
-                  name="gender"
-                  value={formData.gender}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="">-- Chọn giới tính --</option>
-                  <option value="true">Nam</option>
-                  <option value="false">Nữ</option>
-                </select>
+                name="gender"
+                value={formData.gender}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="">-- Chọn giới tính --</option>
+                <option value="true">Nam</option>
+                <option value="false">Nữ</option>
+              </select>
             </div>
             <div className="update-profile-form-group">
               <label>Height :</label>
@@ -114,6 +115,9 @@ const UpdateProfile = ({ onUpdateProfileSuccess }) => {
                 onChange={handleInputChange}
               />
             </div>
+          </div>
+
+          <div className="update-profile-form-column">
             <div className="update-profile-form-group">
               <label>Weight :</label>
               <input
@@ -123,9 +127,6 @@ const UpdateProfile = ({ onUpdateProfileSuccess }) => {
                 onChange={handleInputChange}
               />
             </div>
-          </div>
-
-          <div className="update-profile-form-column">
             <div className="update-profile-form-group">
               <label>Goal :</label>
               <select
@@ -135,9 +136,9 @@ const UpdateProfile = ({ onUpdateProfileSuccess }) => {
                 required
               >
                 <option value="">-- Chọn mục tiêu --</option>
-                <option value="giảm cân"> Giảm cân </option>
-                <option value="cân bằng"> Cân bằng </option>
-                <option value="tăng cơ"> Tăng cơ </option>
+                <option value="giảm cân">Giảm cân</option>
+                <option value="cân bằng">Cân bằng</option>
+                <option value="tăng cơ">Tăng cơ</option>
               </select>
             </div>
             <div className="update-profile-form-group">
@@ -149,17 +150,17 @@ const UpdateProfile = ({ onUpdateProfileSuccess }) => {
                 required
               >
                 <option value="">-- Chọn tần suất vận động --</option>
-                <option value="1"> Ít vận động / Lâu lâu mới vận động </option>
-                <option value="2"> Vận động từ 1-3 buổi/tuần </option>
-                <option value="3"> Vận động từ 4-5 buổi một/tuần </option>
-                <option value="4"> Vận động 6-7 buổi/tuần </option>
+                <option value="1">Ít vận động / Lâu lâu mới vận động</option>
+                <option value="2">Vận động từ 1-3 buổi/tuần</option>
+                <option value="3">Vận động từ 4-5 buổi/tuần</option>
+                <option value="4">Vận động 6-7 buổi/tuần</option>
               </select>
             </div>
           </div>
         </div>
-        
+
         <button type="submit" className="update-profile-save-button" disabled={loading}>
-            {loading ? 'Đang lưu...' : 'Save'}
+          {loading ? 'Đang lưu...' : 'Save'}
         </button>
       </form>
     </div>

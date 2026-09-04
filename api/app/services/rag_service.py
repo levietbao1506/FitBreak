@@ -5,13 +5,13 @@ from typing import Optional
 import pandas as pd
 from pydantic import BaseModel, Field
 
-from api.app.core.exceptions import (
+from app.core.exceptions import (
     InvalidResponseError,
     InvalidUserInformationError,
     NoMatchingFoodsError,
 )
-from api.app.core.ollama_client import generate_chat
-from api.app.services.prompt_builder import prompt_builder
+from app.core.ollama_client import generate_chat
+from app.services.prompt_builder import prompt_builder
 #####
 
 # DATABASE #

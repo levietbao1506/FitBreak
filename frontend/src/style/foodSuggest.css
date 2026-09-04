@@ -1,0 +1,905 @@
+:root {
+    /* Shared */
+    --food-primary: #3b82f6;
+    --food-primary-hover: #2563eb;
+    --food-primary-soft: rgba(59, 130, 246, 0.12);
+    --food-success: #10b981;
+    --food-success-soft: rgba(16, 185, 129, 0.12);
+    --food-warning: #f59e0b;
+    --food-warning-soft: rgba(245, 158, 11, 0.12);
+    --food-danger: #ef4444;
+    --food-danger-soft: rgba(239, 68, 68, 0.12);
+    --food-radius: 1rem;
+    --food-radius-sm: 0.625rem;
+    --food-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── DARK THEME (Default) ── */
+[data-theme="dark"] {
+    --food-bg: #0f172a;
+    --food-card-bg: #1e293b;
+    --food-card-bg-hover: #253449;
+    --food-text-main: #f1f5f9;
+    --food-text-secondary: #94a3b8;
+    --food-text-muted: #64748b;
+    --food-border: rgba(255, 255, 255, 0.06);
+    --food-border-active: rgba(59, 130, 246, 0.5);
+    --food-input-bg: #0f172a;
+    --food-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+    --food-toggle-bg: #334155;
+    --food-toggle-knob: #f1f5f9;
+    --food-toggle-icon-sun: 0.4;
+    --food-toggle-icon-moon: 1;
+}
+
+/* ── LIGHT THEME ── */
+[data-theme="light"] {
+    --food-bg: #f8fafc;
+    --food-card-bg: #ffffff;
+    --food-card-bg-hover: #f1f5f9;
+    --food-text-main: #0f172a;
+    --food-text-secondary: #475569;
+    --food-text-muted: #94a3b8;
+    --food-border: rgba(0, 0, 0, 0.08);
+    --food-border-active: rgba(59, 130, 246, 0.5);
+    --food-input-bg: #f1f5f9;
+    --food-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    --food-toggle-bg: #e2e8f0;
+    --food-toggle-knob: #0f172a;
+    --food-toggle-icon-sun: 1;
+    --food-toggle-icon-moon: 0.35;
+}
+
+/* * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+} */
+
+/* body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--food-bg);
+    color: var(--food-text-main);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 2rem 1rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    transition: background-color var(--food-transition), color var(--food-transition);
+} */
+
+/* === Layout Container === */
+.food-container {
+    max-width: 720px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* ============================================
+    THEME TOGGLE
+    ============================================ */
+.food-theme-toggle-wrapper {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+}
+
+.food-theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--food-card-bg);
+    border: 1px solid var(--food-border);
+    border-radius: 2rem;
+    padding: 0.4rem 0.85rem;
+    cursor: pointer;
+    transition: all var(--food-transition);
+    user-select: none;
+}
+
+.food-theme-toggle:hover {
+    border-color: var(--food-text-muted);
+}
+
+.food-theme-icon {
+    font-size: 1rem;
+    transition: opacity var(--food-transition);
+}
+
+.food-theme-icon--sun {
+    opacity: var(--food-toggle-icon-sun);
+}
+
+.food-theme-icon--moon {
+    opacity: var(--food-toggle-icon-moon);
+}
+
+.food-theme-switch {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    background: var(--food-toggle-bg);
+    border-radius: 11px;
+    transition: background var(--food-transition);
+}
+
+.food-theme-switch::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    background: var(--food-toggle-knob);
+    border-radius: 50%;
+    transition: transform var(--food-transition), background var(--food-transition);
+}
+
+[data-theme="light"] .food-theme-switch::after {
+    transform: translateX(18px);
+}
+
+/* === Header === */
+.food-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.food-header-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+.food-header-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    margin-bottom: 0.5rem;
+}
+
+.food-header-subtitle {
+    color: var(--food-text-secondary);
+    font-size: 0.95rem;
+    font-weight: 400;
+}
+
+.food-header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: var(--food-primary-soft);
+    color: var(--food-primary);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.25rem 0.65rem;
+    border-radius: 1rem;
+    margin-top: 0.6rem;
+    letter-spacing: 0.02em;
+}
+
+/* ============================================
+    QUIZ SECTION
+    ============================================ */
+.food-quiz-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.food-quiz-wrapper.food-hidden {
+    display: none;
+}
+
+/* === Quiz Group === */
+.food-quiz-group {
+    background: var(--food-card-bg);
+    border: 1px solid var(--food-border);
+    border-radius: var(--food-radius);
+    padding: 1.75rem;
+    transition: background var(--food-transition), border-color var(--food-transition);
+}
+
+.food-quiz-label {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.food-quiz-label-icon {
+    font-size: 1.15rem;
+}
+
+.food-quiz-hint {
+    font-size: 0.8rem;
+    color: var(--food-text-muted);
+    margin-bottom: 1.25rem;
+}
+
+/* === Budget Input === */
+.food-budget-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.food-budget-input {
+    flex: 1;
+    min-width: 150px;
+    padding: 0.75rem 1rem;
+    background: var(--food-input-bg);
+    border: 1px solid var(--food-border);
+    border-radius: var(--food-radius-sm);
+    color: var(--food-text-main);
+    font-size: 1rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color var(--food-transition), background var(--food-transition);
+}
+
+.food-budget-input:focus {
+    border-color: var(--food-border-active);
+}
+
+.food-budget-input::placeholder {
+    color: var(--food-text-muted);
+}
+
+.food-budget-unit {
+    color: var(--food-text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* === Budget Presets === */
+.food-budget-presets {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.food-budget-preset {
+    padding: 0.5rem 1rem;
+    background: var(--food-input-bg);
+    border: 1px solid var(--food-border);
+    border-radius: 2rem;
+    color: var(--food-text-secondary);
+    font-size: 0.8rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all var(--food-transition);
+}
+
+.food-budget-preset:hover {
+    border-color: var(--food-text-muted);
+    color: var(--food-text-main);
+}
+
+.food-budget-preset.food-active {
+    background: var(--food-primary-soft);
+    border-color: var(--food-primary);
+    color: var(--food-primary);
+}
+
+/* === Option Items (Chip selector) === */
+.food-option-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.food-option-item {
+    position: relative;
+}
+
+.food-option-item input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.food-option-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1.15rem;
+    background: var(--food-input-bg);
+    border: 1px solid var(--food-border);
+    border-radius: 2rem;
+    color: var(--food-text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--food-transition);
+    user-select: none;
+}
+
+.food-option-chip:hover {
+    border-color: var(--food-text-muted);
+    color: var(--food-text-main);
+    background: var(--food-card-bg-hover);
+}
+
+.food-option-item input:checked + .food-option-chip {
+    background: var(--food-primary-soft);
+    border-color: var(--food-primary);
+    color: var(--food-primary);
+}
+
+.food-option-chip-icon {
+    font-size: 1rem;
+}
+
+/* === Checkbox style for allergy items === */
+.food-option-item input[type="checkbox"] + .food-option-chip::before {
+    content: '';
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--food-text-muted);
+    border-radius: 4px;
+    display: inline-block;
+    transition: all var(--food-transition);
+    flex-shrink: 0;
+}
+
+.food-option-item input[type="checkbox"]:checked + .food-option-chip::before {
+    background: var(--food-primary);
+    border-color: var(--food-primary);
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
+    background-size: 12px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* === Submit Button === */
+.food-btn-submit {
+    width: 100%;
+    padding: 1rem 2rem;
+    background: var(--food-primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--food-radius);
+    font-size: 1.05rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all var(--food-transition);
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.food-btn-submit:hover:not(:disabled) {
+    background: var(--food-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+}
+
+.food-btn-submit:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.food-btn-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* === Validation Error === */
+.food-quiz-group.food-error {
+    border-color: var(--food-danger);
+    animation: food-shake 0.4s ease;
+}
+
+@keyframes food-shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-4px); }
+    40%, 80% { transform: translateX(4px); }
+}
+
+.food-error-message {
+    color: var(--food-danger);
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    display: none;
+}
+
+.food-quiz-group.food-error .food-error-message {
+    display: block;
+}
+
+/* ============================================
+    LOADING STATE
+    ============================================ */
+.food-loading-wrapper {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+.food-loading-wrapper.food-visible {
+    display: flex;
+}
+
+.food-loading-spinner {
+    width: 56px;
+    height: 56px;
+    border: 3px solid var(--food-border);
+    border-top-color: var(--food-primary);
+    border-radius: 50%;
+    animation: food-spin 0.8s linear infinite;
+    margin-bottom: 1.5rem;
+}
+
+@keyframes food-spin {
+    to { transform: rotate(360deg); }
+}
+
+.food-loading-text {
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--food-text-secondary);
+    margin-bottom: 0.35rem;
+}
+
+.food-loading-subtext {
+    font-size: 0.82rem;
+    color: var(--food-text-muted);
+}
+
+/* ============================================
+    ERROR STATE
+    ============================================ */
+.food-error-wrapper {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    text-align: center;
+    background: var(--food-card-bg);
+    border: 1px solid var(--food-danger);
+    border-radius: var(--food-radius);
+}
+
+.food-error-wrapper.food-visible {
+    display: flex;
+}
+
+.food-error-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.food-error-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.food-error-detail {
+    font-size: 0.85rem;
+    color: var(--food-text-secondary);
+    margin-bottom: 1.5rem;
+    max-width: 400px;
+    line-height: 1.5;
+}
+
+.food-btn-retry {
+    padding: 0.75rem 1.5rem;
+    background: var(--food-danger);
+    color: #fff;
+    border: none;
+    border-radius: var(--food-radius-sm);
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all var(--food-transition);
+}
+
+.food-btn-retry:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* ============================================
+    RESULT SECTION
+    ============================================ */
+.food-result-wrapper {
+    display: none;
+}
+
+.food-result-wrapper.food-visible {
+    display: block;
+}
+
+/* === Result Summary === */
+.food-result-summary {
+    background: var(--food-card-bg);
+    border: 1px solid var(--food-border);
+    border-radius: var(--food-radius);
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 1.75rem;
+    transition: background var(--food-transition), border-color var(--food-transition);
+}
+
+.food-result-summary-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.food-result-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.food-result-tag {
+    padding: 0.35rem 0.85rem;
+    border-radius: 2rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.food-result-tag--goal {
+    background: var(--food-primary-soft);
+    color: var(--food-primary);
+}
+
+.food-result-tag--diet {
+    background: var(--food-success-soft);
+    color: var(--food-success);
+}
+
+.food-result-tag--budget {
+    background: var(--food-warning-soft);
+    color: var(--food-warning);
+}
+
+.food-result-tag--allergy {
+    background: var(--food-danger-soft);
+    color: var(--food-danger);
+}
+
+/* === Daily Total Stats === */
+.food-daily-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.75rem;
+}
+
+.food-stat-card {
+    background: var(--food-card-bg);
+    border: 1px solid var(--food-border);
+    border-radius: var(--food-radius-sm);
+    padding: 1rem;
+    text-align: center;
+    transition: background var(--food-transition), border-color var(--food-transition);
+}
+
+.food-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--food-primary);
+    line-height: 1.2;
+}
+
+.food-stat-label {
+    font-size: 0.75rem;
+    color: var(--food-text-muted);
+    margin-top: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* === Meal Cards === */
+.food-meals-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-bottom: 1.75rem;
+}
+
+.food-meal-card {
+    background: var(--food-card-bg);
+    border: 1px solid var(--food-border);
+    border-radius: var(--food-radius);
+    overflow: hidden;
+    transition: border-color var(--food-transition), background var(--food-transition);
+}
+
+.food-meal-card:hover {
+    border-color: rgba(59, 130, 246, 0.15);
+}
+
+.food-meal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--food-border);
+}
+
+.food-meal-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+
+.food-meal-title-icon {
+    font-size: 1.25rem;
+}
+
+.food-meal-time {
+    font-size: 0.8rem;
+    color: var(--food-text-muted);
+    font-weight: 400;
+}
+
+.food-meal-body {
+    padding: 1.25rem 1.5rem;
+}
+
+.food-meal-name {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.food-meal-description {
+    font-size: 0.85rem;
+    color: var(--food-text-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.food-meal-meta {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.food-meal-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.82rem;
+}
+
+.food-meal-meta-icon {
+    font-size: 0.95rem;
+}
+
+.food-meal-meta-value {
+    color: var(--food-text-main);
+    font-weight: 600;
+}
+
+.food-meal-meta-label {
+    color: var(--food-text-muted);
+}
+
+/* === Nutrition Breakdown (mini bar) === */
+.food-meal-nutrition {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--food-border);
+}
+
+.food-nutrition-item {
+    flex: 1;
+    text-align: center;
+}
+
+.food-nutrition-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.food-nutrition-label {
+    font-size: 0.7rem;
+    color: var(--food-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.food-nutrition-bar {
+    height: 3px;
+    background: var(--food-input-bg);
+    border-radius: 2px;
+    margin-top: 0.3rem;
+    overflow: hidden;
+}
+
+.food-nutrition-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.6s ease;
+}
+
+.food-nutrition-fill--protein { background: var(--food-primary); }
+.food-nutrition-fill--carb    { background: var(--food-warning); }
+.food-nutrition-fill--fat     { background: var(--food-success); }
+
+/* === Ingredients === */
+.food-meal-ingredients {
+    font-size: 0.78rem;
+    color: var(--food-text-muted);
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--food-border);
+    line-height: 1.5;
+}
+
+.food-meal-ingredients strong {
+    color: var(--food-text-secondary);
+}
+
+/* === Action Buttons === */
+.food-result-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.food-btn-refresh,
+.food-btn-reset {
+    flex: 1;
+    padding: 0.875rem 1.5rem;
+    border-radius: var(--food-radius-sm);
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all var(--food-transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+}
+
+.food-btn-refresh {
+    background: var(--food-primary);
+    color: #fff;
+    border: none;
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
+}
+
+.food-btn-refresh:hover:not(:disabled) {
+    background: var(--food-primary-hover);
+    transform: translateY(-1px);
+}
+
+.food-btn-refresh:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.food-btn-reset {
+    background: transparent;
+    color: var(--food-text-secondary);
+    border: 1px solid var(--food-border);
+}
+
+.food-btn-reset:hover {
+    border-color: var(--food-text-muted);
+    color: var(--food-text-main);
+}
+
+/* === AI Source Badge === */
+.food-ai-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    font-size: 0.72rem;
+    color: var(--food-text-muted);
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--food-border);
+}
+
+/* === Page Transition === */
+.food-fade-in {
+    animation: food-fadeIn 0.4s ease forwards;
+}
+
+@keyframes food-fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================
+    RESPONSIVE
+    ============================================ */
+@media (max-width: 600px) {
+    body {
+    padding: 1rem 0.75rem;
+    }
+
+    .food-header-title {
+    font-size: 1.4rem;
+    }
+
+    .food-quiz-group {
+    padding: 1.25rem;
+    }
+
+    .food-daily-stats {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    }
+
+    .food-stat-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    padding: 0.85rem 1rem;
+    }
+
+    .food-stat-value {
+    font-size: 1.25rem;
+    order: 2;
+    }
+
+    .food-stat-label {
+    margin-top: 0;
+    order: 1;
+    }
+
+    .food-meal-header {
+    padding: 1rem 1.15rem;
+    }
+
+    .food-meal-body {
+    padding: 1rem 1.15rem;
+    }
+
+    .food-meal-meta {
+    gap: 0.75rem;
+    }
+
+    .food-result-actions {
+    flex-direction: column;
+    }
+
+    .food-meal-nutrition {
+    gap: 0.5rem;
+    }
+}
+
+@media (min-width: 601px) and (max-width: 900px) {
+    .food-container {
+    max-width: 600px;
+    }
+}
