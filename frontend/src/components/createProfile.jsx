@@ -202,9 +202,8 @@ const CreateProfile = ({ user, onCreateProfileSuccess}) => {
               >
                 <option value="">-- Chọn tần suất vận động --</option>
                 <option value="1"> Ít vận động / Lâu lâu mới vận động </option>
-                <option value="2"> Vận động từ 1-3 buổi/tuần </option>
-                <option value="3"> Vận động từ 4-5 buổi một/tuần </option>
-                <option value="4"> Vận động 6-7 buổi/tuần </option>
+                <option value="2"> Vận động từ 1-4 buổi/tuần </option>
+                <option value="3"> Vận động từ 5-7 buổi một/tuần </option>
               </select>
             </div>
 

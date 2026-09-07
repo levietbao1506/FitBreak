@@ -56,7 +56,7 @@ const UpdateProfile = ({ onUpdateProfileSuccess }) => {
         throw new Error(data.detail || data.message || 'Cập nhật thông tin thất bại!');
       }
 
-      onUpdateProfileSuccess(data);
+      onUpdateProfileSuccess(payload);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -151,9 +151,8 @@ const UpdateProfile = ({ onUpdateProfileSuccess }) => {
               >
                 <option value="">-- Chọn tần suất vận động --</option>
                 <option value="1">Ít vận động / Lâu lâu mới vận động</option>
-                <option value="2">Vận động từ 1-3 buổi/tuần</option>
-                <option value="3">Vận động từ 4-5 buổi/tuần</option>
-                <option value="4">Vận động 6-7 buổi/tuần</option>
+                <option value="2">Vận động từ 1-4 buổi/tuần</option>
+                <option value="3">Vận động 5-7 buổi/tuần</option>
               </select>
             </div>
           </div>

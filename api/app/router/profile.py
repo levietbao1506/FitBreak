@@ -1,11 +1,6 @@
 from fastapi import APIRouter, Request, Response, Form, Depends, HTTPException, status
-from fastapi.responses import RedirectResponse
-from app.core.database import supabase
-from supabase import create_client, ClientOptions
-from app.core.database import SUPABASE_URL, SUPABASE_KEY
 from app.schemas.createProfile import createProfile
 from app.schemas.updateProfile import updateProfile
-from app.core.auth import get_current_user
 from app.core.calculate_user_stats import calculateBMI, calculateBMR, calculateTDEE
 from app.core.token_authorization import tokenAuthorization, token_authorization
 
@@ -32,10 +27,24 @@ async def createProfile(request: Request, data: createProfile,
             "bmr" : bmr,
             "tdee" : tdee
         }).execute()
+
+        team_response = token.client.table("stats").select("team").order("team", desc=True).limit(1).execute()
+        if team_response.data == None:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Khong tim thay data")
+        max_current_team = team_response.data[0]['team'] if team_response.data else 0
+        max_new_team = max_current_team + 1
         token.client.table("stats").insert({
             "id" : token.user_id,
+            "team" : max_new_team,
+            "email" : token.user_email,
             "damage" : 1,
             "coins" : 0
+        }).execute()
+        # dang su dung mock data
+        token.client.table("raid").insert({
+            "team" : max_new_team,
+            "boss_id" : 1,
+            "health" : 15
         }).execute()
         return {"message": "Tạo profile thành công"}
     except Exception as e:
