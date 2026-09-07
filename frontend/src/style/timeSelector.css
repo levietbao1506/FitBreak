@@ -1,0 +1,84 @@
+/* TimeSelector.css */
+.time-selector-container {
+  background-color: #000016; /* Màu nền tối giống hình 2 */
+  color: white;
+  font-family: Arial, sans-serif;
+  padding: 1px;
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: center;
+  user-select: none; /* Tránh bôi đen text khi kéo chuột */
+}
+
+.time-grid {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 60px repeat(7, 1fr);
+  gap: 0;
+  /* border: 3px solid white; */
+  border-radius: 8px;
+  background-color: rgb(240, 190, 190);
+}
+
+.grid-header {
+  text-align: center;
+  padding: 10px 5px;
+  font-weight: bold;
+  border-bottom: 2px solid black;
+  background-color: #12152b;
+}
+
+.time-label-col {
+  display: flex;
+  flex-direction: column;
+  background-color: #000016; 
+  border-right: none; 
+}
+
+.time-label {
+  height: 40px;
+  padding: 0px 10px 0px 0px; 
+  font-size: 18px; 
+  color: white; 
+  display: flex;
+  justify-content: flex-end; 
+  align-items: flex-start;
+  transform: translateY(-10px); 
+}
+
+.day-col {
+  display: flex;
+  flex-direction: column;
+  border-right: 2px solid black;
+}
+
+.day-col:last-child {
+  border-right: none;
+}
+
+.time-slot {
+  height: 20px; /* Chiều cao mỗi 30 phút */
+  background-color: transparent;
+  cursor: pointer;
+  transition: background-color 0.1s;
+}
+
+/* Đường viền đứt nét cho phút 30, viền liền cho tròn giờ */
+.time-slot.half-hour {
+  border-bottom: 2px solid rgb(0, 0, 0);
+}
+
+.time-slot.full-hour {
+  border-bottom: 2px dotted rgb(0, 0, 0);
+}
+
+.time-slot.selected {
+  background-color: rgb(2, 147, 9);
+}
+
+.time-label-end {
+  height: 0 !important;
+  line-height: 0;
+  transform: translateY(-50%);
+}

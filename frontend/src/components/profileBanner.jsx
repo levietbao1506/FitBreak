@@ -1,6 +1,9 @@
 import React from 'react';
 
-const ProfileBanner = () => {
+const ProfileBanner = ({ user }) => {
+  const name = user?.name || "Player 1"
+  const email = user?.email || "player1@gmail.com"
+
   return (
     <div className="profile-banner">
       <div className="avatar-box">
@@ -8,8 +11,8 @@ const ProfileBanner = () => {
         <div className="avatar-pixel"></div>
       </div>
       <div className="user-info">
-        <h3>Lê Viết Bảo</h3>
-        <p>@tobi1233 • Level 1 Warrior</p>
+        <h3> {name} </h3>
+        <p> {email} </p>
         
         <div className="progress-bars">
           <div className="bar-container">

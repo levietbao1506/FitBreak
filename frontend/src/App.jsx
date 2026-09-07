@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import Header from './components/header';
-import ProfileBanner from './components/ProfileBanner';
+import ProfileBanner from './components/profileBanner';
 import TaskBoard from './components/TaskBoard';
 import LogIn from "./components/logIn";
 import SignUp from "./components/signUp";
 import UpdateProfile from './components/updateProfile';
 import CreateProfile from "./components/createProfile";
 import FoodSuggest from "./components/foodSuggest";
+import TimeSelector from "./components/timeSelector";
 import './App.css';
 
 function App() {
@@ -97,10 +98,15 @@ function App() {
   };
 
   const handleUpdateProfileSuccess = (updatedData) => {
-    if (updatedData?.user) {
-      setUser(updatedData.user);
-      localStorage.setItem('user', JSON.stringify(updatedData.user));
-    }
+    setUser((prevUser) => {
+      const newProfileInfo = updatedData?.user || updatedData;
+
+      const newUserState = { ...prevUser, ...newProfileInfo };
+
+      localStorage.setItem('user', JSON.stringify(newUserState));
+      
+      return newUserState;
+    });
   };
 
   const handleCreateProfileSuccess = (data) => {
@@ -135,6 +141,7 @@ function App() {
             <UpdateProfile onUpdateProfileSuccess={handleUpdateProfileSuccess} />
           )}
           {activeTab === 'food' && <FoodSuggest />}
+          {activeTab === 'schedule' && <TimeSelector />}
         </div>
         {showCreateProfileModal && (
           <CreateProfile 
