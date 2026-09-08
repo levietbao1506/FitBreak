@@ -30,6 +30,21 @@ def calculateTDEE(bmr: int, activity_frequency: int):
     result = ceil(tdee)
     return result
 
+# activity frequency:
+# 1 : it hoat dong / lau lau moi hoat dong -> R = 0.8
+# 2 : hoat dong 1 - 4 buoi 1 tuan -> R = 1.2
+# 3 : hoat dong 5 - 7 buoi 1 tuan -> R = 1.6
+def calculateProtein(weight: float, activity_frequency: int):
+    r = None
+    if activity_frequency == 1:
+        r = 0.8
+    elif activity_frequency == 2:
+        r = 1.2
+    else: r = 1.6
+
+    protein_need = r * weight
+    return protein_need
+
 def main():
     height = 179
     weight = 67
