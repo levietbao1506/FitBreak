@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, Response, Form, Depends, HTTPException, status
 from app.schemas.createProfile import createProfile
 from app.schemas.updateProfile import updateProfile
-from app.core.calculate_user_stats import calculateBMI, calculateBMR, calculateTDEE
+from app.core.calculate_user_stats import calculateBMI, calculateBMR, calculateTDEE, calculateProtein
 from app.core.token_authorization import tokenAuthorization, token_authorization
 
 router = APIRouter()
@@ -13,6 +13,7 @@ async def createProfile(request: Request, data: createProfile,
         bmi =  calculateBMI(data.weight, data.height)
         bmr = calculateBMR(data.weight, data.height, data.age, data.gender)
         tdee = calculateTDEE(bmr, data.activity_frequency)
+        protein = calculateProtein(data.weight, data.activity_frequecy)
         token.client.table("profiles").insert({
             "id" : token.user_id,
             "email" : token.user_email,
@@ -25,7 +26,8 @@ async def createProfile(request: Request, data: createProfile,
             "activity_frequency" : data.activity_frequency,
             "bmi" : bmi,
             "bmr" : bmr,
-            "tdee" : tdee
+            "tdee" : tdee,
+            "protein": protein
         }).execute()
 
         team_response = token.client.table("stats").select("team").order("team", desc=True).limit(1).execute()
@@ -57,7 +59,7 @@ async def updateProfile(request: Request, data: updateProfile,
         bmi = calculateBMI(data.weight, data.height)
         bmr = calculateBMR(data.weight, data.height, data.age, data.gender)
         tdee = calculateTDEE(bmr, data.activity_frequency)
-
+        protein = calculateProtein(data.weight, data.activity_frequency)
         token.client.table("profiles").update({
             "id" : token.user_id,
             "email" : token.user_email,
@@ -70,7 +72,8 @@ async def updateProfile(request: Request, data: updateProfile,
             "activity_frequency" : data.activity_frequency,
             "bmi" : bmi,
             "bmr" : bmr,
-            "tdee" : tdee
+            "tdee" : tdee,
+            "protein": protein
         }).eq("id", token.user_id).execute()
         return {"message": "Cập nhật profile thành công"}
     except Exception as e:
