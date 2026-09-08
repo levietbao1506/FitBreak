@@ -65,54 +65,54 @@ const FoodSuggest = () => {
     }
 
     try {
-        // const response = await fetch('http://localhost:8000/food-suggest', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //         'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        //     },
-        //     body: JSON.stringify(payload),
-        // });
-
-        // const data = await response.json();
-
-        // if (!response.ok) {
-        //     if (Array.isArray(data.detail)) {
-        //         throw new Error(data.detail[0].msg || 'Dữ liệu nhập vào không hợp lệ!');
-        //     }
-        //     throw new Error(data.detail || data.message || 'Lỗi khi lấy thực đơn!');
-        // }
-
-        // setResultData(data)
-        // ------------
-        setTimeout(() => {
-        setResultData({
-          total_calories: 1150,
-          total_protein: 60,
-          total_cost: 80000,
-          meals: [
-            {
-              id: 1, type: 'Bữa sáng', time: '7:30 - 8:00',
-              name: 'Bánh cuốn chả lụa', desc: 'Bánh cuốn nóng, chả lụa, hành phi...',
-              kcal: 350, cost: 25000, protein: 15, carbs: 45, fat: 12,
-              ingredients: 'Bột gạo, chả lụa, hành phi, nước mắm'
+        const response = await fetch('http://localhost:8000/food-suggest', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
             },
-            {
-              id: 2, type: 'Bữa trưa', time: '12:00 - 13:00',
-              name: 'Bún thịt nướng (phần nhỏ)', desc: 'Bún thịt nướng ít bún, nhiều rau sống.',
-              kcal: 450, cost: 30000, protein: 25, carbs: 48, fat: 18,
-              ingredients: 'Bún tươi, thịt heo, rau sống, nước mắm pha'
-            },
-            {
-              id: 3, type: 'Bữa tối', time: '18:30 - 19:30',
-              name: 'Gỏi cuốn tôm thịt', desc: '3 cuốn gỏi cuốn tôm thịt, rau sống.',
-              kcal: 350, cost: 25000, protein: 20, carbs: 38, fat: 10,
-              ingredients: 'Bánh tráng, tôm, thịt heo, rau sống, bún'
-            }
-          ]
+            body: JSON.stringify(payload),
         });
-        setLoading(false);
-      }, 1500);
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            if (Array.isArray(data.detail)) {
+                throw new Error(data.detail[0].msg || 'Dữ liệu nhập vào không hợp lệ!');
+            }
+            throw new Error(data.detail || data.message || 'Lỗi khi lấy thực đơn!');
+        }
+
+        setResultData(data)
+        // ------------
+        // setTimeout(() => {
+        // setResultData({
+        //   total_calories: 1150,
+        //   total_protein: 60,
+        //   total_cost: 80000,
+        //   meals: [
+        //     {
+        //       id: 1, type: 'Bữa sáng', time: '7:30 - 8:00',
+        //       name: 'Bánh cuốn chả lụa', desc: 'Bánh cuốn nóng, chả lụa, hành phi...',
+        //       kcal: 350, cost: 25000, protein: 15, carbs: 45, fat: 12,
+        //       ingredients: 'Bột gạo, chả lụa, hành phi, nước mắm'
+        //     },
+        //     {
+        //       id: 2, type: 'Bữa trưa', time: '12:00 - 13:00',
+        //       name: 'Bún thịt nướng (phần nhỏ)', desc: 'Bún thịt nướng ít bún, nhiều rau sống.',
+        //       kcal: 450, cost: 30000, protein: 25, carbs: 48, fat: 18,
+        //       ingredients: 'Bún tươi, thịt heo, rau sống, nước mắm pha'
+        //     },
+        //     {
+        //       id: 3, type: 'Bữa tối', time: '18:30 - 19:30',
+        //       name: 'Gỏi cuốn tôm thịt', desc: '3 cuốn gỏi cuốn tôm thịt, rau sống.',
+        //       kcal: 350, cost: 25000, protein: 20, carbs: 38, fat: 10,
+        //       ingredients: 'Bánh tráng, tôm, thịt heo, rau sống, bún'
+        //     }
+        //   ]
+        // });
+        // setLoading(false);
+      // }, 1500);
     } catch (err) {
         setError(err.message);
     } finally {

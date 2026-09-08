@@ -8,6 +8,7 @@ import UpdateProfile from './components/updateProfile';
 import CreateProfile from "./components/createProfile";
 import FoodSuggest from "./components/foodSuggest";
 import TimeSelector from "./components/timeSelector";
+import JoinTeam from "./components/joinTeam";
 import './App.css';
 
 function App() {
@@ -142,6 +143,7 @@ function App() {
           )}
           {activeTab === 'food' && <FoodSuggest />}
           {activeTab === 'schedule' && <TimeSelector />}
+          {activeTab === 'team' && <JoinTeam />}
         </div>
         {showCreateProfileModal && (
           <CreateProfile 
