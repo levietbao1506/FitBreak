@@ -1,50 +1,103 @@
-/* Container chứa toàn bộ thẻ của team */
+/* Container bao ngoài toàn bộ trang */
+.join-team-wrapper {
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* --- KHUNG NHẬP EMAIL & NÚT JOIN --- */
+.join-form {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin-bottom: 25px;
+  justify-content: center;
+}
+
+.join-input {
+  background-color: transparent;
+  border: 2px solid #ffffff;
+  border-radius: 12px;
+  padding: 10px 20px;
+  font-size: 18px;
+  color: #ffffff;
+  width: 420px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.join-input::placeholder {
+  color: #a0a0a0;
+  font-size: 18px;
+}
+
+.join-btn {
+  background-color: #ff4d4d; /* Màu đỏ cam nút Join */
+  color: #000000;
+  border: none;
+  border-radius: 25px;
+  padding: 8px 35px;
+  font-size: 24px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.1s ease;
+}
+
+.join-btn:hover {
+  opacity: 0.9;
+}
+
+.join-btn:active {
+  transform: scale(0.98);
+}
+
+.join-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* --- DANH SÁCH TEAM & THE PROFILE --- */
 .team-container {
   display: flex;
   flex-direction: column; 
   gap: 20px;
-  padding: 20px;
   background-color: transparent; 
   align-items: stretch; 
 }
 
-/* Thẻ profile chứa cả index và info */
 .profile-card {
   display: flex;
   flex-direction: row;
   background-color: transparent; 
   border: 2px solid #b3b3b3; 
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 15px 30px;
   width: 100%; 
   height: fit-content; 
-  color: #ffffff; /* Hoặc inherit tùy bạn */
+  color: #ffffff;
   box-sizing: border-box;
-  align-items: center; /* Căn giữa nội dung theo chiều dọc */
+  align-items: center;
 }
 
-/* --- PHẦN BÊN TRÁI: Số thứ tự --- */
 .profile-index {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40px; /* Số to cho nổi bật */
+  font-size: 40px;
   font-weight: bold;
-  width: 60px; /* Độ rộng cố định cho khung số */
-  border-right: 2px solid #555555; /* Đường gạch dọc ngăn cách */
-  margin-right: 30px; /* Khoảng cách với phần chữ bên phải */
+  width: 60px;
+  border-right: 2px solid #555555;
+  margin-right: 30px;
   padding-right: 15px; 
-  color: white;
+  color: #ffffff;
 }
 
-/* --- PHẦN BÊN PHẢI: Khung chứa 2 cột thông tin --- */
 .profile-info {
   display: flex;
   flex-direction: row;
-  flex: 1; /* Chiếm toàn bộ phần không gian còn lại */
+  flex: 1;
 }
 
-/* Cột chứa danh sách (trái và phải) */
 .profile-column {
   flex: 1; 
 }
