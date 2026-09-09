@@ -6,7 +6,7 @@ from app.core.exceptions import (
 )
 from app.core.ollama_client import chat as check_ollama
 from app.core.rate_limiter import RateLimitMiddleware
-from app.router import auth_route, exercise, profile, foodSuggest, team
+from app.router import auth_route, exercise, profile, foodSuggest, team, raid
 from app.core.ollama_client import chat as check_ollama
 
 @asynccontextmanager
@@ -54,6 +54,7 @@ app.include_router(profile.router, tags=["Create Profile Routers"])
 app.include_router(exercise.router, tags=["Exercise"])
 app.include_router(foodSuggest.router, tags=["Food Suggest"])
 app.include_router(team.router, tags=["Team"])
+app.include_router(raid.router, tags=["Raid"])
 
 @app.get("/api/health")
 async def health_check():
