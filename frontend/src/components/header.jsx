@@ -4,7 +4,7 @@ import LogOut from "./logOut";
 const Header = ({ user, onLogout, activeTab, onSelectTab }) => {
   return (
     <header className="header">
-      <div className="header-logo">🐉</div>
+      <div className="header-logo">FitBreak</div>
       <nav className="header-nav">
         <a 
           href="#tasks" 

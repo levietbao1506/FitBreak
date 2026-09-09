@@ -13,7 +13,7 @@ async def createProfile(request: Request, data: createProfile,
         bmi =  calculateBMI(data.weight, data.height)
         bmr = calculateBMR(data.weight, data.height, data.age, data.gender)
         tdee = calculateTDEE(bmr, data.activity_frequency)
-        protein = calculateProtein(data.weight, data.activity_frequecy)
+        protein = calculateProtein(data.weight, data.activity_frequency)
         token.client.table("profiles").insert({
             "id" : token.user_id,
             "email" : token.user_email,
@@ -43,7 +43,7 @@ async def createProfile(request: Request, data: createProfile,
             "coins" : 0
         }).execute()
         # dang su dung mock data
-        boss_response = token.client.table("boss").select("*").eq("id", 1).execute()
+        boss_response = token.client.table("boss").select("*").eq("id", 1).single().execute()
         boss_stat = boss_response.data
         if not boss_stat:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Boss not exist")

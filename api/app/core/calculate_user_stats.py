@@ -43,6 +43,7 @@ def calculateProtein(weight: float, activity_frequency: int):
     else: r = 1.6
 
     protein_need = r * weight
+    protein_need = ceil(protein_need)
     return protein_need
 
 def main():
