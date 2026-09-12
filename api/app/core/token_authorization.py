@@ -1,7 +1,7 @@
 from fastapi import HTTPException, Depends
 from dataclasses import dataclass
 from supabase import create_client, Client
-from api.app.core.database import SUPABASE_URL, SUPABASE_KEY
+from app.core.database import SUPABASE_URL, SUPABASE_KEY
 from app.core.auth import get_current_user
 
 @dataclass
