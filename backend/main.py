@@ -7,8 +7,8 @@ from app.core.exceptions import (
 from app.core.ollama_client import chat as check_ollama
 from app.core.rate_limiter import RateLimitMiddleware
 from app.router import auth_route, exercise, profile, foodSuggest, team
-from app.schemas.purchase import PurchaseRequest
-from app.router.purchase import purchase_item
+from models import PurchaseRequest
+from purchase import purchase_item
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
