@@ -8,11 +8,11 @@ try:
     from app.schemas.logIn import logIn
     from app.schemas.signUp import signUp
 except ImportError:
-    from api.app.core.database import supabase
-    from api.app.core.rate_limiter import RateLimiter
-    from api.app.schemas.authResponse import authResponse
-    from api.app.schemas.logIn import logIn
-    from api.app.schemas.signUp import signUp
+    from app.core.database import supabase
+    from app.core.rate_limiter import RateLimiter
+    from app.schemas.authResponse import authResponse
+    from app.schemas.logIn import logIn
+    from app.schemas.signUp import signUp
 
 router = APIRouter()
 
