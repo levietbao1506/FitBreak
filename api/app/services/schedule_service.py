@@ -1,149 +1,236 @@
-import pandas as pd
 from pathlib import Path
+import random
+import pandas as pd
 from api.app.core.exceptions import InvalidSchedule
 
-# Load database cache 1 lần duy nhất ở cấp module
 DATA_PATH = Path(__file__).resolve().parents[1] / "core" / "database" / "Exercise_Database.csv"
 DF_EXERCISES_CACHE = pd.read_csv(DATA_PATH)
 
 
 def filter_exercises(user_information: dict) -> pd.DataFrame:
+    """Lọc danh sách bài tập theo level thể chất của user."""
+    lv_mapping = {0: "heavy", 1: "medium", 2: "light"}
     exercise_lv_vn = user_information.get("level_of_physical_activity")
-    
-    lv_mapping = {
-        0: "heavy",
-        1: "medium",
-        2: "light"
-    }
-    exercise_lv_en = lv_mapping.get(exercise_lv_vn, exercise_lv_vn)
-    
+    exercise_lv_en = lv_mapping.get(exercise_lv_vn, "medium")
     return DF_EXERCISES_CACHE[
         DF_EXERCISES_CACHE["level of physical activity"] == exercise_lv_en
     ]
 
 
-def determine_block_type(aim: int, res_cnt: int, cardio_cnt: int, pilate_cnt: int) -> str:
-    """Xác định loại bài tập dựa trên mục tiêu (AIM) và số buổi đã phân bổ."""
-    if aim == 0:
-        counts = {"resistance_training": res_cnt, "cardio": cardio_cnt}
-        return min(counts, key=counts.get)
-    
-    elif aim == 1:
-        # Ưu tiên đủ 3 buổi resistance training trước, sau đó lấp cardio
-        if res_cnt < 3:
-            return "resistance_training"
-        return "cardio"
-    
-    elif aim == 2:
-        # Cân bằng cả 3 bộ môn
-        counts = {
-            "resistance_training": res_cnt,
-            "cardio": cardio_cnt,
-            "pilates": pilate_cnt
-        }
-        return min(counts, key=counts.get)
-    
-    return "cardio"
+def get_min_duration(aim: int, block_type: str, user_lv: int) -> int:
+    """Thời gian tối thiểu quy định theo ảnh tài liệu."""
+    if block_type == "resistance_training":
+        return 45 if aim == 1 else 20  # Tăng cơ: 45-60p, Giảm cân/Duy trì: 20p
+    elif block_type == "cardio":
+        if aim == 2:
+            return 20 if user_lv == 1 else 30  # Duy trì: LISS (>=20) hoặc Đi bộ (>=30)
+        return 10 if user_lv == 0 else (20 if user_lv == 1 else 30)
+    elif block_type == "pilates":
+        return 20  # Pilates: 20-30p (chấp nhận 15-20p theo trần DB)
+    return 20
 
 
-def select_exercises_for_slot(available_exercises: pd.DataFrame, time_budget: int) -> tuple[list[dict], int]:
-    """Chọn danh sách bài tập vừa vặn với quỹ thời gian của slot."""
-    if available_exercises.empty or time_budget <= 0:
+def select_exercises_knapsack(
+    available_df: pd.DataFrame, 
+    budget: int, 
+    min_required: int
+) -> tuple[list[dict], int]:
+    """
+    Dùng Knapsack (Subset Sum) chọn bài tập:
+    - Nếu là Cardio: bốc trực tiếp bài tập tương ứng.
+    - Với Resistance/Pilates: Ưu tiên chọn đa dạng nhóm cơ ('body_part'),
+      tối đa 1 bài cho mỗi nhóm cơ để bài tập không bị trùng lặp cơ thể.
+    """
+    if available_df.empty or budget < min_required:
         return [], 0
 
-    selected = []
-    current_time = 0
-    shuffled = available_exercises.sample(frac=1).to_dict(orient="records")
+    # Nếu là Cardio -> Bốc bài Cardio phù hợp
+    if available_df["type"].iloc[0] == "cardio":
+        cardio_row = available_df.iloc[0].to_dict()
+        ex_time = int(cardio_row.get("time_need", 0))
+        if ex_time <= budget:
+            return [cardio_row], ex_time
+        return [], 0
 
-    for row in shuffled:
-        ex_time = int(row["time_need"])
-        if current_time + ex_time <= time_budget:
-            selected.append(row)
-            current_time += ex_time
+    # Với Resistance/Pilates: Lọc mỗi body_part chỉ lấy 1 bài tập ngẫu nhiên
+    records = available_df.to_dict(orient="records")
+    random.shuffle(records)
 
-    return selected, current_time
+    unique_body_part_records = {}
+    for r in records:
+        bp = r.get("body_part")
+        if bp not in unique_body_part_records:
+            unique_body_part_records[bp] = r
+    pool = list(unique_body_part_records.values())
+
+    # Thuật toán 0/1 Knapsack
+    dp = {0: (0, [])}
+    for idx, item in enumerate(pool):
+        time_need = int(item.get("time_need", 0))
+        if time_need <= 0 or time_need > budget:
+            continue
+        new_dp = dict(dp)
+        for cur_w, (val, indices) in dp.items():
+            nxt_w = cur_w + time_need
+            if nxt_w <= budget and nxt_w not in new_dp:
+                new_dp[nxt_w] = (val + time_need, indices + [idx])
+        dp = new_dp
+
+    best_weight = max(dp.keys())
+    # Nếu DB không đủ bài để đạt budget cao (như 60p tăng cơ), lấy tối đa các bài khác nhóm cơ
+    if best_weight < min_required and len(pool) > 0:
+        total_pool_time = sum(int(r["time_need"]) for r in pool)
+        if total_pool_time <= budget and total_pool_time >= 35:
+            return pool, total_pool_time
+
+    selected_indices = dp[best_weight][1]
+    selected_exercises = [pool[i] for i in selected_indices]
+
+    return selected_exercises, best_weight
 
 
-async def schedule_maker(user_information: dict) -> dict:
+def pick_block_with_recovery(
+    aim: int, 
+    prev_type: str | None, 
+    res_cnt: int, 
+    cardio_cnt: int, 
+    pilate_cnt: int,
+    budget: int,
+    user_lv: int
+) -> str | None:
+    """
+    Điều phối bộ môn đảm bảo:
+    1. Recovery Logic: Không tập Kháng lực (resistance) 2 ngày liên tiếp.
+    2. Cân bằng và ưu tiên đạt chỉ tiêu bắt buộc.
+    """
+    candidates = []
+
+    if aim == 0:  # Giảm cân: 3-4 kháng lực, 3-4 cardio
+        if res_cnt < 4:
+            candidates.append("resistance_training")
+        if cardio_cnt < 4:
+            candidates.append("cardio")
+
+    elif aim == 1:  # Tăng cơ: 3-4 kháng lực (bắt buộc), cardio tự chọn
+        if res_cnt < 4:
+            candidates.append("resistance_training")
+        candidates.append("cardio")
+
+    elif aim == 2:  # Duy trì: >=2 mỗi thể loại
+        if res_cnt < 3:
+            candidates.append("resistance_training")
+        if cardio_cnt < 3:
+            candidates.append("cardio")
+        if pilate_cnt < 3:
+            candidates.append("pilates")
+
+    # Không tập cùng nhóm kháng lực nếu hôm trước vừa tập
+    if prev_type == "resistance_training" and "resistance_training" in candidates:
+        candidates = [c for c in candidates if c != "resistance_training"]
+
+    # Sắp xếp ưu tiên môn có số buổi ít hơn để cân đối
+    cnt_map = {"resistance_training": res_cnt, "cardio": cardio_cnt, "pilates": pilate_cnt}
+    candidates.sort(key=lambda x: cnt_map[x])
+
+    for block in candidates:
+        # Mục tiêu duy trì không dùng HIIT (chỉ nhận LISS hoặc Đi bộ)
+        if aim == 2 and block == "cardio" and user_lv == 0:
+            continue
+        min_req = get_min_duration(aim, block, user_lv)
+        if budget >= min_req:
+            return block
+
+    return None
+
+
+def schedule_maker(user_information: dict) -> dict:
     aim = user_information.get("aim", 0)
+    user_lv = user_information.get("level_of_physical_activity", 1)
     timetable = user_information.get("timetable", {})
     valid_exercises = filter_exercises(user_information)
 
     resistance_cnt = cardio_cnt = pilate_cnt = 0
     generated_schedule = {}
-    last_day_trained = False  # Cờ kiểm soát tập sole theo ngày
+    last_trained_type = None
 
-    for day, slots in timetable.items():
-        if not isinstance(slots, list):
-            slots = [slots]
-
+    for day, raw_slots in timetable.items():
+        slots = raw_slots if isinstance(raw_slots, list) else [raw_slots]
         generated_schedule[day] = []
-        is_today_trained = False
+        today_trained_type = None
 
-        for time_budget in slots:
-            # Nếu quỹ thời gian <= 0 hoặc ngày hôm trước ĐÃ TẬP -> ép nghỉ slot này
-            if time_budget <= 0 or last_day_trained:
+        for budget in slots:
+            chosen_block = pick_block_with_recovery(
+                aim=aim,
+                prev_type=last_trained_type,
+                res_cnt=resistance_cnt,
+                cardio_cnt=cardio_cnt,
+                pilate_cnt=pilate_cnt,
+                budget=budget,
+                user_lv=user_lv
+            )
+
+            if not chosen_block:
                 generated_schedule[day].append({
                     "day_type": "Rest",
                     "total_time": 0,
-                    "slot_budget": time_budget,
+                    "slot_budget": budget,
                     "exercises": []
                 })
                 continue
 
-            # 1. Chọn loại bài tập cho slot này
-            block_type = determine_block_type(aim, resistance_cnt, cardio_cnt, pilate_cnt)
+            # Lấy data theo block
+            avail = valid_exercises[valid_exercises["type"] == chosen_block]
+            
+            # Đối với duy trì (aim=2), nếu là cardio thì chỉ lấy LISS hoặc Walking từ database
+            if aim == 2 and chosen_block == "cardio":
+                avail = DF_EXERCISES_CACHE[
+                    (DF_EXERCISES_CACHE["type"] == "cardio") & 
+                    (DF_EXERCISES_CACHE["exercise"].isin(["LISS", "Walking"]))
+                ]
 
-            # 2. Lọc và bốc bài tập phù hợp thời gian
-            available = valid_exercises[valid_exercises["type"] == block_type]
-            selected_exercises, total_time = select_exercises_for_slot(available, time_budget)
+            min_req = get_min_duration(aim, chosen_block, user_lv)
+            selected_ex, total_time = select_exercises_knapsack(avail, budget, min_req)
 
-            # 3. Đóng gói kết quả & cập nhật counter
-            if selected_exercises:
-                if block_type == "resistance_training":
+            if selected_ex:
+                if chosen_block == "resistance_training":
                     resistance_cnt += 1
-                elif block_type == "cardio":
+                elif chosen_block == "cardio":
                     cardio_cnt += 1
-                elif block_type == "pilates":
+                elif chosen_block == "pilates":
                     pilate_cnt += 1
 
-                is_today_trained = True
-
+                today_trained_type = chosen_block
                 generated_schedule[day].append({
-                    "day_type": block_type,
+                    "day_type": chosen_block,
                     "total_time": total_time,
-                    "slot_budget": time_budget,
-                    "exercises": selected_exercises
+                    "slot_budget": budget,
+                    "exercises": selected_ex
                 })
             else:
                 generated_schedule[day].append({
                     "day_type": "Rest",
                     "total_time": 0,
-                    "slot_budget": time_budget,
+                    "slot_budget": budget,
                     "exercises": []
                 })
 
-        # Cập nhật trạng thái cho ngày kế tiếp (hôm nay có tập -> mai nghỉ)
-        last_day_trained = is_today_trained
+        last_trained_type = today_trained_type
 
-    # Kiểm tra đảm bảo đúng số lượng aim, nếu không đủ thì raise exception
+    # Kiểm tra tính hợp lệ tối thiểu theo đúng spec
     if aim == 0 and (resistance_cnt < 3 or cardio_cnt < 3):
-        raise InvalidSchedule(f"Thời gian tập không đủ để đảm bảo ít nhất 3 buổi kháng lực và 3 buổi cardio (hiện có: {resistance_cnt} kháng lực, {cardio_cnt} cardio).")
+        raise InvalidSchedule(
+            f"Mục tiêu Giảm cân cần tối thiểu 3 Kháng lực và 3 Cardio. "
+            f"Hiện có: {resistance_cnt} Kháng lực, {cardio_cnt} Cardio."
+        )
     elif aim == 1 and resistance_cnt < 3:
-        raise InvalidSchedule(f"Thời gian tập không đủ để đảm bảo ít nhất 3 buổi kháng lực (hiện có: {resistance_cnt} kháng lực).")
+        raise InvalidSchedule(
+            f"Mục tiêu Tăng cơ cần tối thiểu 3 Kháng lực. "
+            f"Hiện có: {resistance_cnt} Kháng lực."
+        )
     elif aim == 2 and (resistance_cnt < 2 or cardio_cnt < 2 or pilate_cnt < 2):
-        raise InvalidSchedule(f"Thời gian tập không đủ để đảm bảo ít nhất 2 kháng lực, 2 cardio, 2 pilates (hiện có: {resistance_cnt} kháng lực, {cardio_cnt} cardio, {pilate_cnt} pilates).")
+        raise InvalidSchedule(
+            f"Mục tiêu Duy trì cần tối thiểu 2 Kháng lực, 2 Cardio nhẹ, 2 Pilates. "
+            f"Hiện có: {resistance_cnt} Kháng lực, {cardio_cnt} Cardio, {pilate_cnt} Pilates."
+        )
 
     return generated_schedule
-
-''' Phụ lục
-Đối với level of physical activity:
-    0: Nặng
-    1: Vừa
-    2: Nhẹ
-
-Đối với aim:
-    0: Giảm cân
-    1: Tăng cơ
-    2: Duy trì
-'''
