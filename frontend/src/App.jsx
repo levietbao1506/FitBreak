@@ -48,6 +48,29 @@ function App() {
     }
   };
 
+  const fetchUserStats = async (token) => {
+    if (!token) return null;
+
+    try {
+      const response = await fetch(`http://localhost:8000/get-stats`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const statsData = await response.json();
+        return statsData;
+      }
+      return null;
+    } catch (error) {
+      console.error("Lỗi khi lấy thông tin stats:", error);
+      return null;
+    }
+  };
+
   useEffect(() => {
     const checkUserStatus = async () => {
       const savedUser = localStorage.getItem('user');
@@ -64,15 +87,23 @@ function App() {
 
       if (token && savedUser) {
         const parsedUser = JSON.parse(savedUser);
-        setUser(parsedUser);
+        const [profile, stats] = await Promise.all([
+          fetchUserProfileByEmail(parsedUser.email, token),
+          fetchUserStats(token)
+        ]);
+        
+        const fullUserData = { 
+          ...parsedUser, 
+          ...profile, 
+          ...stats, 
+          hasProfile: !!profile 
+        };
+
+        setUser(fullUserData);
+        localStorage.setItem('user', JSON.stringify(fullUserData));
         setCurrentScreen('main');
 
-        const profile = await fetchUserProfileByEmail(parsedUser.email, token);
-
-        if (profile) {
-          setUser((prev) => ({ ...prev, ...profile, hasProfile: true }));
-          setShowCreateProfileModal(false);
-        } else {
+        if (!profile) {
           setShowCreateProfileModal(true);
         }
       }
@@ -86,25 +117,34 @@ function App() {
     const userObj = data?.user;
 
     if (token) localStorage.setItem('token', token);
-    if (userObj) {
-      localStorage.setItem('user', JSON.stringify(userObj));
-      setUser(userObj);
-    }
 
     setCurrentScreen('main');
 
     if (isSignUp) {
+      if (userObj) setUser(userObj);
       setShowCreateProfileModal(true);
       return;
     }
 
-    const profile = await fetchUserProfileByEmail(userObj?.email, token);
+    const [profile, stats] = await Promise.all([
+      fetchUserProfileByEmail(userObj?.email, token),
+      fetchUserStats(token)
+    ]);
 
-    if (profile) {
-      setUser((prev) => ({ ...prev, ...profile, hasProfile: true }));
-      setShowCreateProfileModal(false);
-    } else {
+    const fullUserData = {
+      ...userObj,
+      ...profile,
+      ...stats,
+      hasProfile: !!profile
+    };
+
+    setUser(fullUserData);
+    localStorage.setItem('user', JSON.stringify(fullUserData));
+
+    if (!profile) {
       setShowCreateProfileModal(true);
+    } else {
+      setShowCreateProfileModal(false);
     }
   };
 
@@ -124,11 +164,24 @@ function App() {
     setShowCreateProfileModal(false);
   };
 
+  const handleUpdateCoins = (newCoins) => {
+    setUser((prevUser) => {
+      const updatedUser = { ...prevUser, coins: newCoins };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      return updatedUser;
+    });
+  };
+
+  const handleUpdateSchedule = (newSchedule) => {
+    setWorkoutSchedule(newSchedule);
+    localStorage.setItem('workoutSchedule', JSON.stringify(newSchedule));
+  };
+
   const handleScheduleGenerated = (newSchedule) => {
-  localStorage.setItem('workoutSchedule', JSON.stringify(newSchedule));
-  setWorkoutSchedule(newSchedule);
-  setActiveTab('tasks');
-};
+    localStorage.setItem('workoutSchedule', JSON.stringify(newSchedule));
+    setWorkoutSchedule(newSchedule);
+    setActiveTab('tasks');
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -147,11 +200,20 @@ function App() {
           activeTab={activeTab} 
           onSelectTab={setActiveTab} 
         />
-        <ProfileBanner user={user} />
+        <ProfileBanner 
+          user={user} 
+          teamName={user?.team || 1}
+          token={localStorage.getItem('token')}
+        />
         
         <div className="main-content">
           {activeTab === 'tasks' && (
-            <TaskBoard user={user} scheduleData={workoutSchedule} />
+            <TaskBoard 
+              user={user} 
+              scheduleData={workoutSchedule} 
+              onUpdateCoins={handleUpdateCoins}
+              onUpdateSchedule={handleUpdateSchedule}
+            />
           )}
           {activeTab === 'profile' && (
             <UpdateProfile onUpdateProfileSuccess={handleUpdateProfileSuccess} />

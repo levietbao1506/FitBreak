@@ -1,0 +1,135 @@
+.profile-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 35px 80px 35px 50px; /* Tăng padding để khung profile bự và cao hơn */
+  background-color: #0d0f17;
+  color: #ffffff;
+  position: relative;
+  overflow: visible; /* Đảm bảo hình Boss không bị cắt khi nhô ra */
+  min-height: 140px;
+}
+
+.user-profile-group {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.avatar-box {
+  width: 90px; /* Phóng to avatar người chơi */
+  height: 90px;
+  background-color: #ffffff;
+  border-radius: 12px;
+}
+
+.user-info h3 {
+  margin: 0 0 6px 0;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.user-info p {
+  margin: 0 0 14px 0;
+  color: #9aa0a6;
+  font-size: 15px;
+}
+
+.user-stats-text {
+  display: flex;
+  gap: 20px;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* --- KHUNG BOSS MỞ RỘNG --- */
+.boss-section {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #1b1e2b;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 24px 100px 24px 28px; /* Nhường thêm khoảng trống bên phải cho Boss bự */
+  min-width: 420px; /* Phóng to chiều rộng khung Boss */
+  margin-right: 75px; /* Đẩy lề phải để Boss bự không bị tràn khỏi màn hình */
+}
+
+.boss-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.boss-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.boss-title {
+  font-weight: bold;
+  font-size: 18px;
+  color: #ffffff;
+}
+
+.boss-reward {
+  color: #ffc107;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.boss-hp-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.boss-hp-bar {
+  width: 100%;
+  height: 14px; /* Thanh máu dày và rõ hơn */
+  background-color: #2c3040;
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+.boss-hp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff4d4d, #f97316);
+  transition: width 0.3s ease;
+}
+
+.boss-hp-text {
+  font-size: 13px;
+  color: #a0a5b5;
+  text-align: right;
+  font-weight: 600;
+}
+
+/* --- HÌNH BOSS BỰ VƯỢT KHUNG --- */
+.boss-avatar {
+  position: absolute;
+  right: -80px; /* Đẩy Boss nhô mạnh sang bên phải ngoài khung */
+  top: 50%;
+  transform: translateY(-50%);
+  width: 170px; /* Phóng to kích thước hình Boss (từ 110px -> 170px) */
+  height: 170px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.boss-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0px 10px 20px rgba(0, 0, 0, 0.75)); /* Đổ bóng nổi bật */
+}
+
+.boss-placeholder {
+  font-size: 80px;
+}

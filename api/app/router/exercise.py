@@ -15,29 +15,26 @@ async def getExercisesById(request: Request, id: int,
                            current_user: dict = Depends(get_current_user)):
     pass
 
-# gui du lieu da hoan thanh exercise
 @router.post("/exercises-log")
 async def exercisesLog(request: Request, data: exerciseLog,
-                    token: tokenAuthorization = Depends(token_authorization)):
+                       token: tokenAuthorization = Depends(token_authorization)):
     try:
-        response = token.client.table("stats").select("*").eq("id", token.user_id).single().execute()
+        response = token.client.table("stats").select("*").eq("user_id", token.user_id).single().execute()
         stat = response.data
-        final_coins = stat["coins"] + data.reward_coins
-
+        
         if not stat:
             raise HTTPException(status_code=404, detail="Stats record not found")
 
-        token.client.table("exercise_logs").insert({
-            "id" : token.user_id,
-            "exercise_id" : data.exercise_id,
-            "completed_at" : data.completed_at.isoformat(),
-            "reward_coins" : data.reward_coins
-        }).execute()
+        current_coins = stat.get("coins")
+        if current_coins is None:
+            current_coins = 0
+
+        final_coins = current_coins + data.reward_coins
 
         token.client.table("stats").update({
             "coins" : final_coins
-        }).eq("id" , token.user_id).execute()
-
-        return RedirectResponse("/", status_code=status.HTTP_303_SEE_OTHER)
+        }).eq("user_id" , token.user_id).execute()
+        
+        return {"message": "Success", "new_coins": final_coins}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

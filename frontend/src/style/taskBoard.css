@@ -1,4 +1,3 @@
-/* taskBoard.css */
 .taskboard-container {
   width: 100%;
   max-width: 900px;
@@ -19,7 +18,6 @@
   color: #ffffff;
 }
 
-/* Khung hiển thị khi chưa có lịch hoặc Ngày nghỉ */
 .empty-schedule-card,
 .rest-day-card {
   background-color: #12152b;
@@ -48,7 +46,6 @@
   font-size: 20px;
 }
 
-/* Khối nhóm bài tập */
 .workout-block {
   background-color: #12152b;
   border-radius: 12px;
@@ -85,14 +82,12 @@
   border-radius: 16px;
 }
 
-/* Danh sách bài tập */
 .exercise-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-/* Thẻ card từng bài tập */
 .exercise-card {
   display: flex;
   align-items: center;
@@ -101,7 +96,7 @@
   border: 1px solid #2e3458;
   padding: 14px 18px;
   border-radius: 10px;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.3s ease;
 }
 
 .exercise-card:hover {
@@ -109,19 +104,6 @@
   transform: translateY(-2px);
 }
 
-/* Trạng thái bài tập đã tích chọn hoàn thành */
-.exercise-card.completed {
-  background-color: rgba(16, 185, 129, 0.1);
-  border-color: #10b981;
-  opacity: 0.65;
-}
-
-.exercise-card.completed h4 {
-  text-decoration: line-through;
-  color: #6b7280;
-}
-
-/* Checkbox hoàn thành */
 .exercise-card input[type="checkbox"] {
   width: 22px;
   height: 22px;
@@ -133,17 +115,67 @@
   flex: 1;
 }
 
-.exercise-info h4 {
+.exercise-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.exercise-header-row h4 {
   font-size: 16px;
-  margin-bottom: 4px;
+  font-weight: 600;
   color: #f3f4f6;
+  margin: 0;
+}
+
+/* Badge nhóm cơ (body_part) */
+.body-part-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: #c084fc;
+  background-color: rgba(192, 132, 252, 0.15);
+  border: 1px solid rgba(192, 132, 252, 0.3);
+  padding: 2px 10px;
+  border-radius: 12px;
+  text-transform: capitalize;
 }
 
 .exercise-info p {
   font-size: 13px;
   color: #9ca3af;
+  margin: 0;
 }
 
 .exercise-info b {
   color: #60a5fa;
+}
+
+.level-text {
+  color: #f43f5e;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+/* Hiệu ứng mờ dần và biến mất khi tick hoàn thành */
+.exercise-card.fade-out {
+  opacity: 0;
+  transform: translateX(30px) scale(0.95);
+  pointer-events: none;
+}
+
+.completed-block {
+  text-align: center;
+  color: #10b981;
+  padding: 24px;
+  background-color: rgba(16, 185, 129, 0.08);
+  border: 1px dashed #10b981;
+  border-radius: 12px;
+  margin-bottom: 25px;
+}
+
+.completed-block h3 {
+  font-size: 16px;
+  margin: 0;
 }
