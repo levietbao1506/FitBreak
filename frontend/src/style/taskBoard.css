@@ -1,0 +1,149 @@
+/* taskBoard.css */
+.taskboard-container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  color: #ffffff;
+  font-family: Arial, sans-serif;
+}
+
+.taskboard-header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.taskboard-header h2 {
+  font-size: 24px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+/* Khung hiển thị khi chưa có lịch hoặc Ngày nghỉ */
+.empty-schedule-card,
+.rest-day-card {
+  background-color: #12152b;
+  border: 1px dashed #3b82f6;
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.rest-day-card {
+  border-color: #10b981;
+  background-color: rgba(16, 185, 129, 0.08);
+}
+
+.empty-schedule-card p,
+.rest-day-card p {
+  color: #9ca3af;
+  margin-top: 8px;
+  font-size: 15px;
+}
+
+.rest-day-card h3 {
+  color: #10b981;
+  font-size: 20px;
+}
+
+/* Khối nhóm bài tập */
+.workout-block {
+  background-color: #12152b;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  border: 1px solid #1e293b;
+}
+
+.block-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #334155;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.block-title h3 {
+  font-size: 18px;
+  color: #e2e8f0;
+}
+
+.highlight-type {
+  color: #f59e0b;
+  font-weight: bold;
+}
+
+.block-title span {
+  font-size: 13px;
+  color: #94a3b8;
+  background-color: #1e293b;
+  padding: 4px 12px;
+  border-radius: 16px;
+}
+
+/* Danh sách bài tập */
+.exercise-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Thẻ card từng bài tập */
+.exercise-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background-color: #1a1d36;
+  border: 1px solid #2e3458;
+  padding: 14px 18px;
+  border-radius: 10px;
+  transition: all 0.2s ease-in-out;
+}
+
+.exercise-card:hover {
+  border-color: #3b82f6;
+  transform: translateY(-2px);
+}
+
+/* Trạng thái bài tập đã tích chọn hoàn thành */
+.exercise-card.completed {
+  background-color: rgba(16, 185, 129, 0.1);
+  border-color: #10b981;
+  opacity: 0.65;
+}
+
+.exercise-card.completed h4 {
+  text-decoration: line-through;
+  color: #6b7280;
+}
+
+/* Checkbox hoàn thành */
+.exercise-card input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  accent-color: #10b981;
+  cursor: pointer;
+}
+
+.exercise-info {
+  flex: 1;
+}
+
+.exercise-info h4 {
+  font-size: 16px;
+  margin-bottom: 4px;
+  color: #f3f4f6;
+}
+
+.exercise-info p {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.exercise-info b {
+  color: #60a5fa;
+}

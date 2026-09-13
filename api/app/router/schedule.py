@@ -10,7 +10,7 @@ async def scheduleMaker(inp: dict,
                         token: tokenAuthorization = Depends(token_authorization)):
     try:
         response = token.client.table("profiles").select("*").eq("id", token.user_id).execute()
-        stat = response.data
+        stat = response.data[0]
         if not stat:
             raise HTTPException(status_code=404, detail="Stats record not found")
 
@@ -27,13 +27,13 @@ async def scheduleMaker(inp: dict,
             activity_frequency = 1
         else: activity_frequency = 2
 
-        data = schedule(
-            timetable = inp,
-            level_of_physical_activity = activity_frequency,
-            aim = goal
-        )
+        user_info = {
+            "timetable": inp,
+            "level_of_physical_activity": activity_frequency,
+            "aim": goal
+        }
 
-        result = schedule_maker(data)
+        result = await schedule_maker(user_info)
         return result
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
