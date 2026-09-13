@@ -2,6 +2,8 @@ import React from 'react';
 import LogOut from "./logOut";
 
 const Header = ({ user, onLogout, activeTab, onSelectTab }) => {
+  const coins = user?.coins || 0;
+
   return (
     <header className="header">
       <div className="header-logo">FitBreak</div>
@@ -45,8 +47,7 @@ const Header = ({ user, onLogout, activeTab, onSelectTab }) => {
         <a href="#">Help</a>
       </nav>
       <div className="header-stats">
-        <span>💎 0</span>
-        <span>🪙 0</span>
+        <span>🪙 {coins}</span>
         <LogOut onLogoutSuccess={onLogout} />
       </div>
     </header>
