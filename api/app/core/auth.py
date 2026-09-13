@@ -1,7 +1,7 @@
 from fastapi import Request, HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import jwt
-from app.core.database import supabase
+from api.app.core.database import supabase
 #auto_error=False
 security = HTTPBearer(auto_error=False) # schema handles extracting & validating authorization
 
