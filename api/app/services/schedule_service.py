@@ -1,7 +1,11 @@
 from pathlib import Path
+<<<<<<< HEAD
+from app.core.exceptions import InvalidSchedule
+=======
 import random
 import pandas as pd
 from api.app.core.exceptions import InvalidSchedule
+>>>>>>> 08614410bf1b978351435f29007c52e531fac022
 
 DATA_PATH = Path(__file__).resolve().parents[1] / "core" / "database" / "Exercise_Database.csv"
 DF_EXERCISES_CACHE = pd.read_csv(DATA_PATH)

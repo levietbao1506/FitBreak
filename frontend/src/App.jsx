@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import Header from './components/header';
 import ProfileBanner from './components/profileBanner';
-import TaskBoard from './components/TaskBoard';
 import LogIn from "./components/logIn";
 import SignUp from "./components/signUp";
 import UpdateProfile from './components/updateProfile';
 import CreateProfile from "./components/createProfile";
 import FoodSuggest from "./components/foodSuggest";
 import TimeSelector from "./components/timeSelector";
+import JoinTeam from "./components/joinTeam";
+import TaskBoard from "./components/taskBoard"
 import './App.css';
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('tasks');
   const [user, setUser] = useState(null);
   const [showCreateProfileModal, setShowCreateProfileModal] = useState(false);
+  const [workoutSchedule, setWorkoutSchedule] = useState(null);
 
   const fetchUserProfileByEmail = async (email, token) => {
     if (!email || !token) return null;
@@ -50,6 +52,15 @@ function App() {
     const checkUserStatus = async () => {
       const savedUser = localStorage.getItem('user');
       const token = localStorage.getItem('token');
+      const savedSchedule = localStorage.getItem('workoutSchedule');
+
+      if (savedSchedule) {
+        try {
+          setWorkoutSchedule(JSON.parse(savedSchedule));
+        } catch (e) {
+          console.error("Lỗi parse lịch tập:", e);
+        }
+      }
 
       if (token && savedUser) {
         const parsedUser = JSON.parse(savedUser);
@@ -100,11 +111,8 @@ function App() {
   const handleUpdateProfileSuccess = (updatedData) => {
     setUser((prevUser) => {
       const newProfileInfo = updatedData?.user || updatedData;
-
       const newUserState = { ...prevUser, ...newProfileInfo };
-
       localStorage.setItem('user', JSON.stringify(newUserState));
-      
       return newUserState;
     });
   };
@@ -113,16 +121,22 @@ function App() {
     const updatedUser = { ...user, ...(data?.user || {}), hasProfile: true };
     setUser(updatedUser);
     localStorage.setItem('user', JSON.stringify(updatedUser));
-    
     setShowCreateProfileModal(false);
   };
 
-  const handleLogout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  setUser(null);
-  setCurrentScreen('login');
+  const handleScheduleGenerated = (newSchedule) => {
+  localStorage.setItem('workoutSchedule', JSON.stringify(newSchedule));
+  setWorkoutSchedule(newSchedule);
+  setActiveTab('tasks');
 };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('workoutSchedule');
+    setUser(null);
+    setCurrentScreen('login');
+  };
 
   if (currentScreen === 'main') {
     return (
@@ -136,19 +150,24 @@ function App() {
         <ProfileBanner user={user} />
         
         <div className="main-content">
-          {activeTab === 'tasks' && <TaskBoard user={user} />}
+          {activeTab === 'tasks' && (
+            <TaskBoard user={user} scheduleData={workoutSchedule} />
+          )}
           {activeTab === 'profile' && (
             <UpdateProfile onUpdateProfileSuccess={handleUpdateProfileSuccess} />
           )}
           {activeTab === 'food' && <FoodSuggest />}
-          {activeTab === 'schedule' && <TimeSelector />}
+          {activeTab === 'schedule' && (
+            <TimeSelector onScheduleGenerated={handleScheduleGenerated} />
+          )}
+          {activeTab === 'team' && <JoinTeam />}
         </div>
+
         {showCreateProfileModal && (
           <CreateProfile 
             user={user}
             onCreateProfileSuccess={handleCreateProfileSuccess}
           />
-
         )}
       </div>
     );
