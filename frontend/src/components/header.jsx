@@ -43,8 +43,13 @@ const Header = ({ user, onLogout, activeTab, onSelectTab }) => {
         >
           Team
         </a>
-        <a href="#">Challenges</a>
-        <a href="#">Help</a>
+        <a 
+          href="#shop" 
+          className={activeTab === 'shop' ? 'active' : ''}
+          onClick={(e) => { e.preventDefault(); onSelectTab('shop'); }}
+        >
+          Shop
+        </a>
       </nav>
       <div className="header-stats">
         <span>🪙 {coins}</span>

@@ -1,5 +1,5 @@
 from pydantic import BaseModel
 
 class PurchaseRequest(BaseModel):
-      user_id: int
-      item_id: int
+    user_id: str
+    item_id: int

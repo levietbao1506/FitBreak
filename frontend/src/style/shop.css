@@ -1,0 +1,184 @@
+.shop-container {
+  display: flex;
+  gap: 24px;
+  padding: 24px;
+  color: #fff;
+}
+
+.shop-preview-section {
+  width: 240px;
+  flex-shrink: 0;
+  background: #1e1b2e;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #362f4b;
+  text-align: center;
+}
+
+.avatar-preview-box {
+  width: 160px;
+  height: 160px;
+  margin: 16px auto;
+}
+
+.shop-items-section {
+  flex: 1;
+}
+
+/* --- Thanh Tab Danh Mục --- */
+.category-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  background: #1e1b2e;
+  border: 1px solid #362f4b;
+  color: #a29bfe;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+}
+
+.tab-btn:hover {
+  background: #2e2845;
+  color: #ffffff;
+  border-color: #5b4bc4;
+}
+
+.tab-btn.active {
+  background: #6c5ce7;
+  color: #ffffff;
+  border-color: #8c7ae6;
+  box-shadow: 0 0 10px rgba(108, 92, 231, 0.5);
+}
+
+.empty-category-msg {
+  margin-top: 24px;
+  color: #a29bfe;
+  font-style: italic;
+}
+
+/* --- Lưới vật phẩm --- */
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 16px;
+}
+
+.item-card {
+  background: #252136;
+  border: 1px solid #3d3556;
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.item-card:hover {
+  transform: translateY(-2px);
+  border-color: #8c7ae6;
+}
+
+.item-image {
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1726;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.item-image img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.item-info {
+  text-align: center;
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+.item-info h4 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  color: #ffffff;
+}
+
+.item-stat {
+  margin: 2px 0;
+  font-size: 12px;
+  color: #a29bfe;
+  font-weight: 600;
+}
+
+.item-price {
+  margin: 2px 0;
+  font-size: 13px;
+  color: #ffeaa7;
+  font-weight: bold;
+}
+
+.item-actions {
+  width: 100%;
+  margin-top: auto;
+}
+
+.btn-buy, .btn-equip, .btn-equipped {
+  width: 100%;
+  padding: 8px 0;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 13px;
+  transition: background-color 0.2s, opacity 0.2s;
+}
+
+.btn-buy {
+  background: #6c5ce7;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.btn-buy:hover {
+  background: #5b4bc4;
+}
+
+.btn-equip {
+  background: #0984e3;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.btn-equip:hover {
+  background: #0773c5;
+}
+
+.btn-equipped {
+  background: #00b894;
+  color: #ffffff;
+  cursor: default;
+  opacity: 0.9;
+}
+
+.shop-message {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #ffeaa7;
+  word-break: break-word;
+}

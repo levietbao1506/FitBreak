@@ -8,7 +8,8 @@ import CreateProfile from "./components/createProfile";
 import FoodSuggest from "./components/foodSuggest";
 import TimeSelector from "./components/timeSelector";
 import JoinTeam from "./components/joinTeam";
-import TaskBoard from "./components/taskBoard"
+import TaskBoard from "./components/taskBoard";
+import Shop from './components/shop';
 import './App.css';
 
 function App() {
@@ -18,9 +19,15 @@ function App() {
   const [showCreateProfileModal, setShowCreateProfileModal] = useState(false);
   const [workoutSchedule, setWorkoutSchedule] = useState(null);
 
+  // State để thông báo cập nhật Avatar toàn ứng dụng
+  const [avatarVersion, setAvatarVersion] = useState(0);
+
+  const handleAvatarUpdated = () => {
+    setAvatarVersion((prev) => prev + 1);
+  };
+
   const fetchUserProfileByEmail = async (email, token) => {
     if (!email || !token) return null;
-
     try {
       const response = await fetch(`http://localhost:8000/profiles/get-profile-by-email/${email}`, {
         method: 'GET',
@@ -31,15 +38,13 @@ function App() {
       });
 
       if (response.status === 401) {
-        console.warn("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         return null;
       }
 
       if (response.ok) {
-        const profileData = await response.json();
-        return profileData;
+        return await response.json();
       }
       return null;
     } catch (error) {
@@ -50,7 +55,6 @@ function App() {
 
   const fetchUserStats = async (token) => {
     if (!token) return null;
-
     try {
       const response = await fetch(`http://localhost:8000/get-stats`, {
         method: 'GET',
@@ -61,8 +65,7 @@ function App() {
       });
 
       if (response.ok) {
-        const statsData = await response.json();
-        return statsData;
+        return await response.json();
       }
       return null;
     } catch (error) {
@@ -204,6 +207,7 @@ function App() {
           user={user} 
           teamName={user?.team || 1}
           token={localStorage.getItem('token')}
+          avatarVersion={avatarVersion}
         />
         
         <div className="main-content">
@@ -223,6 +227,13 @@ function App() {
             <TimeSelector onScheduleGenerated={handleScheduleGenerated} />
           )}
           {activeTab === 'team' && <JoinTeam />}
+          {activeTab === 'shop' && (
+            <Shop 
+              user={user} 
+              onUpdateCoins={handleUpdateCoins} 
+              onAvatarUpdated={handleAvatarUpdated}
+            />
+          )}
         </div>
 
         {showCreateProfileModal && (

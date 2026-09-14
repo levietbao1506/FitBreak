@@ -1,16 +1,10 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.core.exceptions import (
-    AIModelOfflineException
-)
+from app.core.exceptions import AIModelOfflineException
 from app.core.ollama_client import chat as check_ollama
 from app.core.rate_limiter import RateLimitMiddleware
-from app.router import auth_route, exercise, profile, foodSuggest, team, raid, schedule, stats
-from app.core.ollama_client import chat as check_ollama
-from app.router import auth_route, exercise, profile, foodSuggest, team
-from app.schemas.purchase import PurchaseRequest
-from app.router.purchase import purchase_item
+from app.router import auth_route, exercise, profile, foodSuggest, team, raid, schedule, stats, shop
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -23,29 +17,21 @@ async def lifespan(app: FastAPI):
         print(f"[WARN] Không thể kiểm tra Ollama lúc khởi động: {e}")
     yield
 
-
-app = FastAPI()
-
+app = FastAPI(lifespan=lifespan)
 app.add_middleware(RateLimitMiddleware, max_requests=100, window_seconds=60)
 
 origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:5500",
-    "http://127.0.0.1:5500",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    "http://localhost:5173", "http://127.0.0.1:5173",
+    "http://localhost:5500", "http://127.0.0.1:5500",
+    "http://localhost:3000", "http://127.0.0.1:3000",
 ]
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 app.include_router(auth_route.router, tags=["Auth Routers"])
 app.include_router(profile.router, tags=["Create Profile Routers"])
@@ -55,6 +41,7 @@ app.include_router(team.router, tags=["Team"])
 app.include_router(raid.router, tags=["Raid"])
 app.include_router(schedule.router, tags=["Schedule"])
 app.include_router(stats.router, tags=["Stats"])
+app.include_router(shop.router, tags=["Shop"])
 
 @app.get("/api/health")
 async def health_check():
@@ -67,12 +54,3 @@ async def health_check():
 @app.get("/")
 async def root():
     return {"message": "Welcome to FitBreak API! Go to /docs for API documentation."}
-
-@app.post("/purchase")
-def purchase(request: PurchaseRequest):
-    result = purchase_item(
-        request.user_id,
-        request.item_id
-    )
-
-    return result
