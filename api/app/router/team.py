@@ -17,7 +17,7 @@ async def joinTeam(data: joinTeam,
 
         token.client.table("stats").update({
             "team" : team
-        }).eq("id", token.user_id).execute()
+        }).eq("user_id", token.user_id).execute()
 
         return {"message" : "Join team successfully"}
     except Exception as e:
@@ -26,17 +26,17 @@ async def joinTeam(data: joinTeam,
 @router.get("/get-team")
 async def getTeam(token: tokenAuthorization = Depends(token_authorization)):
     try:
-        user_stat = token.client.table("stats").select("team").eq("id", token.user_id).single().execute()
+        user_stat = token.client.table("stats").select("team").eq("user_id", token.user_id).single().execute()
         if not user_stat.data or user_stat.data.get("team") is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User chưa thuộc team nào")
 
         current_team = user_stat.data["team"]
 
-        team_stats = token.client.table("stats").select("id").eq("team", current_team).execute()
+        team_stats = token.client.table("stats").select("user_id").eq("team", current_team).execute()
         if not team_stats.data:
             return []
 
-        member_ids = [item["id"] for item in team_stats.data]
+        member_ids = [item["user_id"] for item in team_stats.data]
 
         profiles_response = token.client.table("profiles").select("*").in_("id", member_ids).execute()
 

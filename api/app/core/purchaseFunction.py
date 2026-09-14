@@ -1,78 +1,51 @@
-from fastapi import Depends
-from app.core.token_authorization import token_authorization, tokenAuthorization
+from fastapi import HTTPException, status
 
-async def purchase_item(user_id, item_id,
-                  token: tokenAuthorization = Depends(token_authorization)):
-      # Lấy thông tin user
-      user_result = token.client \
-            .table("users") \
-            .select("*") \
-            .eq("id", user_id) \
-            .single() \
-            .execute()
+def get_item_category(item_name: str) -> str:
+    name_lower = (item_name or "").lower()
+    if "background" in name_lower:
+        return "background"
+    if "hair" in name_lower:
+        return "hair"
+    if "shirt" in name_lower:
+        return "shirt"
+    if "skin" in name_lower:
+        return "skin"
+    return "weapon"
 
-      user = user_result.data
 
-      if user is None:
-            return {
-                  "success": False,
-                  "message": "User không tồn tại"
-            }
+async def purchase_item(user_id: str, item_id: int, token):
+    client = token.client
 
-      # Lấy thông tin item
-      item_result = token.client \
-            .table("items") \
-            .select("*") \
-            .eq("id", item_id) \
-            .single() \
-            .execute()
+    item_res = client.table("item").select("*").eq("item_id", item_id).single().execute()
+    item = item_res.data
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vật phẩm không tồn tại")
 
-      item = item_result.data
+    price = item.get("price", 0)
 
-      if item is None:
-            return {
-                  "success": False,
-                  "message": "Item không tồn tại"
-            }
+    stats_res = client.table("stats").select("coins").eq("id", user_id).single().execute()
+    stats = stats_res.data
+    if not stats:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy dữ liệu người chơi")
 
-      # Kiểm tra stock
-      if item["stock"] <= 0:
-            return {
-                  "success": False,
-                  "message": "Item đã hết hàng"
-            }
+    current_coins = stats.get("coins", 0)
+    if current_coins < price:
+        return {"success": False, "message": "Không đủ Coin để mua vật phẩm này"}
 
-      # Kiểm tra coin
-      if user["coins"] < item["price"]:
-            return {
-                  "success": False,
-                  "message": "Không đủ coin"
-            }
+    remaining_coin = current_coins - price
 
-      # Tính số coin còn lại
-      remaining_coin = user["coins"] - item["price"]
+    client.table("stats").update({"coins": remaining_coin}).eq("id", user_id).execute()
 
-      # Update coin
-      token.client \
-            .table("users") \
-            .update({
-                  "coins": remaining_coin
-            }) \
-            .eq("id", user_id) \
-            .execute()
+    category = get_item_category(item.get("name"))
+    client.table("user").upsert({
+        "user_id": user_id,
+        category: item.get("name")
+    }).execute()
 
-      remaining_stock = item["stock"] - 1
-
-      token.client \
-            .table("items") \
-            .update({
-                  "stock": remaining_stock
-            }) \
-            .eq("id", item_id) \
-            .execute()
-
-      return {
-            "success": True,
-            "message": "Mua hàng thành công",
-            "remaining_coin": remaining_coin
-      }
+    return {
+        "success": True,
+        "message": f"Mua {item.get('name')} thành công",
+        "remaining_coin": remaining_coin,
+        "equipped_category": category,
+        "equipped_item": item.get("name")
+    }

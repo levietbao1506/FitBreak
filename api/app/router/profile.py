@@ -10,50 +10,65 @@ router = APIRouter()
 async def createProfile(request: Request, data: createProfile,
                         token: tokenAuthorization = Depends(token_authorization)):
     try:
-        bmi =  calculateBMI(data.weight, data.height)
+        bmi = calculateBMI(data.weight, data.height)
         bmr = calculateBMR(data.weight, data.height, data.age, data.gender)
         tdee = calculateTDEE(bmr, data.activity_frequency)
         protein = calculateProtein(data.weight, data.activity_frequency)
+
         token.client.table("profiles").insert({
-            "id" : token.user_id,
-            "email" : token.user_email,
-            "name" : data.name,
-            "age" : data.age,
-            "gender" : data.gender,
-            "height" : data.height,
-            "weight" : data.weight,
-            "goal" : data.goal,
-            "activity_frequency" : data.activity_frequency,
-            "bmi" : bmi,
-            "bmr" : bmr,
-            "tdee" : tdee,
+            "id": token.user_id,
+            "email": token.user_email,
+            "name": data.name,
+            "age": data.age,
+            "gender": data.gender,
+            "height": data.height,
+            "weight": data.weight,
+            "goal": data.goal,
+            "activity_frequency": data.activity_frequency,
+            "bmi": bmi,
+            "bmr": bmr,
+            "tdee": tdee,
             "protein": protein
         }).execute()
 
         team_response = token.client.table("stats").select("team").order("team", desc=True).limit(1).execute()
-        if team_response.data == None:
+        if team_response.data is None:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Khong tim thay data")
+        
         max_current_team = team_response.data[0]['team'] if team_response.data else 0
         max_new_team = max_current_team + 1
+
         token.client.table("stats").insert({
-            "id" : token.user_id,
-            "team" : max_new_team,
-            "email" : token.user_email,
-            "damage" : 1,
-            "coins" : 0
+            "user_id": token.user_id,
+            "team": max_new_team,
+            "email": token.user_email,
+            "damage": 1,
+            "coins": 0
         }).execute()
+
         # dang su dung mock data
         boss_response = token.client.table("boss").select("*").eq("id", 1).single().execute()
         boss_stat = boss_response.data
         if not boss_stat:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Boss not exist")
+
         token.client.table("raid").insert({
-            "team" : max_new_team,
-            "boss_id" : boss_stat["id"],
-            "boss_name" : boss_stat["name"],
-            "health" : boss_stat["health"],
-            "reward_coins" : boss_stat["reward_coins"]
+            "team": max_new_team,
+            "boss_id": boss_stat["id"],
+            "boss_name": boss_stat["name"],
+            "health": boss_stat["health"],
+            "reward_coins": boss_stat["reward_coins"]
         }).execute()
+
+        token.client.table("user").insert({
+            "user_id": token.user_id,
+            "skin": "Orange Skin",
+            "shirt": "Blue Shirt",
+            "hair": "Black Hair",
+            "background": None,
+            "weapon": None
+        }).execute()
+
         return {"message": "Tạo profile thành công"}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

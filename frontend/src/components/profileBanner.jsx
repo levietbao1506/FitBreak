@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import AvatarDisplay from './avatarDisplay';
 import '../style/profileBanner.css';
 
 const API_BASE_URL = 'http://localhost:8000';
 
-const ProfileBanner = ({ user, teamName, token: propToken }) => {
+const ProfileBanner = ({ user, teamName, token: propToken, avatarVersion }) => {
   const name = user?.name || "Player 1";
   const email = user?.email || "player1@gmail.com";
   const damage = user?.damage ?? user?.str ?? 1;
@@ -11,7 +12,9 @@ const ProfileBanner = ({ user, teamName, token: propToken }) => {
 
   const activeTeam = user?.team || teamName || 1;
   const token = propToken || localStorage.getItem('token');
+  const userId = user?.id || user?.user_id;
 
+  const [equippedUrls, setEquippedUrls] = useState({});
   const [boss, setBoss] = useState({
     boss_name: "Loading...",
     health: 100,
@@ -21,37 +24,43 @@ const ProfileBanner = ({ user, teamName, token: propToken }) => {
   });
 
   useEffect(() => {
-    const fetchBossData = async () => {
+    const fetchData = async () => {
       if (!token) return;
 
+      const headers = { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      };
+
       try {
-        const res = await fetch(`${API_BASE_URL}/get-raid-boss/${activeTeam}`, {
-          headers: { 
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+        const resBoss = await fetch(`${API_BASE_URL}/get-raid-boss/${activeTeam}`, { headers });
+        if (resBoss.ok) {
+          const bossData = await resBoss.json();
+          setBoss(bossData);
+        }
+
+        if (userId) {
+          const resAvatar = await fetch(`${API_BASE_URL}/user/equipped-avatar/${userId}`, { headers });
+          if (resAvatar.ok) {
+            const avatarUrls = await resAvatar.json();
+            setEquippedUrls(avatarUrls);
           }
-        });
-        
-        if (res.ok) {
-          const data = await res.json();
-          setBoss(data);
-        } else {
-          console.error("Lỗi API Backend:", res.status);
         }
       } catch (err) {
-        console.error("Lỗi lấy thông tin Boss:", err);
+        console.error("Lỗi tải dữ liệu Profile Banner:", err);
       }
     };
 
-    fetchBossData();
-  }, [activeTeam, token]);
+    fetchData();
+  }, [activeTeam, token, userId, avatarVersion]); // Tự gọi lại khi avatarVersion thay đổi
 
   const healthPercentage = Math.max(0, Math.min(100, (boss.health / boss.max_health) * 100));
 
   return (
     <div className="profile-banner">
-      <div className="avatar-box">
-        <div className="avatar-pixel"></div>
+      {/* Khung avatar kích thước 110px x 110px, bo tròn không bị góc thừa */}
+      <div className="avatar-box" style={{ width: '150px', height: '150px', flexShrink: 0, borderRadius: '12px', overflow: 'hidden' }}>
+        <AvatarDisplay equippedItems={equippedUrls} />
       </div>
       
       <div className="user-info">
