@@ -128,14 +128,6 @@ const FoodSuggest = () => {
 
     return (
     <div className="food-container">
-      <div className="food-theme-toggle-wrapper">
-        <div className="food-theme-toggle" role="button" tabIndex={0} aria-label="Chuyển đổi giao diện sáng/tối">
-          <span className="food-theme-icon food-theme-icon--sun">☀️</span>
-          <div className="food-theme-switch"></div>
-          <span className="food-theme-icon food-theme-icon--moon">🌙</span>
-        </div>
-      </div>
-
       <header className="food-header">
         <span className="food-header-icon">🍱</span>
         <h1 className="food-header-title">Gợi Ý Thực Đơn AI</h1>

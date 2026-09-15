@@ -64,20 +64,19 @@ async def get_all_items(
     token: tokenAuthorization = Depends(token_authorization)
 ):
     try:
-        # 1. Lấy toàn bộ danh sách vật phẩm từ bảng "item"
         result = token.client.table("item").select("*").execute()
         items = result.data or []
 
         equipped_names = set()
+        owned_names = set()
 
-        # 2. Lấy trang bị hiện tại từ bảng "user"
         if user_id:
-            user_res = token.client.table("user").select("background, skin, shirt, hair, weapon").eq("user_id", user_id).execute()
+            user_res = token.client.table("user").select("background, skin, shirt, hair, weapon, inventory").eq("user_id", user_id).execute()
             if user_res.data:
                 u_data = user_res.data[0]
-                equipped_names = {v for v in u_data.values() if v}
+                equipped_names = {v for k, v in u_data.items() if k != "inventory" and v}
+                owned_names = set(u_data.get("inventory") or [])
 
-        # 3. Gắn trạng thái is_owned và is_equipped
         for item in items:
             item_name = item.get("name")
             item_price = item.get("price", 0)
@@ -85,11 +84,9 @@ async def get_all_items(
             item["image_url"] = get_supabase_image_url(token.client, SHOP_ITEM_MAP.get(item_name, item_name))
             item["equip_url"] = get_supabase_image_url(token.client, AVATAR_EQUIP_MAP.get(item_name, item_name))
 
-            # Trạng thái đang mặc
             item["is_equipped"] = item_name in equipped_names
-            
-            # Đã sở hữu nếu đang mặc HOẶC món đồ có giá = 0 (mặc định)
-            item["is_owned"] = item["is_equipped"] or (item_price == 0)
+
+            item["is_owned"] = (item_name in owned_names) or item["is_equipped"] or (item_price == 0)
 
         return items
     except Exception as e:
@@ -127,19 +124,37 @@ async def get_user_equipped_avatar(user_id: str, token: tokenAuthorization = Dep
 
 @router.post("/purchase")
 async def purchase(request: PurchaseRequest, token: tokenAuthorization = Depends(token_authorization)):
-    res = await purchase_item(request.user_id, request.item_id, token)
+    try:
+        res = await purchase_item(request.user_id, request.item_id, token)
 
-    if res.get("success"):
-        try:
-            item_res = token.client.table("item").select("*").eq("item_id", request.item_id).execute()
-            if item_res.data:
-                item_data = item_res.data[0]
-                category = get_item_category(item_data.get("name"))
-                token.client.table("user").update({category: item_data.get("name")}).eq("user_id", request.user_id).execute()
-        except Exception as e:
-            print(f"Lỗi tự động mặc trang bị sau khi mua: {e}")
-            
-    return res
+        if isinstance(res, dict) and res.get("success"):
+            try:
+                item_res = token.client.table("item").select("*").eq("item_id", request.item_id).execute()
+                if item_res.data:
+                    item_data = item_res.data[0]
+                    item_name = item_data.get("name")
+                    category = get_item_category(item_name)
+
+                    user_res = token.client.table("user").select("inventory").eq("user_id", request.user_id).execute()
+                    current_inv = []
+                    if user_res.data and user_res.data[0].get("inventory"):
+                        current_inv = user_res.data[0].get("inventory")
+
+                    if item_name not in current_inv:
+                        current_inv.append(item_name)
+
+                    token.client.table("user").update({
+                        "inventory": current_inv,
+                        category: item_name
+                    }).eq("user_id", request.user_id).execute()
+
+            except Exception as e:
+                print(f"Lỗi cập nhật kho đồ/trang bị: {e}")
+
+        return res
+    except Exception as e:
+        print(f"Lỗi mua hàng Backend: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/equip")
 async def equip_item(request: EquipRequest, token: tokenAuthorization = Depends(token_authorization)):
@@ -147,10 +162,17 @@ async def equip_item(request: EquipRequest, token: tokenAuthorization = Depends(
         item_res = token.client.table("item").select("*").eq("item_id", request.item_id).execute()
         if not item_res.data:
             raise HTTPException(status_code=404, detail="Không tìm thấy vật phẩm")
-        
+
         item_data = item_res.data[0]
         item_name = item_data.get("name")
+        item_price = item_data.get("price", 0)
         category = get_item_category(item_name)
+
+        if item_price > 0:
+            user_res = token.client.table("user").select("inventory").eq("user_id", request.user_id).execute()
+            inventory = (user_res.data[0].get("inventory") or []) if user_res.data else []
+            if item_name not in inventory:
+                raise HTTPException(status_code=400, detail="Bạn chưa sở hữu vật phẩm này!")
 
         token.client.table("user").update({category: item_name}).eq("user_id", request.user_id).execute()
         return {"success": True, "message": f"Đã trang bị {item_name}"}

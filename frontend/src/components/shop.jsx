@@ -106,7 +106,7 @@ const Shop = ({ user, onUpdateCoins, onAvatarUpdated }) => {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          user_id: currentUserId,
+          user_id: String(currentUserId),
           item_id: item.item_id
         })
       });

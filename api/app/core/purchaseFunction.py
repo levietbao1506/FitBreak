@@ -13,39 +13,32 @@ def get_item_category(item_name: str) -> str:
     return "weapon"
 
 
-async def purchase_item(user_id: str, item_id: int, token):
-    client = token.client
+async def purchase_item(user_id: str, item_id: str | int, token):
+    try:
+        item_res = token.client.table("item").select("*").eq("item_id", item_id).execute()
+        if not item_res.data:
+            return {"success": False, "message": "Vật phẩm không tồn tại!"}
+        
+        item_data = item_res.data[0]
+        item_price = item_data.get("price", 0)
 
-    item_res = client.table("item").select("*").eq("item_id", item_id).single().execute()
-    item = item_res.data
-    if not item:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vật phẩm không tồn tại")
+        stats_res = token.client.table("stats").select("coins").eq("user_id", user_id).execute()
+        if not stats_res.data:
+            return {"success": False, "message": "Không tìm thấy dữ liệu stats của người dùng!"}
+        
+        current_coins = stats_res.data[0].get("coins", 0)
 
-    price = item.get("price", 0)
+        if current_coins < item_price:
+            return {"success": False, "message": "Bạn không đủ Coins!"}
 
-    stats_res = client.table("stats").select("coins").eq("id", user_id).single().execute()
-    stats = stats_res.data
-    if not stats:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy dữ liệu người chơi")
+        new_coins = current_coins - item_price
+        token.client.table("stats").update({"coins": new_coins}).eq("user_id", user_id).execute()
 
-    current_coins = stats.get("coins", 0)
-    if current_coins < price:
-        return {"success": False, "message": "Không đủ Coin để mua vật phẩm này"}
-
-    remaining_coin = current_coins - price
-
-    client.table("stats").update({"coins": remaining_coin}).eq("id", user_id).execute()
-
-    category = get_item_category(item.get("name"))
-    client.table("user").upsert({
-        "user_id": user_id,
-        category: item.get("name")
-    }).execute()
-
-    return {
-        "success": True,
-        "message": f"Mua {item.get('name')} thành công",
-        "remaining_coin": remaining_coin,
-        "equipped_category": category,
-        "equipped_item": item.get("name")
-    }
+        return {
+            "success": True,
+            "message": "Mua hàng thành công!",
+            "remaining_coin": new_coins
+        }
+    except Exception as e:
+        print(f"Lỗi trong purchase_item: {e}")
+        return {"success": False, "message": f"Lỗi hệ thống: {str(e)}"}
