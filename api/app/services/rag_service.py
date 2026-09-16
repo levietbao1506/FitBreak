@@ -29,6 +29,10 @@ def get_user_value(user_information: dict, field: str, default=None):
       return getattr(user_information, field, default)
 
 
+def _normalize_diet_key(value) -> str:
+    return re.sub(r"[\s_\-]+", "", str(value).strip().lower())
+
+
 def filter_foods(df: pd.DataFrame, user_diet: str, user_allergens) -> pd.DataFrame:
       if isinstance(user_allergens, str):
             user_allergens = [
@@ -50,13 +54,14 @@ def filter_foods(df: pd.DataFrame, user_diet: str, user_allergens) -> pd.DataFra
 
       # 2. Lọc chế độ ăn
       if user_diet:
-            normalized_diet = str(user_diet).strip().lower()
-            valid_df = valid_df[
-                  valid_df["diet_type"].apply(
-                  lambda diets: normalized_diet
-                  in {diet.strip().lower() for diet in str(diets).split(";")}
-                  )
-            ]
+        norm_user_diet = _normalize_diet_key(user_diet)
+        valid_df = valid_df[
+            valid_df["diet_type"].apply(
+                lambda diets: norm_user_diet in {
+                    _normalize_diet_key(d) for d in str(diets).split(";")
+                }
+            )
+        ]
 
       return valid_df
 
@@ -140,13 +145,12 @@ def validate_user_information(user_information: dict) -> None:
                   raise InvalidUserInformationError(f"{field} phải là số không âm")
 
 
-def format_meal_summary(response: str, df_pool: pd.DataFrame, user_information: dict) -> str:
+def format_meal_summary(response: str, df_pool: pd.DataFrame, user_information: dict) -> dict:
       meal_plan = parse_llm_meal_response(response)
 
       # 1. Bữa sáng
       bf_name_llm = meal_plan.meals.breakfast.dish_name
       bf_info = get_dish_info(bf_name_llm, df_pool)
-      bf_name = bf_info["real_name"]
 
       # 2. Bữa trưa
       lu = meal_plan.meals.lunch
@@ -154,7 +158,6 @@ def format_meal_summary(response: str, df_pool: pd.DataFrame, user_information: 
       lu_rice_cal = (lu.rice_grams / 100) * RICE_NUTRIENTS_PER_100G["calories"]
       lu_rice_pro = (lu.rice_grams / 100) * RICE_NUTRIENTS_PER_100G["protein"]
       lu_rice_cost = (lu.rice_grams / 100) * RICE_NUTRIENTS_PER_100G["price"]
-
       lu_total_cal = lu_main["calories"] + lu_rice_cal
       lu_total_pro = lu_main["protein"] + lu_rice_pro
       lu_total_cost = lu_main["price"] + lu_rice_cost
@@ -165,7 +168,6 @@ def format_meal_summary(response: str, df_pool: pd.DataFrame, user_information: 
       dn_rice_cal = (dn.rice_grams / 100) * RICE_NUTRIENTS_PER_100G["calories"]
       dn_rice_pro = (dn.rice_grams / 100) * RICE_NUTRIENTS_PER_100G["protein"]
       dn_rice_cost = (dn.rice_grams / 100) * RICE_NUTRIENTS_PER_100G["price"]
-
       dn_total_cal = dn_main["calories"] + dn_rice_cal
       dn_total_pro = dn_main["protein"] + dn_rice_pro
       dn_total_cost = dn_main["price"] + dn_rice_cost
@@ -175,26 +177,49 @@ def format_meal_summary(response: str, df_pool: pd.DataFrame, user_information: 
       total_pro = bf_info["protein"] + lu_total_pro + dn_total_pro
       total_cost = bf_info["price"] + lu_total_cost + dn_total_cost
 
-      target_cal = get_user_value(user_information, "calories_need")
-      target_pro = get_user_value(user_information, "protein_need")
-      budget = get_user_value(user_information, "daily_budget")
-
-      # Không ném lỗi ngân sách gắt gao quá để tránh sập API
-      # Vẫn hiển thị chi phí thực tế cho user xem
-      
-      return (
-            f"Bữa sáng: {bf_name} ({bf_info['calories']} kcal / {bf_info['protein']}g protein / {bf_info['price']:,.0f}đ)\n"
-            f"Nguyên liệu: {bf_info['ingredients']}\n\n"
-            f"Bữa trưa: {lu_main['real_name']} + {lu.rice_grams}g cơm ({lu_total_cal:.0f} kcal / {lu_total_pro:.1f}g protein / {lu_total_cost:,.0f}đ)\n"
-            f"Nguyên liệu: {lu_main['ingredients']}\n\n"
-            f"Bữa tối: {dn_main['real_name']} + {dn.rice_grams}g cơm ({dn_total_cal:.0f} kcal / {dn_total_pro:.1f}g protein / {dn_total_cost:,.0f}đ)\n"
-            f"Nguyên liệu: {dn_main['ingredients']}\n\n"
-            f"Tổng kết ngày:\n"
-            f"    Tổng Calo: {total_cal:.0f} / {target_cal} kcal\n"
-            f"    Tổng Protein: {total_pro:.1f} / {target_pro} g\n"
-            f"    Tổng Chi phí: {total_cost:,.0f} / {budget:,.0f} đ"
-      )
-#####
+      return {
+            "total_calories": round(total_cal),
+            "total_protein": round(total_pro, 1),
+            "total_cost": round(total_cost),
+            "meals": [
+                  {
+                        "type": "Bữa sáng",
+                        "time": "07:00",
+                        "name": bf_info["real_name"],
+                        "desc": "",
+                        "kcal": round(bf_info["calories"]),
+                        "cost": round(bf_info["price"]),
+                        "protein": round(bf_info["protein"], 1),
+                        "carbs": 0,
+                        "fat": 0,
+                        "ingredients": bf_info["ingredients"],
+                  },
+                  {
+                        "type": "Bữa trưa",
+                        "time": "12:00",
+                        "name": f'{lu_main["real_name"]} + {lu.rice_grams}g cơm',
+                        "desc": "",
+                        "kcal": round(lu_total_cal),
+                        "cost": round(lu_total_cost),
+                        "protein": round(lu_total_pro, 1),
+                        "carbs": 0,
+                        "fat": 0,
+                        "ingredients": lu_main["ingredients"],
+                  },
+                  {
+                        "type": "Bữa tối",
+                        "time": "19:00",
+                        "name": f'{dn_main["real_name"]} + {dn.rice_grams}g cơm',
+                        "desc": "",
+                        "kcal": round(dn_total_cal),
+                        "cost": round(dn_total_cost),
+                        "protein": round(dn_total_pro, 1),
+                        "carbs": 0,
+                        "fat": 0,
+                        "ingredients": dn_main["ingredients"],
+                  },
+            ],
+      }
 
 # MAIN RAG #
 async def process_rag_pipeline(user_information: dict) -> str:
