@@ -24,18 +24,19 @@ async def food_suggest(req: FoodSuggestRequest):
         user_info = req.model_dump()
         result = await process_rag_pipeline(user_info)
         return FoodSuggestResponse(success=True, result=result)
-
-    except AIModelOfflineException as e:
-        raise HTTPException(status_code=503, detail=f"Ollama offline: {e}")
-    except ModelNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except InvalidUserInformationError as e:
-        raise HTTPException(status_code=422, detail=str(e))
-    except NoMatchingFoodsError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except RequestTimeoutError as e:
-        raise HTTPException(status_code=504, detail=str(e))
-    except InvalidResponseError as e:
-        raise HTTPException(status_code=502, detail=f"LLM trả về không hợp lệ: {e}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Lỗi không xác định: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+    # except AIModelOfflineException as e:
+    #     raise HTTPException(status_code=503, detail=f"Ollama offline: {e}")
+    # except ModelNotFoundError as e:
+    #     raise HTTPException(status_code=404, detail=str(e))
+    # except InvalidUserInformationError as e:
+    #     raise HTTPException(status_code=422, detail=str(e))
+    # except NoMatchingFoodsError as e:
+    #     raise HTTPException(status_code=404, detail=str(e))
+    # except RequestTimeoutError as e:
+    #     raise HTTPException(status_code=504, detail=str(e))
+    # except InvalidResponseError as e:
+    #     raise HTTPException(status_code=502, detail=f"LLM trả về không hợp lệ: {e}")
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=f"Lỗi không xác định: {e}")

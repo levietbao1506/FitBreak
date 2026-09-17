@@ -1,7 +1,8 @@
 from pydantic import BaseModel
+from typing import Dict, Any
 from typing import Optional
 
 class FoodSuggestResponse(BaseModel):
     success: bool
-    result: Optional[str] = None
+    result: Dict[str, Any]
     error: Optional[str] = None
