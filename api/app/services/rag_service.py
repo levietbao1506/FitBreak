@@ -20,7 +20,13 @@ DF_FOODS = pd.read_csv(DATA_PATH)
 DF_FOODS["allergens"] = DF_FOODS["allergens"].fillna("")
 
 # Dùng cơm trắng 100g làm chuẩn tính toán calo/protein/giá
-RICE_NUTRIENTS_PER_100G = {"calories": 130, "protein": 2.7, "price": 2000}
+RICE_NUTRIENTS_PER_100G = {
+      "calories": 130,
+      "protein": 2.7,
+      "carbs": 28,
+      "fat": 0.3,
+      "price": 2000,
+}
 
 
 def get_user_value(user_information: dict, field: str, default=None):
@@ -74,15 +80,12 @@ def normalize_text(text: str) -> str:
 def get_dish_info(dish_name: str, df: pd.DataFrame) -> dict:
       """Helper tra cứu thông tin dinh dưỡng an toàn từ tên món."""
       norm_target = normalize_text(dish_name)
-      
-      # 1. Khớp chính xác 100% (sau khi chuẩn hóa Unicode & lowercase)
+
       matched = df[df["name"].apply(normalize_text) == norm_target]
-      
-      # 2. Nếu không khớp chính xác, thử tìm kiếm chuỗi con (fallback)
+
       if matched.empty:
             matched = df[df["name"].apply(normalize_text).str.contains(norm_target, regex=False)]
-            
-      # 3. Nếu vẫn không có, lấy món đầu tiên của danh sách để tránh crash (chống hallucination mạnh)
+
       if matched.empty and not df.empty:
             matched = df.head(1)
             
@@ -92,6 +95,8 @@ def get_dish_info(dish_name: str, df: pd.DataFrame) -> dict:
             return {
                   "calories": float(row.get("calories", 0)),
                   "protein": float(row.get("protein_g", 0)),
+                  "carbs": float(row.get("carbs_g", 0)),
+                  "fat": float(row.get("fat_g", 0)), 
                   "price": float(row.get("cost_vnd", 0)),
                   "ingredients": str(ingredients_val) if pd.notna(ingredients_val) else row["name"],
                   "real_name": row["name"]
@@ -157,9 +162,14 @@ def format_meal_summary(response: str, df_pool: pd.DataFrame, user_information: 
       lu_main = get_dish_info(lu.main_dish, df_pool)
       lu_rice_cal = (lu.rice_grams / 100) * RICE_NUTRIENTS_PER_100G["calories"]
       lu_rice_pro = (lu.rice_grams / 100) * RICE_NUTRIENTS_PER_100G["protein"]
+      lu_rice_carb = (lu.rice_grams / 100) * RICE_NUTRIENTS_PER_100G["carbs"]
+      lu_rice_fat = (lu.rice_grams / 100) * RICE_NUTRIENTS_PER_100G["fat"]
       lu_rice_cost = (lu.rice_grams / 100) * RICE_NUTRIENTS_PER_100G["price"]
+
       lu_total_cal = lu_main["calories"] + lu_rice_cal
       lu_total_pro = lu_main["protein"] + lu_rice_pro
+      lu_total_carb = lu_main["carbs"] + lu_rice_carb
+      lu_total_fat = lu_main["fat"] + lu_rice_fat
       lu_total_cost = lu_main["price"] + lu_rice_cost
 
       # 3. Bữa tối
@@ -167,19 +177,28 @@ def format_meal_summary(response: str, df_pool: pd.DataFrame, user_information: 
       dn_main = get_dish_info(dn.main_dish, df_pool)
       dn_rice_cal = (dn.rice_grams / 100) * RICE_NUTRIENTS_PER_100G["calories"]
       dn_rice_pro = (dn.rice_grams / 100) * RICE_NUTRIENTS_PER_100G["protein"]
+      dn_rice_carb = (dn.rice_grams / 100) * RICE_NUTRIENTS_PER_100G["carbs"]
+      dn_rice_fat = (dn.rice_grams / 100) * RICE_NUTRIENTS_PER_100G["fat"]
       dn_rice_cost = (dn.rice_grams / 100) * RICE_NUTRIENTS_PER_100G["price"]
+
       dn_total_cal = dn_main["calories"] + dn_rice_cal
       dn_total_pro = dn_main["protein"] + dn_rice_pro
+      dn_total_carb = dn_main["carbs"] + dn_rice_carb
+      dn_total_fat = dn_main["fat"] + dn_rice_fat
       dn_total_cost = dn_main["price"] + dn_rice_cost
 
       # Tổng kết
       total_cal = bf_info["calories"] + lu_total_cal + dn_total_cal
       total_pro = bf_info["protein"] + lu_total_pro + dn_total_pro
+      total_carb = bf_info["carbs"] + lu_total_carb + dn_total_carb
+      total_fat = bf_info["fat"] + lu_total_fat + dn_total_fat
       total_cost = bf_info["price"] + lu_total_cost + dn_total_cost
 
       return {
             "total_calories": round(total_cal),
             "total_protein": round(total_pro, 1),
+            "total_carbs": round(total_carb, 1),
+            "total_fat": round(total_fat, 1),
             "total_cost": round(total_cost),
             "meals": [
                   {
@@ -190,8 +209,8 @@ def format_meal_summary(response: str, df_pool: pd.DataFrame, user_information: 
                         "kcal": round(bf_info["calories"]),
                         "cost": round(bf_info["price"]),
                         "protein": round(bf_info["protein"], 1),
-                        "carbs": 0,
-                        "fat": 0,
+                        "carbs": round(bf_info["carbs"], 1),
+                        "fat": round(bf_info["fat"], 1),
                         "ingredients": bf_info["ingredients"],
                   },
                   {
@@ -202,8 +221,8 @@ def format_meal_summary(response: str, df_pool: pd.DataFrame, user_information: 
                         "kcal": round(lu_total_cal),
                         "cost": round(lu_total_cost),
                         "protein": round(lu_total_pro, 1),
-                        "carbs": 0,
-                        "fat": 0,
+                        "carbs": round(lu_total_carb, 1),
+                        "fat": round(lu_total_fat, 1),
                         "ingredients": lu_main["ingredients"],
                   },
                   {
@@ -214,8 +233,8 @@ def format_meal_summary(response: str, df_pool: pd.DataFrame, user_information: 
                         "kcal": round(dn_total_cal),
                         "cost": round(dn_total_cost),
                         "protein": round(dn_total_pro, 1),
-                        "carbs": 0,
-                        "fat": 0,
+                        "carbs": round(dn_total_carb, 1),
+                        "fat": round(dn_total_fat, 1),
                         "ingredients": dn_main["ingredients"],
                   },
             ],
