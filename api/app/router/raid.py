@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from app.schemas.updateBossHealth import updateBossHealth
 from app.schemas.defeatBoss import defeatBoss
 from app.core.token_authorization import tokenAuthorization, token_authorization
+from app.services.raid_service import apply_boss_damage, advance_to_next_boss
 
 router = APIRouter()
 
@@ -55,22 +56,10 @@ async def get_raid_boss(team_name: str, token: tokenAuthorization = Depends(toke
 async def updateBossHealth(data: updateBossHealth,
                            token: tokenAuthorization = Depends(token_authorization)):
     try:
-        response = token.client.table("raid").select("*").eq("team", data.team).single().execute()
-        stat = response.data
-        if not stat:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Raid team not found")
-            
-        old_boss_health = stat["health"]
-        new_boss_health = max(0, old_boss_health - data.damage)
-
-        token.client.table("raid").update({
-            "health": new_boss_health
-        }).eq("team", data.team).execute()
-
-        return {
-            "message": "Update boss health success",
-            "current_health": new_boss_health
-        }
+        result = apply_boss_damage(token.client, data.team, data.damage)
+        return {"message": "Update boss health success", **result}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
@@ -78,52 +67,13 @@ async def updateBossHealth(data: updateBossHealth,
 async def defeatBoss(data: defeatBoss,
                      token: tokenAuthorization = Depends(token_authorization)):
     try:
-        response = token.client.table("raid").select("*").eq("team", data.team).single().execute()
-        stat = response.data
-        if not stat:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Raid team not found")
-
-        current_boss_id = stat.get("boss_id", 1)
-
-        boss_res = token.client.table("boss").select("*").eq("id", current_boss_id).single().execute()
-        current_boss_stat = boss_res.data
-        reward_coins = current_boss_stat.get("reward_coins", 0) if current_boss_stat else stat.get("reward_coins", 0)
-
-        if reward_coins > 0:
-            team_users_res = token.client.table("stats").select("id, coins").eq("team", data.team).execute()
-            team_users = team_users_res.data or []
-
-            for user in team_users:
-                current_coins = user.get("coins") or 0
-                updated_coins = current_coins + reward_coins
-                
-                token.client.table("stats").update({
-                    "coins": updated_coins
-                }).eq("id", user["id"]).execute()
-
-        next_boss_res = token.client.table("boss").select("*").gt("id", current_boss_id).order("id", desc=False).limit(1).execute()
-        
-        if not next_boss_res.data:
-            next_boss_res = token.client.table("boss").select("*").order("id", desc=False).limit(1).execute()
-
-        next_boss_stat = next_boss_res.data[0]
-
-        token.client.table("raid").update({
-            "boss_id": next_boss_stat["id"],
-            "boss_name": next_boss_stat["name"],
-            "health": next_boss_stat["health"],
-            "reward_coins": next_boss_stat["reward_coins"]
-        }).eq("team", data.team).execute()
-
+        result = advance_to_next_boss(token.client, data.team)
+        reward = result["reward_coins"]
         return {
-            "message": f"Boss defeated! All team members received {reward_coins} coins.",
-            "next_boss": {
-                "id": next_boss_stat["id"],
-                "name": next_boss_stat["name"],
-                "health": next_boss_stat["health"],
-                "reward_coins": next_boss_stat["reward_coins"]
-            }
+            "message": f"Boss defeated! All team members received {reward} coins.",
+            "next_boss": result["next_boss"]
         }
-
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

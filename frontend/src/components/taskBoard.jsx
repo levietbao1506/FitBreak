@@ -106,9 +106,9 @@ const TaskBoard = ({ scheduleData, onUpdateCoins, onUpdateSchedule }) => {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          exercise_id: "mini_break_task", // ID giả định cho các bài tập phụ
+          exercise_id: "mini_break_task",
           completed_at: new Date().toISOString(),
-          reward_coins: 2 // Cộng 2 coins
+          reward_coins: 2
         })
       });
 
@@ -117,9 +117,13 @@ const TaskBoard = ({ scheduleData, onUpdateCoins, onUpdateSchedule }) => {
         if (onUpdateCoins) {
           onUpdateCoins(data.new_coins);
         }
-        // Hoàn thành xong thì Reset lại đồng hồ
         setIsBreak(false);
         setTimeLeft(POMODORO_TIME);
+
+        setTodaySchedule(fullSchedule[currentDayKey] || []);
+
+        console.log('%c[TaskBoard] Chuẩn bị dispatch raid:boss-updated với data.boss =', 'color: cyan; font-weight: bold;', data.boss);
+        window.dispatchEvent(new CustomEvent('raid:boss-updated', { detail: data.boss }));
       } else {
         console.error("Lỗi server khi hoàn thành mini task");
       }
@@ -172,6 +176,8 @@ const TaskBoard = ({ scheduleData, onUpdateCoins, onUpdateSchedule }) => {
           }
           
           setTodaySchedule(fullSchedule[currentDayKey] || []);
+
+          window.dispatchEvent(new CustomEvent('raid:boss-updated', { detail: data.boss }));
         }, 300);
       } else {
         setRemovingTasks((prev) => ({ ...prev, [taskId]: false }));
