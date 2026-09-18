@@ -33,6 +33,9 @@ SHOP_ITEM_MAP = {
 
 AVATAR_EQUIP_MAP = SHOP_ITEM_MAP
 
+EQUIP_SLOTS = ["background", "skin", "shirt", "hair", "weapon"]
+
+
 def get_supabase_image_url(client, file_name: str):
     if not file_name:
         return None
@@ -41,6 +44,7 @@ def get_supabase_image_url(client, file_name: str):
     except Exception as e:
         print(f"Lỗi lấy URL ảnh từ Supabase: {e}")
         return None
+
 
 def get_item_category(item_name: str) -> str:
     name_lower = (item_name or "").lower()
@@ -54,9 +58,43 @@ def get_item_category(item_name: str) -> str:
         return "hair"
     return "weapon"
 
+async def update_user_total_damage(user_id: str, token: tokenAuthorization):
+    try:
+        user_res = (
+            token.client.table("user")
+            .select(",".join(EQUIP_SLOTS))
+            .eq("user_id", user_id)
+            .execute()
+        )
+        if not user_res.data:
+            return
+
+        user_data = user_res.data[0]
+        equipped_names = [user_data.get(slot) for slot in EQUIP_SLOTS if user_data.get(slot)]
+
+        total_damage = 0
+
+        if equipped_names:
+            items_res = (
+                token.client.table("item")
+                .select("name, strength")
+                .in_("name", equipped_names)
+                .execute()
+            )
+            total_damage = sum((it.get("strength") or 0) for it in (items_res.data or []))
+
+        token.client.table("stats").update({"damage": total_damage}).eq("user_id", user_id).execute()
+
+        return total_damage
+    except Exception as e:
+        print(f"Lỗi cập nhật damage cho user {user_id}: {e}")
+        return None
+
+
 class EquipRequest(BaseModel):
     user_id: str
-    item_id: Union[int, str]  # Chuẩn hóa kiểu dữ liệu int8 trong DB
+    item_id: Union[int, str]
+
 
 @router.get("/items")
 async def get_all_items(
@@ -92,12 +130,13 @@ async def get_all_items(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.get("/user/equipped-avatar/{user_id}")
 async def get_user_equipped_avatar(user_id: str, token: tokenAuthorization = Depends(token_authorization)):
     try:
         user_res = token.client.table("user").select("*").eq("user_id", user_id).execute()
         user_data = user_res.data[0] if user_res.data else {}
-        
+
         bg_name = user_data.get("background")
         skin_name = user_data.get("skin") or "Orange Skin"
         shirt_name = user_data.get("shirt") or "Blue Shirt"
@@ -121,6 +160,7 @@ async def get_user_equipped_avatar(user_id: str, token: tokenAuthorization = Dep
             "hair": get_supabase_image_url(token.client, "hair_bangs_1_black.png"),
             "weapon": None,
         }
+
 
 @router.post("/purchase")
 async def purchase(request: PurchaseRequest, token: tokenAuthorization = Depends(token_authorization)):
@@ -148,6 +188,10 @@ async def purchase(request: PurchaseRequest, token: tokenAuthorization = Depends
                         category: item_name
                     }).eq("user_id", request.user_id).execute()
 
+                    new_damage = await update_user_total_damage(request.user_id, token)
+                    if isinstance(res, dict):
+                        res["damage"] = new_damage
+
             except Exception as e:
                 print(f"Lỗi cập nhật kho đồ/trang bị: {e}")
 
@@ -155,6 +199,7 @@ async def purchase(request: PurchaseRequest, token: tokenAuthorization = Depends
     except Exception as e:
         print(f"Lỗi mua hàng Backend: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/equip")
 async def equip_item(request: EquipRequest, token: tokenAuthorization = Depends(token_authorization)):
@@ -175,6 +220,13 @@ async def equip_item(request: EquipRequest, token: tokenAuthorization = Depends(
                 raise HTTPException(status_code=400, detail="Bạn chưa sở hữu vật phẩm này!")
 
         token.client.table("user").update({category: item_name}).eq("user_id", request.user_id).execute()
-        return {"success": True, "message": f"Đã trang bị {item_name}"}
+
+        new_damage = await update_user_total_damage(request.user_id, token)
+
+        return {
+            "success": True,
+            "message": f"Đã trang bị {item_name}",
+            "damage": new_damage,
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
