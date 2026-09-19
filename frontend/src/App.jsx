@@ -25,6 +25,19 @@ function App() {
   const handleAvatarUpdated = () => {
     setAvatarVersion((prev) => prev + 1);
   };
+  const getScheduleKey = (u) => (u?.email ? `workoutSchedule_${u.email}` : null);
+
+  const loadScheduleForUser = (u) => {
+    const key = getScheduleKey(u);
+    if (!key) return null;
+    try {
+      const saved = localStorage.getItem(key);
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      console.error("Lỗi parse lịch tập:", e);
+      return null;
+    }
+  };
 
   const fetchUserProfileByEmail = async (email, token) => {
     if (!email || !token) return null;
@@ -76,39 +89,30 @@ function App() {
 
   useEffect(() => {
     const checkUserStatus = async () => {
+      // Xóa key cũ dùng chung cho mọi tài khoản (chỉ là dữ liệu rác)
+      localStorage.removeItem('workoutSchedule');
+
       const savedUser = localStorage.getItem('user');
       const token = localStorage.getItem('token');
-      const savedSchedule = localStorage.getItem('workoutSchedule');
-
-      if (savedSchedule) {
-        try {
-          setWorkoutSchedule(JSON.parse(savedSchedule));
-        } catch (e) {
-          console.error("Lỗi parse lịch tập:", e);
-        }
-      }
 
       if (token && savedUser) {
         const parsedUser = JSON.parse(savedUser);
+
+        // Chỉ load lịch của đúng user này
+        setWorkoutSchedule(loadScheduleForUser(parsedUser));
+
         const [profile, stats] = await Promise.all([
           fetchUserProfileByEmail(parsedUser.email, token),
           fetchUserStats(token)
         ]);
-        
-        const fullUserData = { 
-          ...parsedUser, 
-          ...profile, 
-          ...stats, 
-          hasProfile: !!profile 
-        };
+
+        const fullUserData = { ...parsedUser, ...profile, ...stats, hasProfile: !!profile };
 
         setUser(fullUserData);
         localStorage.setItem('user', JSON.stringify(fullUserData));
         setCurrentScreen('main');
 
-        if (!profile) {
-          setShowCreateProfileModal(true);
-        }
+        if (!profile) setShowCreateProfileModal(true);
       }
     };
 
@@ -120,6 +124,8 @@ function App() {
     const userObj = data?.user;
 
     if (token) localStorage.setItem('token', token);
+
+    setWorkoutSchedule(isSignUp ? null : loadScheduleForUser(userObj));
 
     setCurrentScreen('main');
 
@@ -175,21 +181,35 @@ function App() {
     });
   };
 
+  const handleRefreshStats = async () => {
+    const token = localStorage.getItem('token');
+    const stats = await fetchUserStats(token);
+    if (!stats) return;
+
+    setUser((prevUser) => {
+      const updatedUser = { ...prevUser, ...stats };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      return updatedUser;
+    });
+  };
+
   const handleUpdateSchedule = (newSchedule) => {
     setWorkoutSchedule(newSchedule);
-    localStorage.setItem('workoutSchedule', JSON.stringify(newSchedule));
+    const key = getScheduleKey(user);
+    if (key) localStorage.setItem(key, JSON.stringify(newSchedule));
   };
 
   const handleScheduleGenerated = (newSchedule) => {
-    localStorage.setItem('workoutSchedule', JSON.stringify(newSchedule));
     setWorkoutSchedule(newSchedule);
+    const key = getScheduleKey(user);
+    if (key) localStorage.setItem(key, JSON.stringify(newSchedule));
     setActiveTab('tasks');
   };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    localStorage.removeItem('workoutSchedule');
+    setWorkoutSchedule(null);
     setUser(null);
     setCurrentScreen('login');
   };
@@ -232,6 +252,7 @@ function App() {
               user={user} 
               onUpdateCoins={handleUpdateCoins} 
               onAvatarUpdated={handleAvatarUpdated}
+              onStatsUpdated={handleRefreshStats}
             />
           )}
         </div>

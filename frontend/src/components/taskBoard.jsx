@@ -20,7 +20,7 @@ const TaskBoard = ({ scheduleData, onUpdateCoins, onUpdateSchedule }) => {
   const [removingTasks, setRemovingTasks] = useState({});
 
   // --- State của Đồng hồ Pomodoro ---
-  const POMODORO_TIME = 1;
+  const POMODORO_TIME = 25*60;
   // const POMODORO_TIME = 25 * 60; // 25 phút tính bằng giây
   const [timeLeft, setTimeLeft] = useState(POMODORO_TIME);
   const [isRunning, setIsRunning] = useState(false);
@@ -37,24 +37,11 @@ const TaskBoard = ({ scheduleData, onUpdateCoins, onUpdateSchedule }) => {
 
   // Khởi tạo lịch tập
   useEffect(() => {
-    const currentDayIndex = new Date().getDay();
-    const currentDayKey = daysOfWeekMap[currentDayIndex];
+    const currentDayKey = daysOfWeekMap[new Date().getDay()];
     setTodayName(currentDayKey);
 
-    let schedule = scheduleData;
-    if (!schedule) {
-      const savedSchedule = localStorage.getItem('workoutSchedule');
-      if (savedSchedule) {
-        try {
-          schedule = JSON.parse(savedSchedule);
-        } catch (e) {
-          console.error("Lỗi parse lịch tập:", e);
-        }
-      }
-    }
-
-    if (schedule && schedule[currentDayKey]) {
-      setTodaySchedule(JSON.parse(JSON.stringify(schedule[currentDayKey])));
+    if (scheduleData && scheduleData[currentDayKey]) {
+      setTodaySchedule(JSON.parse(JSON.stringify(scheduleData[currentDayKey])));
     } else {
       setTodaySchedule([]);
     }
@@ -120,7 +107,6 @@ const TaskBoard = ({ scheduleData, onUpdateCoins, onUpdateSchedule }) => {
         setIsBreak(false);
         setTimeLeft(POMODORO_TIME);
 
-        setTodaySchedule(fullSchedule[currentDayKey] || []);
 
         console.log('%c[TaskBoard] Chuẩn bị dispatch raid:boss-updated với data.boss =', 'color: cyan; font-weight: bold;', data.boss);
         window.dispatchEvent(new CustomEvent('raid:boss-updated', { detail: data.boss }));
@@ -171,8 +157,6 @@ const TaskBoard = ({ scheduleData, onUpdateCoins, onUpdateSchedule }) => {
 
           if (onUpdateSchedule) {
             onUpdateSchedule(fullSchedule);
-          } else {
-            localStorage.setItem('workoutSchedule', JSON.stringify(fullSchedule));
           }
           
           setTodaySchedule(fullSchedule[currentDayKey] || []);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import AvatarDisplay from './avatarDisplay';
 import '../style/profileBanner.css';
 
@@ -29,8 +29,12 @@ const ProfileBanner = ({ user, teamName, token: propToken, avatarVersion }) => {
   });
   const [isHit, setIsHit] = useState(false);
 
+  const requestIdRef = useRef(0);
+
   const fetchBossData = useCallback(async () => {
     if (!token || !activeTeam) return;
+    const myRequestId = ++requestIdRef.current;
+
     const headers = {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
@@ -40,14 +44,17 @@ const ProfileBanner = ({ user, teamName, token: propToken, avatarVersion }) => {
         headers,
         cache: 'no-store'
       });
+
+      if (myRequestId !== requestIdRef.current) return;
+
       if (resBoss.ok) {
         const bossData = await resBoss.json();
-        console.log('[fetchBossData] dữ liệu boss mới nhận từ server:', bossData);
+
+        if (myRequestId !== requestIdRef.current) return;
 
         setBoss((prev) => {
           const isSameBoss = prev.boss_id != null && bossData.boss_id === prev.boss_id;
           const isStaleHealth = isSameBoss && bossData.health > prev.health;
-
           return {
             ...bossData,
             health: isStaleHealth ? prev.health : bossData.health

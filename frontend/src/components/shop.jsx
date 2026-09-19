@@ -14,7 +14,7 @@ const CATEGORIES = [
   { id: 'weapon', label: '⚔️ Vũ khí' },
 ];
 
-const Shop = ({ user, onUpdateCoins, onAvatarUpdated }) => {
+const Shop = ({ user, onUpdateCoins, onAvatarUpdated, onStatsUpdated  }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -123,6 +123,7 @@ const Shop = ({ user, onUpdateCoins, onAvatarUpdated }) => {
 
       await fetchShopAndAvatarData();
       if (onAvatarUpdated) onAvatarUpdated();
+      if (onStatsUpdated) await onStatsUpdated(); 
     } catch (err) {
       console.error('Lỗi mua hàng:', err);
       setMessage('Có lỗi xảy ra khi mua hàng!');
@@ -153,6 +154,7 @@ const Shop = ({ user, onUpdateCoins, onAvatarUpdated }) => {
       setMessage(`Đã trang bị thành công: ${item.name}!`);
       await fetchShopAndAvatarData();
       if (onAvatarUpdated) onAvatarUpdated();
+      if (onStatsUpdated) await onStatsUpdated();
     } catch (err) {
       console.error('Lỗi trang bị:', err);
       setMessage('Có lỗi xảy ra khi trang bị!');
