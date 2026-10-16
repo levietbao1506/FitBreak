@@ -1,5 +1,4 @@
-// src/components/TimeSelector.jsx
-import React, { useState } from 'react';
+import { useState, Fragment } from 'react';
 import "../style/timeSelector.css";
 
 const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -91,18 +90,32 @@ const TimeSelector = ({ onScheduleGenerated }) => {
     }
   };
 
+  const selectedCount = selectedSlots.size;
+  const totalMinutes = selectedCount * 30;
+  const totalHours = (totalMinutes / 60).toFixed(1);
+
   return (
     <div className="time-selector-container" onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}>
       <div className="time-selector-header">
-        <h2>Chọn thời gian rảnh trong tuần</h2>
-        
-        <button 
-          className="btn-generate-schedule" 
-          onClick={handleGenerateSchedule}
-          disabled={loading}
-        >
-          {loading ? 'Đang tạo lịch...' : 'Lưu & Tạo Lịch Tập'}
-        </button>
+        <div className="time-header-title-group">
+          <h2>Chọn Thời Gian Rảnh Trong Tuần</h2>
+          <p>Kéo hoặc nhấn vào các ô để chọn khung giờ bạn có thể tập luyện (mỗi ô là 30 phút)</p>
+        </div>
+
+        <div className="time-header-actions">
+          <div className="time-stats-pill">
+            <span>Đã chọn:</span>
+            <b>{selectedCount} ô ({totalHours} giờ)</b>
+          </div>
+
+          <button 
+            className="btn-generate-schedule" 
+            onClick={handleGenerateSchedule}
+            disabled={loading}
+          >
+            {loading ? 'Đang tạo lịch...' : '✨ Lưu & Tạo Lịch Tập'}
+          </button>
+        </div>
 
         {errorMsg && (
           <div className="error-banner">
@@ -112,41 +125,45 @@ const TimeSelector = ({ onScheduleGenerated }) => {
         )}
       </div>
 
-      <div className="time-grid">
-        <div className="grid-header">Time</div>
-        {days.map((day) => (
-          <div key={day} className="grid-header">{day}</div>
-        ))}
+      <div className="time-grid-wrapper">
+        <div className="time-grid">
+          <div className="grid-header time-col-header">Giờ</div>
+          {days.map((day) => (
+            <div key={day} className="grid-header day-col-header">{day}</div>
+          ))}
 
-        <div className="time-label-col">
-          {hours.map((hour) => (
-            <div key={`label-${hour}`} className="time-label">
-              {hour}:00
+          <div className="time-label-col">
+            {hours.map((hour) => (
+              <div key={`label-${hour}`} className="time-label">
+                {hour}:00
+              </div>
+            ))}
+            <div className="time-label time-label-end">21:00</div>
+          </div>
+
+          {days.map((day) => (
+            <div key={`col-${day}`} className="day-col">
+              {hours.map((hour) => (
+                <Fragment key={`slots-${day}-${hour}`}>
+                  <div
+                    className={`time-slot full-hour ${selectedSlots.has(getSlotKey(day, hour, false)) ? 'selected' : ''}`}
+                    onMouseDown={() => handleMouseDown(getSlotKey(day, hour, false))}
+                    onMouseEnter={() => handleMouseEnter(getSlotKey(day, hour, false))}
+                    title={`${day} ${hour}:00 - ${hour}:30`}
+                  ></div>
+                  {hour !== 21 && (
+                    <div
+                      className={`time-slot half-hour ${selectedSlots.has(getSlotKey(day, hour, true)) ? 'selected' : ''}`}
+                      onMouseDown={() => handleMouseDown(getSlotKey(day, hour, true))}
+                      onMouseEnter={() => handleMouseEnter(getSlotKey(day, hour, true))}
+                      title={`${day} ${hour}:30 - ${hour + 1}:00`}
+                    ></div>
+                  )}
+                </Fragment>
+              ))}
             </div>
           ))}
-          <div className="time-label time-label-end">21:00</div>
         </div>
-
-        {days.map((day) => (
-          <div key={`col-${day}`} className="day-col">
-            {hours.map((hour) => (
-              <React.Fragment key={`slots-${day}-${hour}`}>
-                <div
-                  className={`time-slot full-hour ${selectedSlots.has(getSlotKey(day, hour, false)) ? 'selected' : ''}`}
-                  onMouseDown={() => handleMouseDown(getSlotKey(day, hour, false))}
-                  onMouseEnter={() => handleMouseEnter(getSlotKey(day, hour, false))}
-                ></div>
-                {hour !== 21 && (
-                  <div
-                    className={`time-slot half-hour ${selectedSlots.has(getSlotKey(day, hour, true)) ? 'selected' : ''}`}
-                    onMouseDown={() => handleMouseDown(getSlotKey(day, hour, true))}
-                    onMouseEnter={() => handleMouseEnter(getSlotKey(day, hour, true))}
-                  ></div>
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-        ))}
       </div>
     </div>
   );

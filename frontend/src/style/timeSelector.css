@@ -1,60 +1,84 @@
-/* TimeSelector.css */
 .time-selector-container {
-  background-color: #000016;
-  color: white;
-  font-family: Arial, sans-serif;
-  padding: 20px;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  width: 100%;
-  box-sizing: border-box;
   user-select: none;
 }
 
 .time-selector-header {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  margin-bottom: 25px;
-  width: 100%;
-  gap: 12px;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
-.time-selector-header h2 {
+.time-header-title-group h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   color: #ffffff;
-  font-size: 24px;
-  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.time-header-title-group p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
   margin: 0;
 }
 
+.time-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.time-stats-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: #e0f2fe;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  font-size: 0.88rem;
+}
+
+.time-stats-pill b {
+  color: var(--accent-cyan);
+  font-family: var(--font-mono);
+}
+
 .btn-generate-schedule {
-  background: linear-gradient(135deg, #ff4d4d 0%, #dc2626 100%);
+  background: linear-gradient(135deg, var(--accent-purple) 0%, #6d28d9 100%);
   color: #ffffff;
   border: none;
-  padding: 10px 28px;
-  font-size: 15px;
-  font-weight: bold;
-  border-radius: 20px;
+  padding: 12px 28px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  border-radius: var(--radius-full);
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
-  transition: all 0.2s ease-in-out;
+  box-shadow: 0 4px 18px var(--accent-purple-glow);
+  transition: var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.btn-generate-schedule:hover {
+.btn-generate-schedule:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.6);
-  background: linear-gradient(135deg, #ff6666 0%, #ef4444 100%);
+  box-shadow: 0 6px 24px rgba(139, 92, 246, 0.45);
 }
 
-.btn-generate-schedule:active {
+.btn-generate-schedule:active:not(:disabled) {
   transform: translateY(0);
 }
 
 .btn-generate-schedule:disabled {
-  background: #4b5563;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
   box-shadow: none;
   cursor: not-allowed;
 }
@@ -62,64 +86,96 @@
 .error-banner {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background-color: rgba(239, 68, 68, 0.15);
-  border: 1px solid #ef4444;
-  color: #fca5a5;
-  padding: 10px 20px;
-  border-radius: 10px;
-  font-size: 14px;
-  max-width: 500px;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+  gap: 10px;
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  color: #fda4af;
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  max-width: 600px;
 }
 
 .error-icon {
-  font-size: 16px;
+  font-size: 1.1rem;
+}
+
+.time-grid-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 8px;
 }
 
 .time-grid {
   display: grid;
   width: 100%;
-  max-width: 1000px;
-  grid-template-columns: 60px repeat(7, 1fr);
-  gap: 0;
-  border-radius: 8px;
-  background-color: rgb(240, 190, 190);
+  min-width: 700px;
+  max-width: 1100px;
+  margin: 0 auto;
+  grid-template-columns: 70px repeat(7, 1fr);
+  border-radius: var(--radius-xl);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-medium);
   overflow: hidden;
-  margin-bottom: 30px !important;
+  box-shadow: var(--shadow-md);
 }
 
 .grid-header {
   text-align: center;
-  padding: 10px 5px;
-  font-weight: bold;
-  border-bottom: 2px solid black;
-  background-color: #12152b;
+  padding: 14px 8px;
+  font-weight: 800;
+  font-size: 0.88rem;
+  letter-spacing: 0.05em;
+  background: rgba(14, 18, 32, 0.95);
+  color: #ffffff;
+  border-bottom: 1px solid var(--border-medium);
+}
+
+.time-col-header {
+  border-right: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+}
+
+.day-col-header {
+  text-transform: uppercase;
 }
 
 .time-label-col {
   display: flex;
   flex-direction: column;
-  background-color: #000016; 
-  border-right: none; 
+  background: rgba(10, 13, 24, 0.6);
+  border-right: 1px solid var(--border-subtle);
 }
 
 .time-label {
-  height: 40px;
-  padding: 0px 10px 0px 0px; 
-  font-size: 18px; 
-  color: white; 
+  height: 42px;
+  padding-right: 12px;
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-muted);
   display: flex;
-  justify-content: flex-end; 
+  justify-content: flex-end;
   align-items: flex-start;
-  transform: translateY(-10px); 
+  transform: translateY(-8px);
+}
+
+.time-label-end {
+  height: 0 !important;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  padding-right: 12px;
+  transform: translateY(6px);
 }
 
 .day-col {
   display: flex;
   flex-direction: column;
-  border-right: 2px solid black;
+  border-right: 1px solid var(--border-subtle);
+  background: rgba(22, 28, 51, 0.3);
 }
 
 .day-col:last-child {
@@ -127,32 +183,29 @@
 }
 
 .time-slot {
-  height: 20px;
+  height: 21px;
   background-color: transparent;
   cursor: pointer;
-  transition: background-color 0.1s;
+  transition: var(--transition-fast);
 }
 
-.time-slot.half-hour {
-  border-bottom: 2px solid rgb(0, 0, 0);
+.time-slot:hover {
+  background-color: rgba(139, 92, 246, 0.15);
 }
 
 .time-slot.full-hour {
-  border-bottom: 2px dotted rgb(0, 0, 0);
+  border-bottom: 1px dotted rgba(255, 255, 255, 0.08);
+}
+
+.time-slot.half-hour {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .time-slot.selected {
-  background-color: rgb(2, 147, 9);
+  background-color: rgba(16, 185, 129, 0.75);
+  box-shadow: inset 0 0 10px rgba(16, 185, 129, 0.5);
 }
 
-/* FIX: Căn nhích 21:00 lên trên đường kẻ đáy */
-.time-label-end {
-  height: 0 !important;
-  font-size: 18px;
-  color: white;
-  display: flex;
-  justify-content: flex-end;
-  align-items: flex-end;
-  padding-right: 10px;
-  transform: translateY(5px);
+.time-slot.selected:hover {
+  background-color: rgba(16, 185, 129, 0.9);
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import "../style/joinTeam.css";
 
 const JoinTeam = () => {
@@ -86,54 +86,98 @@ const JoinTeam = () => {
 
   return (
     <div className="join-team-wrapper">
-      <form className="join-form" onSubmit={handleJoinTeam}>
-        <input
-          type="email"
-          className="join-input"
-          placeholder="Type player’s email to join team"
-          value={emailInput}
-          onChange={(e) => setEmailInput(e.target.value)}
-        />
-        <button type="submit" className="join-btn" disabled={joining}>
-          {joining ? "..." : "Join"}
-        </button>
-      </form>
+      <div className="join-team-header-section">
+        <div className="join-title-group">
+          <h2>Đội Ngũ Luyện Tập (Team Roster)</h2>
+          <p>Mời đồng đội cùng tham gia Guild để cùng hợp sức đánh Boss và tăng sức mạnh!</p>
+        </div>
+
+        <form className="join-form" onSubmit={handleJoinTeam}>
+          <div className="join-input-box">
+            <span className="join-input-icon">✉️</span>
+            <input
+              type="email"
+              className="join-input"
+              placeholder="Nhập email đồng đội để gia nhập..."
+              value={emailInput}
+              onChange={(e) => setEmailInput(e.target.value)}
+            />
+          </div>
+          <button type="submit" className="join-btn" disabled={joining}>
+            {joining ? "Đang xử lý..." : "Gia nhập Team"}
+          </button>
+        </form>
+      </div>
+
       {loading ? (
-        <div style={{ color: "white" }}>Đang tải dữ liệu...</div>
+        <div className="team-loading-state">
+          <div className="team-spinner"></div>
+          <span>Đang tải thông tin đội ngũ...</span>
+        </div>
       ) : error ? (
-        <div style={{ color: "red" }}>Lỗi: {error}</div>
+        <div className="team-error-state">
+          <span>⚠️ {error}</span>
+        </div>
       ) : teamMembers.length === 0 ? (
-        <div style={{ color: "white" }}>Chưa có thành viên nào trong team.</div>
+        <div className="team-empty-state">
+          <div className="team-empty-icon">👥</div>
+          <h3>Chưa có thành viên nào trong team</h3>
+          <p>Nhập email người chơi ở trên để xây dựng Guild ngay!</p>
+        </div>
       ) : (
         <div className="team-container">
           {teamMembers.map((member, index) => (
             <div key={member.id || index} className="profile-card">
-              <div className="profile-index">
-                {index + 1}
+              <div className="profile-index-badge">
+                #{String(index + 1).padStart(2, '0')}
               </div>
+              
               <div className="profile-info">
-                <div className="profile-column">
-                  <ul>
-                    <li>Name: {member.name}</li>
-                    <li>Age: {member.age}</li>
-                    <li>Gender: {member.gender ? "Nam" : "Nữ"}</li>
-                    <li>Height: {member.height} cm</li>
-                    <li>Weight: {member.weight} kg</li>
-                    <li>Goal: {member.goal}</li>
-                  </ul>
+                <div className="profile-header-meta">
+                  <h4 className="member-name">{member.name || 'Chiến Binh'}</h4>
+                  <span className="member-goal-tag">🎯 {member.goal || 'Tập luyện'}</span>
                 </div>
-                
-                <div className="profile-column">
-                  <ul>
-                    <li>Activity frequency: {member.activity_frequency} lần/tuần</li>
-                    <li>BMI: {member.bmi}</li>
-                    <li>BMR: {member.bmr}</li>
-                    <li>TDEE: {member.tdee}</li>
-                    <li>Protein: {member.protein}g</li>
-                  </ul>
+
+                <div className="profile-details-grid">
+                  <div className="profile-detail-column">
+                    <div className="detail-stat-row">
+                      <span className="detail-stat-label">Tuổi:</span>
+                      <span className="detail-stat-val">{member.age || '--'}</span>
+                    </div>
+                    <div className="detail-stat-row">
+                      <span className="detail-stat-label">Giới tính:</span>
+                      <span className="detail-stat-val">{member.gender ? "Nam" : "Nữ"}</span>
+                    </div>
+                    <div className="detail-stat-row">
+                      <span className="detail-stat-label">Chiều cao:</span>
+                      <span className="detail-stat-val">{member.height} cm</span>
+                    </div>
+                    <div className="detail-stat-row">
+                      <span className="detail-stat-label">Cân nặng:</span>
+                      <span className="detail-stat-val">{member.weight} kg</span>
+                    </div>
+                  </div>
+
+                  <div className="profile-detail-column profile-vitals-column">
+                    <div className="detail-stat-row">
+                      <span className="detail-stat-label">Tần suất:</span>
+                      <span className="detail-stat-val highlight-val">{member.activity_frequency} buổi/tuần</span>
+                    </div>
+                    <div className="detail-stat-row">
+                      <span className="detail-stat-label">Chỉ số BMI:</span>
+                      <span className="detail-stat-val">{member.bmi || '--'}</span>
+                    </div>
+                    <div className="detail-stat-row">
+                      <span className="detail-stat-label">Năng lượng TDEE:</span>
+                      <span className="detail-stat-val">{member.tdee ? `${member.tdee} kcal` : '--'}</span>
+                    </div>
+                    <div className="detail-stat-row">
+                      <span className="detail-stat-label">Protein cần nạp:</span>
+                      <span className="detail-stat-val highlight-protein">{member.protein ? `${member.protein}g` : '--'}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-
             </div>
           ))}
         </div>

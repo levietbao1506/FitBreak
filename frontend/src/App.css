@@ -1,107 +1,151 @@
-/* Reset cơ bản */
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-body { background-color: #2c2b2b; color: #333; }
-
-/* Header */
-.header {
-  display: flex; justify-content: space-between; align-items: center;
-  background-color: #000000; color: white; padding: 10px 20px;
+.app-container {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
-.header-nav { display: flex; gap: 20px; }
-.header-nav a { color: #ccc; text-decoration: none; font-weight: bold; }
-.header-nav a.active { color: white; border-bottom: 2px solid white; padding-bottom: 5px; }
-.header-stats { display: flex; gap: 15px; align-items: center; }
 
-/* Profile Banner */
-.profile-banner {
-  background-color: #151515; 
-  color: white; 
-  padding: 20px 40px; 
-  display: flex; 
-  gap: 20px; 
+.main-content {
+  flex: 1;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+  animation: appFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes appFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
   align-items: center;
   justify-content: space-between;
-}
-.avatar-box { width: 100px; height: 100px; background-color: #fdfdfd; border-radius: 8px; }
-.user-info { flex: 1; }
-.progress-bars { margin-top: 10px; width: 300px;}
-.bar-container { display: flex; align-items: center; gap: 10px; margin-bottom: 5px;}
-.bar { flex: 1; height: 10px; background: #e1da07; border-radius: 5px; overflow: hidden; }
-.bg-red .fill { background: #f04e4e; height: 100%; }
-.bg-yellow .fill { background: #ffc107; height: 100%; }
-.party-promo { text-align: right; }
-.btn-start { background-color: #b33333; color: white; border: none; padding: 8px 16px; border-radius: 4px; margin-top: 10px; cursor: pointer;}
-
-/* Task Board (4 Cột) */
-.main-content { padding: 20px; max-width: 1400px; margin: 0 auto; }
-.task-board {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  padding: 14px 32px;
+  background: rgba(10, 13, 24, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-subtle);
+  transition: var(--transition-normal);
 }
 
-/* Task Column */
-.task-column { background: transparent; }
-.column-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;}
-.column-header h2 { font-size: 1.2rem; display: flex; align-items: center; gap: 8px;}
-.badge { background: #8a63d2; color: white; border-radius: 50%; padding: 2px 8px; font-size: 0.8rem; }
-.add-task-input input {
-  width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px;
-  background-color: #eaeaea; margin-bottom: 10px;
-}
-.task-list { display: flex; flex-direction: column; gap: 10px; }
-
-/* Task Card */
-.task-card {
-  display: flex; align-items: stretch; background: white;
-  border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;
-}
-.task-card.habit { border-left: 5px solid #ffb03a; }
-.task-card.daily, .task-card.todo { border-left: 5px solid #ffb03a; }
-.habit-controls button {
-  background: #ffb03a; border: none; color: white; width: 40px; cursor: pointer; font-size: 1.2rem;
-}
-.checkbox { width: 30px; background: #f4d07b; }
-.task-content { flex: 1; padding: 10px; }
-.sub-text { font-size: 0.8rem; color: #888; }
-.reward-cost { padding: 10px; background: #fff3cd; font-weight: bold; display: flex; align-items: center;}
-
-/* 1. Xóa lề và reset căn giữa mặc định của Vite */
-#root {
-  max-width: 100% !important;
-  width: 100%;
-  padding: 0 !important;
-  margin: 0 !important;
-  text-align: left !important;
-}
-
-/* 2. Sửa lỗi tiêu đề cột bị màu trắng (tàng hình) */
-.column-header h2 { 
-  font-size: 1.2rem; 
-  display: flex; 
-  align-items: center; 
-  gap: 8px;
-  color: #333 !important; /* Ép màu chữ thành xám đậm */
-}
-
-/* 3. Sửa chữ All Active bị dính vào nhau */
-.filters {
+.header-logo {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  background: linear-gradient(135deg, #ffffff 30%, var(--accent-purple) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   display: flex;
-  gap: 15px; /* Tạo khoảng cách giữa các chữ */
-  color: #666;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+
+.header-logo-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  color: var(--accent-purple);
+  -webkit-text-fill-color: var(--accent-purple);
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(22, 28, 51, 0.5);
+  padding: 5px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+}
+
+.header-nav a {
+  position: relative;
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
   font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-/* 4. Ép chữ trong các thẻ Task căn trái */
-.task-content { 
-  flex: 1; 
-  padding: 10px; 
-  text-align: left; /* Đảm bảo chữ luôn căn trái */
+.header-nav a:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
 }
 
-/* 5. Tinh chỉnh lại Banner để phần "Get Started" dạt hẳn sang mép phải */
+.header-nav a.active {
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--accent-purple) 0%, #6d28d9 100%);
+  box-shadow: 0 2px 12px var(--accent-purple-glow);
+}
 
-/* Kéo dãn Header ra sát mép */
-.header {
-  padding: 10px 40px;
+.header-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-coin-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  padding: 7px 14px;
+  border-radius: var(--radius-full);
+  color: #fef08a;
+  font-weight: 700;
+  font-size: 0.92rem;
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.15);
+  transition: var(--transition-fast);
+}
+
+.header-coin-badge:hover {
+  border-color: rgba(245, 158, 11, 0.5);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 1024px) {
+  .header {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .header-nav {
+    order: 3;
+    width: 100%;
+    justify-content: space-around;
+    overflow-x: auto;
+  }
+  .header-nav a {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .main-content {
+    padding: 20px 12px 48px;
+  }
 }

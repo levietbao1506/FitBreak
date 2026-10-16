@@ -1,14 +1,10 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import AvatarDisplay from './avatarDisplay';
 import '../style/profileBanner.css';
 
 const API_BASE_URL = 'http://localhost:8000';
 
 const ProfileBanner = ({ user, teamName, token: propToken, avatarVersion }) => {
-  // DÒNG KIỂM TRA: nếu KHÔNG thấy dòng này trong Console khi mở trang,
-  // nghĩa là trình duyệt đang chạy bundle JS CŨ, chưa nhận code mới.
-  console.log('%c[ProfileBanner] BUILD v4 loaded', 'color: lime; font-weight: bold;');
-
   const name = user?.name || "Player 1";
   const email = user?.email || "player1@gmail.com";
   const damage = user?.damage ?? user?.str ?? 1;
@@ -92,11 +88,8 @@ const ProfileBanner = ({ user, teamName, token: propToken, avatarVersion }) => {
   }, [fetchBossData, fetchAvatarData, avatarVersion]);
 
   useEffect(() => {
-    console.log('[ProfileBanner] Gắn listener raid:boss-updated');
-
     const handleBossUpdated = (event) => {
       const bossResult = event.detail;
-      console.log('%c[raid:boss-updated] NHẬN ĐƯỢC EVENT:', 'color: orange; font-weight: bold;', bossResult);
 
       if (bossResult && bossResult.boss_defeated) {
         const next = bossResult.next_boss;
@@ -112,10 +105,8 @@ const ProfileBanner = ({ user, teamName, token: propToken, avatarVersion }) => {
         }
         fetchBossData();
       } else if (bossResult && typeof bossResult.current_health === "number") {
-        console.log('[raid:boss-updated] Cập nhật health ngay lập tức thành:', bossResult.current_health);
         setBoss((prev) => ({ ...prev, health: bossResult.current_health }));
       } else {
-        console.warn('[raid:boss-updated] bossResult rỗng/không hợp lệ, fallback sang fetchBossData()');
         fetchBossData();
       }
 
@@ -125,7 +116,6 @@ const ProfileBanner = ({ user, teamName, token: propToken, avatarVersion }) => {
 
     window.addEventListener('raid:boss-updated', handleBossUpdated);
     return () => {
-      console.log('[ProfileBanner] Gỡ listener raid:boss-updated (component unmount hoặc deps đổi)');
       window.removeEventListener('raid:boss-updated', handleBossUpdated);
     };
   }, [fetchBossData]);
@@ -134,39 +124,63 @@ const ProfileBanner = ({ user, teamName, token: propToken, avatarVersion }) => {
 
   return (
     <div className="profile-banner">
-      <div className="avatar-box" style={{ width: '150px', height: '150px', flexShrink: 0, borderRadius: '12px', overflow: 'hidden' }}>
-        <AvatarDisplay equippedItems={equippedUrls} />
-      </div>
-
-      <div className="user-info">
-        <h3>{name}</h3>
-        <p>{email}</p>
-        <div className="user-stats-text">
-          <div><span style={{ marginRight: '8px' }}>⚔️</span><span>{damage} DMG</span></div>
-          <div><span style={{ marginRight: '8px' }}>🪙</span><span>{coins} Coins</span></div>
-        </div>
-      </div>
-
-      <div className={`boss-section ${isHit ? 'boss-hit' : ''}`}>
-        <div className="boss-avatar">
-          {boss.image_url ? (
-            <img src={boss.image_url} alt={boss.boss_name} />
-          ) : (
-            <div className="boss-placeholder">👾</div>
-          )}
-        </div>
-
-        <div className="boss-details">
-          <div className="boss-header">
-            <span className="boss-title">Boss: {boss.boss_name}</span>
-            <span className="boss-reward">🪙 +{boss.reward_coins} Coins</span>
+      <div className="profile-banner-inner">
+        <div className="user-profile-group">
+          <div className="avatar-box">
+            <AvatarDisplay equippedItems={equippedUrls} />
+            <div className="avatar-rank-badge">LVL 1</div>
           </div>
 
-          <div className="boss-hp-container">
-            <div className="boss-hp-bar">
-              <div className="boss-hp-fill" style={{ width: `${healthPercentage}%` }}></div>
+          <div className="user-info">
+            <div className="user-name-row">
+              <h3>{name}</h3>
+              <span className="user-team-badge">Team #{activeTeam}</span>
             </div>
-            <span className="boss-hp-text">{boss.health} / {boss.max_health} HP</span>
+            <p className="user-email-text">{email}</p>
+            <div className="user-stats-text">
+              <div className="stat-pill stat-damage">
+                <span className="stat-icon">⚔️</span>
+                <span className="stat-num">{damage}</span>
+                <span className="stat-label">DMG</span>
+              </div>
+              <div className="stat-pill stat-coins">
+                <span className="stat-icon">🪙</span>
+                <span className="stat-num">{coins.toLocaleString()}</span>
+                <span className="stat-label">Coins</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className={`boss-section ${isHit ? 'boss-hit' : ''}`}>
+          <div className="boss-tag-banner">
+            <span className="boss-tag-dot"></span>
+            <span>ACTIVE RAID BOSS</span>
+          </div>
+
+          <div className="boss-details">
+            <div className="boss-header">
+              <span className="boss-title">{boss.boss_name}</span>
+              <span className="boss-reward">🪙 +{boss.reward_coins} Coins</span>
+            </div>
+
+            <div className="boss-hp-container">
+              <div className="boss-hp-bar">
+                <div className="boss-hp-fill" style={{ width: `${healthPercentage}%` }}></div>
+              </div>
+              <div className="boss-hp-meta">
+                <span className="boss-hp-percent">{Math.round(healthPercentage)}%</span>
+                <span className="boss-hp-text">{boss.health} / {boss.max_health} HP</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="boss-avatar">
+            {boss.image_url ? (
+              <img src={boss.image_url} alt={boss.boss_name} />
+            ) : (
+              <div className="boss-placeholder">👾</div>
+            )}
           </div>
         </div>
       </div>
