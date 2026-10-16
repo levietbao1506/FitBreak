@@ -1,4 +1,3 @@
-import React from 'react';
 import '../style/avatarDisplay.css';
 
 const AvatarDisplay = ({ equippedItems = {} }) => {
@@ -9,7 +8,6 @@ const AvatarDisplay = ({ equippedItems = {} }) => {
 
   return (
     <div className="avatar-container">
-      {/* 1. Background */}
       {equippedItems.background && (
         <img
           src={equippedItems.background}
@@ -19,7 +17,6 @@ const AvatarDisplay = ({ equippedItems = {} }) => {
         />
       )}
 
-      {/* 2. Skin (Thân & Da) */}
       {equippedItems.skin && (
         <img
           src={equippedItems.skin}
@@ -29,7 +26,6 @@ const AvatarDisplay = ({ equippedItems = {} }) => {
         />
       )}
 
-      {/* 3. Head (Khuôn mặt) - Nếu có */}
       {equippedItems.head && (
         <img
           src={equippedItems.head}
@@ -39,7 +35,6 @@ const AvatarDisplay = ({ equippedItems = {} }) => {
         />
       )}
 
-      {/* 4. Shirt (Áo) */}
       {equippedItems.shirt && (
         <img
           src={equippedItems.shirt}
@@ -49,7 +44,6 @@ const AvatarDisplay = ({ equippedItems = {} }) => {
         />
       )}
 
-      {/* 5. Hair (Tóc) */}
       {equippedItems.hair && (
         <img
           src={equippedItems.hair}
@@ -59,7 +53,6 @@ const AvatarDisplay = ({ equippedItems = {} }) => {
         />
       )}
 
-      {/* 6. Weapon (Vũ khí) */}
       {equippedItems.weapon && (
         <img
           src={equippedItems.weapon}

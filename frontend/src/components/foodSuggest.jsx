@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import "../style/foodSuggestForm.css";
 import "../style/foodSuggestResult.css";
 
@@ -19,7 +19,6 @@ const FoodSuggest = () => {
     const [fetchingProfile, setFetchingProfile] = useState(true);
     const [resultData, setResultData] = useState(null);
 
-    // Fetch dữ liệu profiles của user đăng nhập
     useEffect(() => {
         const fetchUserProfile = async () => {
             try {
@@ -34,7 +33,6 @@ const FoodSuggest = () => {
                     const data = await response.json();
                     setProfile(data);
                     
-                    // Tự động gán aim ban đầu từ cột goal trong database nếu có
                     if (data.goal) {
                         const goalLower = data.goal.toLowerCase();
                         let mappedGoal = 'Cân bằng';
@@ -113,7 +111,6 @@ const FoodSuggest = () => {
             .map(item => ALLERGEN_MAP[item] || item)
             .join(';');
 
-        // Đưa tdee -> calories_need và protein -> protein_need từ profile vào payload
         const payload = {
             ...formData,
             diet_type: DIET_MAP[formData.diet_type] || formData.diet_type,
@@ -161,10 +158,12 @@ const FoodSuggest = () => {
             <div className="food-header-subtitle">Thực đơn cá nhân hóa theo mục tiêu & ngân sách của bạn</div>
         </header>
 
-        {/* Hiển thị thông tin chỉ số đã đồng bộ từ database */}
         {profile && (
-            <div style={{ background: '#f0f4f8', padding: '10px 15px', borderRadius: '8px', marginBottom: '15px', fontSize: '14px', color: '#333' }}>
-                💡 Chỉ số dinh dưỡng từ hồ sơ: <strong>{profile.tdee} kcal/ngày</strong> | <strong>{profile.protein}g protein/ngày</strong>
+            <div className="food-profile-sync-badge">
+                <span className="food-sync-icon">💡</span>
+                <span className="food-sync-text">
+                    Chỉ số từ hồ sơ: <strong>{profile.tdee} kcal/ngày</strong> • <strong>{profile.protein}g protein/ngày</strong>
+                </span>
             </div>
         )}
 
@@ -252,7 +251,7 @@ const FoodSuggest = () => {
                 </div>
 
                 <button type="submit" className="food-btn-submit" disabled={!formData.daily_budget || fetchingProfile}>
-                    <span>✨</span> Gợi ý thực đơn
+                    <span>✨</span> Gợi ý thực đơn AI
                 </button>
             </form>
         )}
@@ -260,8 +259,8 @@ const FoodSuggest = () => {
         {loading && (
             <div className="food-loading-wrapper food-visible food-fade-in">
                 <div className="food-loading-spinner"></div>
-                <div className="food-loading-text">AI đang phân tích...</div>
-                <div className="food-loading-subtext">Đang tạo thực đơn phù hợp cho bạn</div>
+                <div className="food-loading-text">AI đang phân tích khẩu phần...</div>
+                <div className="food-loading-subtext">Đang tính toán dưỡng chất và tối ưu ngân sách phù hợp</div>
             </div>
         )}
 
@@ -277,15 +276,17 @@ const FoodSuggest = () => {
         {resultData && !loading && (
             <div className="food-result-wrapper food-visible food-fade-in">
                 <div className="food-result-summary">
-                    <div className="food-result-summary-title">
-                        <span>📋</span> Thực đơn của bạn
-                    </div>
-                    <div className="food-result-tags">
-                        {formData.aim && <span className="food-result-tag food-result-tag--goal">{formData.aim}</span>}
-                        {formData.diet_type && <span className="food-result-tag food-result-tag--diet">{formData.diet_type}</span>}
-                        <span className="food-result-tag food-result-tag--budget">
-                            {Number(formData.daily_budget || 0).toLocaleString()}đ/ngày
-                        </span>
+                    <div className="food-result-summary-header">
+                        <div className="food-result-summary-title">
+                            <span>📋</span> Thực đơn AI gợi ý
+                        </div>
+                        <div className="food-result-tags">
+                            {formData.aim && <span className="food-result-tag food-result-tag--goal">{formData.aim}</span>}
+                            {formData.diet_type && <span className="food-result-tag food-result-tag--diet">{formData.diet_type}</span>}
+                            <span className="food-result-tag food-result-tag--budget">
+                                {Number(formData.daily_budget || 0).toLocaleString()}đ / ngày
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -334,17 +335,17 @@ const FoodSuggest = () => {
                                     <div className="food-nutrition-item">
                                         <div className="food-nutrition-value">{meal.protein || 0}g</div>
                                         <div className="food-nutrition-label">PROTEIN</div>
-                                        <div className="food-nutrition-bar"><div className="food-nutrition-fill food-nutrition-fill--protein" style={{width: `${((meal.protein || 0)/50)*100}%`}}></div></div>
+                                        <div className="food-nutrition-bar"><div className="food-nutrition-fill food-nutrition-fill--protein" style={{width: `${Math.min(100, ((meal.protein || 0)/50)*100)}%`}}></div></div>
                                     </div>
                                     <div className="food-nutrition-item">
                                         <div className="food-nutrition-value">{meal.carbs || 0}g</div>
                                         <div className="food-nutrition-label">CARBS</div>
-                                        <div className="food-nutrition-bar"><div className="food-nutrition-fill food-nutrition-fill--carb" style={{width: `${((meal.carbs || 0)/50)*100}%`}}></div></div>
+                                        <div className="food-nutrition-bar"><div className="food-nutrition-fill food-nutrition-fill--carb" style={{width: `${Math.min(100, ((meal.carbs || 0)/50)*100)}%`}}></div></div>
                                     </div>
                                     <div className="food-nutrition-item">
                                         <div className="food-nutrition-value">{meal.fat || 0}g</div>
                                         <div className="food-nutrition-label">FAT</div>
-                                        <div className="food-nutrition-bar"><div className="food-nutrition-fill food-nutrition-fill--fat" style={{width: `${((meal.fat || 0)/50)*100}%`}}></div></div>
+                                        <div className="food-nutrition-bar"><div className="food-nutrition-fill food-nutrition-fill--fat" style={{width: `${Math.min(100, ((meal.fat || 0)/50)*100)}%`}}></div></div>
                                     </div>
                                 </div>
 
@@ -361,7 +362,7 @@ const FoodSuggest = () => {
                         <span>🔄</span> Đổi thực đơn khác
                     </button>
                     <button className="food-btn-reset" onClick={handleReset}>
-                        <span>↩️</span> Làm lại quiz
+                        <span>↩️</span> Làm lại câu hỏi
                     </button>
                 </div>
             </div>

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import '../style/createProfile.css';
 
-const CreateProfile = ({ user, onCreateProfileSuccess}) => {
+const CreateProfile = ({ user, onCreateProfileSuccess }) => {
   const [formData, setFormData] = useState({
     name: user?.username || '',
     age: '',
@@ -35,7 +35,7 @@ const CreateProfile = ({ user, onCreateProfileSuccess}) => {
       height: Number(formData.height),
       weight: Number(formData.weight),
       activity_frequency: Number(formData.activity_frequency)
-    }
+    };
 
     try {
       const response = await fetch('http://localhost:8000/profiles/create-profile', {
@@ -69,13 +69,13 @@ const CreateProfile = ({ user, onCreateProfileSuccess}) => {
   return (
     <div className="create-profile-modal-overlay">
       <div className="create-profile-profile-modal">
-        <div className={"create-profile-profile-modal-header"}>
+        <div className="create-profile-profile-modal-header">
           <div className="create-profile-avatar-frame">
             <span className="create-profile-avatar-emoji">🐉</span>
           </div>
           <div className="create-profile-user-stats-summary">
-            <h3 className="create-profile-user-display-name"> Anonymous </h3>
-            <p className="create-profile-user-subtext">@{user?.username || 'user'} • Level 1 Warrior</p>
+            <h3 className="create-profile-user-display-name">{user?.username || 'Warrior One'}</h3>
+            <p className="create-profile-user-subtext">@{user?.email || 'user'} • Level 1 Warrior</p>
 
             <div className="create-profile-stat-row">
               <span className="create-profile-stat-icon">❤️</span>
@@ -88,7 +88,7 @@ const CreateProfile = ({ user, onCreateProfileSuccess}) => {
             <div className="create-profile-stat-row">
               <span className="create-profile-stat-icon">⭐</span>
               <div className="create-profile-stat-bar-bg">
-                <div className="create-profile-stat-bar-fill xp-bar" style={{ width: '0%' }}></div>
+                <div className="create-profile-stat-bar-fill xp-bar" style={{ width: '10%' }}></div>
               </div>
               <span className="create-profile-stat-value">0 / 25</span>
             </div>
@@ -96,23 +96,23 @@ const CreateProfile = ({ user, onCreateProfileSuccess}) => {
         </div>
 
         <div className="create-profile-modal-tabs">
-          <button className="create-profile-tab-item active">Profile</button>
-          <button className="create-profile-tab-item" type="button" disabled>Stats</button>
-          <button className="create-profile-tab-item" type="button" disabled>Achievements</button>
+          <button className="create-profile-tab-item active">Thiết lập Hồ sơ</button>
+          <button className="create-profile-tab-item" type="button" disabled>Chỉ số Stats</button>
+          <button className="create-profile-tab-item" type="button" disabled>Thành tựu</button>
         </div>
 
         <div className="create-profile-modal-body">
-          <h2 className="create-profile-form-title">Edit Profile</h2>
+          <h2 className="create-profile-form-title">Khởi Tạo Nhân Vật & Hồ Sơ</h2>
 
           <div className="create-profile-notice-banner">
             Chào mừng bạn! Vui lòng nhập chính xác các thông tin chỉ số bên dưới để hệ thống thiết lập lộ trình nhiệm vụ cá nhân hóa cho bạn.
           </div>
 
-          {error && <div className="create-profile-error-banner">{error}</div>}
+          {error && <div className="create-profile-error-banner">⚠️ {error}</div>}
 
           <form onSubmit={handleSubmit} className="create-profile-profile-inputs-form">
             <div className="create-profile-form-group">
-              <label>Display name</label>
+              <label>Tên hiển thị (Display Name)</label>
               <input
                 type="text"
                 name="name"
@@ -125,7 +125,7 @@ const CreateProfile = ({ user, onCreateProfileSuccess}) => {
 
             <div className="create-profile-form-row-2">
               <div className="create-profile-form-group">
-                <label>Age</label>
+                <label>Tuổi (Age)</label>
                 <input
                   type="number"
                   name="age"
@@ -137,7 +137,7 @@ const CreateProfile = ({ user, onCreateProfileSuccess}) => {
               </div>
 
               <div className="create-profile-form-group">
-                <label>Gender</label>
+                <label>Giới tính (Gender)</label>
                 <select
                   name="gender"
                   value={formData.gender}
@@ -153,7 +153,7 @@ const CreateProfile = ({ user, onCreateProfileSuccess}) => {
 
             <div className="create-profile-form-row-2">
               <div className="create-profile-form-group">
-                <label>Height (cm)</label>
+                <label>Chiều cao (cm)</label>
                 <input
                   type="number"
                   name="height"
@@ -165,7 +165,7 @@ const CreateProfile = ({ user, onCreateProfileSuccess}) => {
               </div>
 
               <div className="create-profile-form-group">
-                <label>Weight (kg)</label>
+                <label>Cân nặng (kg)</label>
                 <input
                   type="number"
                   name="weight"
@@ -178,7 +178,7 @@ const CreateProfile = ({ user, onCreateProfileSuccess}) => {
             </div>
 
             <div className="create-profile-form-group">
-              <label>Goal</label>
+              <label>Mục tiêu rèn luyện (Goal)</label>
               <select
                 name="goal"
                 value={formData.goal}
@@ -186,14 +186,14 @@ const CreateProfile = ({ user, onCreateProfileSuccess}) => {
                 required
               >
                 <option value="">-- Chọn mục tiêu --</option>
-                <option value="giảm cân"> Giảm cân </option>
-                <option value="cân bằng"> Cân bằng </option>
-                <option value="tăng cơ"> Tăng cơ </option>
+                <option value="giảm cân">Giảm cân</option>
+                <option value="cân bằng">Cân bằng</option>
+                <option value="tăng cơ">Tăng cơ</option>
               </select>
             </div>
 
             <div className="create-profile-form-group">
-              <label>Activity Frequency</label>
+              <label>Tần suất vận động (Activity Frequency)</label>
               <select
                 name="activity_frequency"
                 value={formData.activity_frequency}
@@ -201,15 +201,15 @@ const CreateProfile = ({ user, onCreateProfileSuccess}) => {
                 required
               >
                 <option value="">-- Chọn tần suất vận động --</option>
-                <option value="1"> Ít vận động / Lâu lâu mới vận động </option>
-                <option value="2"> Vận động từ 1-4 buổi/tuần </option>
-                <option value="3"> Vận động từ 5-7 buổi một/tuần </option>
+                <option value="1">Ít vận động / Lâu lâu mới vận động</option>
+                <option value="2">Vận động từ 1-4 buổi / tuần</option>
+                <option value="3">Vận động từ 5-7 buổi / tuần</option>
               </select>
             </div>
 
             <div className="create-profile-form-footer">
               <button type="submit" className="create-profile-save-btn" disabled={loading}>
-                {loading ? 'Đang lưu...' : 'Save Profile'}
+                {loading ? 'Đang lưu...' : 'Lưu Hồ Sơ & Bắt Đầu'}
               </button>
             </div>
           </form>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Header from './components/header';
 import ProfileBanner from './components/profileBanner';
 import LogIn from "./components/logIn";
@@ -18,8 +18,6 @@ function App() {
   const [user, setUser] = useState(null);
   const [showCreateProfileModal, setShowCreateProfileModal] = useState(false);
   const [workoutSchedule, setWorkoutSchedule] = useState(null);
-
-  // State để thông báo cập nhật Avatar toàn ứng dụng
   const [avatarVersion, setAvatarVersion] = useState(0);
 
   const handleAvatarUpdated = () => {
@@ -89,7 +87,6 @@ function App() {
 
   useEffect(() => {
     const checkUserStatus = async () => {
-      // Xóa key cũ dùng chung cho mọi tài khoản (chỉ là dữ liệu rác)
       localStorage.removeItem('workoutSchedule');
 
       const savedUser = localStorage.getItem('user');
@@ -98,7 +95,6 @@ function App() {
       if (token && savedUser) {
         const parsedUser = JSON.parse(savedUser);
 
-        // Chỉ load lịch của đúng user này
         setWorkoutSchedule(loadScheduleForUser(parsedUser));
 
         const [profile, stats] = await Promise.all([

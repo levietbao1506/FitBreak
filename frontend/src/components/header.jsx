@@ -1,58 +1,46 @@
-import React from 'react';
 import LogOut from "./logOut";
 
 const Header = ({ user, onLogout, activeTab, onSelectTab }) => {
   const coins = user?.coins || 0;
 
+  const navItems = [
+    { id: 'tasks', label: 'Tasks', icon: '⚡' },
+    { id: 'profile', label: 'Profile', icon: '👤' },
+    { id: 'food', label: 'Food', icon: '🍱' },
+    { id: 'schedule', label: 'Schedule', icon: '🗓️' },
+    { id: 'team', label: 'Team', icon: '👥' },
+    { id: 'shop', label: 'Shop', icon: '⚔️' },
+  ];
+
   return (
     <header className="header">
-      <div className="header-logo">FitBreak</div>
+      <div className="header-logo" onClick={() => onSelectTab('tasks')} style={{ cursor: 'pointer' }}>
+        <span>FitBreak</span>
+        <span className="header-logo-badge">FITNESS RPG</span>
+      </div>
+
       <nav className="header-nav">
-        <a 
-          href="#tasks" 
-          className={activeTab === 'tasks' ? 'active' : ''}
-          onClick={(e) => { e.preventDefault(); onSelectTab('tasks'); }}
-        >
-          Tasks
-        </a>
-        <a 
-          href="#profile" 
-          className={activeTab === 'profile' ? 'active' : ''}
-          onClick={(e) => { e.preventDefault(); onSelectTab('profile'); }}
-        >
-          Profile
-        </a>
-        <a 
-          href="#food" 
-          className={activeTab === 'food' ? 'active' : ''}
-          onClick={(e) => { e.preventDefault(); onSelectTab('food'); }}
-        >
-          Food
-        </a>
-        <a 
-          href="#schedule" 
-          className={activeTab === 'schedule' ? 'active' : ''}
-          onClick={(e) => { e.preventDefault(); onSelectTab('schedule'); }}
-        >
-          Schedule
-        </a>
-        <a 
-          href="#team" 
-          className={activeTab === 'team' ? 'active' : ''}
-          onClick={(e) => { e.preventDefault(); onSelectTab('team'); }}
-        >
-          Team
-        </a>
-        <a 
-          href="#shop" 
-          className={activeTab === 'shop' ? 'active' : ''}
-          onClick={(e) => { e.preventDefault(); onSelectTab('shop'); }}
-        >
-          Shop
-        </a>
+        {navItems.map((item) => (
+          <a
+            key={item.id}
+            href={`#${item.id}`}
+            className={activeTab === item.id ? 'active' : ''}
+            onClick={(e) => {
+              e.preventDefault();
+              onSelectTab(item.id);
+            }}
+          >
+            <span>{item.icon}</span>
+            <span>{item.label}</span>
+          </a>
+        ))}
       </nav>
+
       <div className="header-stats">
-        <span>🪙 {coins}</span>
+        <div className="header-coin-badge" title="Your current coins">
+          <span>🪙</span>
+          <span>{coins.toLocaleString()}</span>
+        </div>
         <LogOut onLogoutSuccess={onLogout} />
       </div>
     </header>

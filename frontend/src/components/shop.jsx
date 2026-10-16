@@ -1,26 +1,23 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import AvatarDisplay from './avatarDisplay';
 import '../style/shop.css';
 
 const API_BASE_URL = 'http://localhost:8000';
 
-// Các danh mục phân loại
 const CATEGORIES = [
   { id: 'all', label: 'Tất cả' },
   { id: 'shirt', label: '👕 Áo' },
   { id: 'hair', label: '💇 Tóc' },
   { id: 'skin', label: '🎨 Da' },
-  { id: 'background', label: '🖼️ Background' },
+  { id: 'background', label: '🖼️ Phông nền' },
   { id: 'weapon', label: '⚔️ Vũ khí' },
 ];
 
-const Shop = ({ user, onUpdateCoins, onAvatarUpdated, onStatsUpdated  }) => {
+const Shop = ({ user, onUpdateCoins, onAvatarUpdated, onStatsUpdated }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  
-  // State quản lý Tab danh mục đang chọn
   const [activeCategory, setActiveCategory] = useState('all');
 
   const [equippedUrls, setEquippedUrls] = useState({
@@ -33,14 +30,13 @@ const Shop = ({ user, onUpdateCoins, onAvatarUpdated, onStatsUpdated  }) => {
 
   const currentUserId = user?.id || user?.user_id;
 
-  // Hàm tự động xác định danh mục dựa vào tên vật phẩm
   const getItemCategory = (name = '') => {
     const lower = name.toLowerCase();
     if (lower.includes('shirt')) return 'shirt';
     if (lower.includes('hair')) return 'hair';
     if (lower.includes('skin')) return 'skin';
     if (lower.includes('background')) return 'background';
-    return 'weapon'; // Sword, Scythe, Staff, ...
+    return 'weapon';
   };
 
   const fetchShopAndAvatarData = useCallback(async () => {
@@ -57,7 +53,6 @@ const Shop = ({ user, onUpdateCoins, onAvatarUpdated, onStatsUpdated  }) => {
         'Content-Type': 'application/json'
       };
 
-      // 1. Tải danh sách vật phẩm
       const url = currentUserId ? `${API_BASE_URL}/items?user_id=${currentUserId}` : `${API_BASE_URL}/items`;
       const resItems = await fetch(url, { headers });
       const rawText = await resItems.text();
@@ -70,7 +65,6 @@ const Shop = ({ user, onUpdateCoins, onAvatarUpdated, onStatsUpdated  }) => {
         setItems(Array.isArray(data) ? data : []);
       }
 
-      // 2. Tải URL avatar đang mặc
       if (currentUserId) {
         const resAvatar = await fetch(`${API_BASE_URL}/user/equipped-avatar/${currentUserId}`, { headers });
         if (resAvatar.ok) {
@@ -90,7 +84,6 @@ const Shop = ({ user, onUpdateCoins, onAvatarUpdated, onStatsUpdated  }) => {
     fetchShopAndAvatarData();
   }, [fetchShopAndAvatarData]);
 
-  // Mua hàng -> Tự động sở hữu & mặc đồ
   const handlePurchase = async (item) => {
     if ((user?.coins || 0) < item.price) {
       setMessage('Bạn không đủ Coins!');
@@ -130,7 +123,6 @@ const Shop = ({ user, onUpdateCoins, onAvatarUpdated, onStatsUpdated  }) => {
     }
   };
 
-  // Trang bị món ĐÃ MUA
   const handleEquip = async (item) => {
     try {
       const token = localStorage.getItem('token');
@@ -161,27 +153,44 @@ const Shop = ({ user, onUpdateCoins, onAvatarUpdated, onStatsUpdated  }) => {
     }
   };
 
-  // Lọc vật phẩm theo Tab đang được chọn
   const filteredItems = activeCategory === 'all'
     ? items
     : items.filter((item) => getItemCategory(item.name) === activeCategory);
 
   return (
     <div className="shop-container">
-      {/* Khung Xem trước Nhân vật */}
       <div className="shop-preview-section">
-        <h3>Xem trước Nhân vật</h3>
+        <div className="shop-preview-header">
+          <span className="shop-preview-badge">HERO PREVIEW</span>
+          <h3>Xem trước Nhân vật</h3>
+        </div>
+        
         <div className="avatar-preview-box">
           <AvatarDisplay equippedItems={equippedUrls} />
         </div>
-        {message && <p className="shop-message">{message}</p>}
+
+        <div className="shop-preview-stats">
+          <div className="preview-stat-item">
+            <span>Ví vàng:</span>
+            <span className="preview-stat-gold">🪙 {(user?.coins || 0).toLocaleString()}</span>
+          </div>
+          <div className="preview-stat-item">
+            <span>Sức mạnh:</span>
+            <span className="preview-stat-str">⚔️ {user?.damage || user?.str || 1} DMG</span>
+          </div>
+        </div>
+
+        {message && <div className="shop-message">{message}</div>}
       </div>
 
-      {/* Cửa hàng */}
       <div className="shop-items-section">
-        <h2>Cửa Hàng Vật Phẩm</h2>
+        <div className="shop-section-header">
+          <div className="shop-title-group">
+            <h2>Cửa Hàng Trang Bị</h2>
+            <p>Trang bị cho anh hùng để gia tăng sức tấn công khi đánh Boss!</p>
+          </div>
+        </div>
 
-        {/* Thanh Tab lọc danh mục */}
         <div className="category-tabs">
           {CATEGORIES.map((cat) => (
             <button
@@ -195,35 +204,43 @@ const Shop = ({ user, onUpdateCoins, onAvatarUpdated, onStatsUpdated  }) => {
         </div>
 
         {error && (
-          <p style={{ color: '#ff6b6b', whiteSpace: 'pre-wrap' }}>{error}</p>
+          <div className="shop-error-box">{error}</div>
         )}
 
         {loading ? (
-          <p>Đang tải cửa hàng...</p>
+          <div className="shop-loading-box">
+            <div className="shop-spinner"></div>
+            <span>Đang tải kho trang bị...</span>
+          </div>
         ) : filteredItems.length === 0 ? (
           !error && <p className="empty-category-msg">Không có vật phẩm nào trong danh mục này.</p>
         ) : (
           <div className="items-grid">
             {filteredItems.map((item) => (
-              <div key={item.item_id} className="item-card">
-                <div className="item-image">
-                  {item.image_url ? (
-                    <img
-                      src={item.image_url}
-                      alt={item.name}
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    <div className="item-image-placeholder">?</div>
-                  )}
+              <div key={item.item_id} className={`item-card ${item.is_equipped ? 'item-equipped-card' : ''}`}>
+                <div className="item-image-wrapper">
+                  <div className="item-image">
+                    {item.image_url ? (
+                      <img
+                        src={item.image_url}
+                        alt={item.name}
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="item-image-placeholder">?</div>
+                    )}
+                  </div>
+                  {item.is_equipped && <span className="item-active-ribbon">ĐANG DÙNG</span>}
                 </div>
 
                 <div className="item-info">
                   <h4>{item.name}</h4>
-                  <p className="item-stat">+{item.strength} DMG</p>
-                  <p className="item-price">{item.price} Coins</p>
+                  <div className="item-stats-row">
+                    <span className="item-stat">+{item.strength} DMG</span>
+                    <span className="item-price">🪙 {item.price}</span>
+                  </div>
                 </div>
 
                 <div className="item-actions">
@@ -237,7 +254,7 @@ const Shop = ({ user, onUpdateCoins, onAvatarUpdated, onStatsUpdated  }) => {
                     </button>
                   ) : (
                     <button className="btn-buy" onClick={() => handlePurchase(item)}>
-                      Mua
+                      Mua ngay
                     </button>
                   )}
                 </div>

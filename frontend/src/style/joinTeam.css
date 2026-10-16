@@ -1,119 +1,280 @@
-/* Container bao ngoài toàn bộ trang */
 .join-team-wrapper {
-  padding: 20px;
   width: 100%;
-  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
 
-/* --- KHUNG NHẬP EMAIL & NÚT JOIN --- */
+.join-team-header-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.join-title-group h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.join-title-group p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
 .join-form {
   display: flex;
   align-items: center;
-  gap: 30px;
-  margin-bottom: 25px;
-  justify-content: center;
+  gap: 12px;
+  max-width: 650px;
+  flex-wrap: wrap;
+}
+
+.join-input-box {
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-lg);
+  padding: 4px 16px;
+  transition: var(--transition-fast);
+}
+
+.join-input-box:focus-within {
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 16px var(--accent-purple-glow);
+}
+
+.join-input-icon {
+  font-size: 1.1rem;
 }
 
 .join-input {
-  background-color: transparent;
-  border: 2px solid #ffffff;
-  border-radius: 12px;
-  padding: 10px 20px;
-  font-size: 18px;
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 10px 0;
+  font-size: 0.95rem;
   color: #ffffff;
-  width: 420px;
   outline: none;
-  box-sizing: border-box;
 }
 
 .join-input::placeholder {
-  color: #a0a0a0;
-  font-size: 18px;
+  color: var(--text-muted);
 }
 
 .join-btn {
-  background-color: #ff4d4d; /* Màu đỏ cam nút Join */
-  color: #000000;
+  background: linear-gradient(135deg, var(--accent-rose) 0%, #e11d48 100%);
+  color: #ffffff;
   border: none;
-  border-radius: 25px;
-  padding: 8px 35px;
-  font-size: 24px;
-  font-weight: 500;
+  border-radius: var(--radius-lg);
+  padding: 12px 24px;
+  font-size: 0.95rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: opacity 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 4px 16px var(--accent-rose-glow);
+  transition: var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.join-btn:hover {
-  opacity: 0.9;
+.join-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(244, 63, 94, 0.45);
 }
 
-.join-btn:active {
-  transform: scale(0.98);
+.join-btn:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .join-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-/* --- DANH SÁCH TEAM & THE PROFILE --- */
-.team-container {
+.team-loading-state {
   display: flex;
-  flex-direction: column; 
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 20px;
+  gap: 16px;
+  color: var(--text-secondary);
+}
+
+.team-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(139, 92, 246, 0.2);
+  border-top-color: var(--accent-purple);
+  border-radius: var(--radius-full);
+  animation: spin 0.8s linear infinite;
+}
+
+.team-error-state {
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  color: #fda4af;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+}
+
+.team-empty-state {
+  text-align: center;
+  padding: 56px 24px;
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-medium);
+  border-radius: var(--radius-xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.team-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 4px;
+}
+
+.team-empty-state h3 {
+  font-size: 1.3rem;
+  color: #ffffff;
+  margin: 0;
+}
+
+.team-empty-state p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.team-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: 20px;
-  background-color: transparent; 
-  align-items: stretch; 
 }
 
 .profile-card {
   display: flex;
-  flex-direction: row;
-  background-color: transparent; 
-  border: 2px solid #b3b3b3; 
-  border-radius: 8px;
-  padding: 15px 30px;
-  width: 100%; 
-  height: fit-content; 
+  background: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-xl);
+  padding: 22px;
   color: #ffffff;
-  box-sizing: border-box;
-  align-items: center;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-normal);
+  gap: 18px;
+  position: relative;
+  overflow: hidden;
 }
 
-.profile-index {
+.profile-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(139, 92, 246, 0.45);
+  box-shadow: var(--shadow-md), 0 0 20px rgba(139, 92, 246, 0.12);
+}
+
+.profile-index-badge {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40px;
-  font-weight: bold;
-  width: 60px;
-  border-right: 2px solid #555555;
-  margin-right: 30px;
-  padding-right: 15px; 
-  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--accent-purple);
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: var(--radius-lg);
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
 }
 
 .profile-info {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   flex: 1;
+  gap: 14px;
 }
 
-.profile-column {
-  flex: 1; 
+.profile-header-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.profile-column ul {
-  list-style-type: disc;
+.member-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #ffffff;
   margin: 0;
-  padding-left: 20px;
 }
 
-.profile-column li {
-  margin-bottom: 10px;
-  font-size: 18px;
-  letter-spacing: 0.5px;
+.member-goal-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
 }
 
-.profile-column li:last-child {
-  margin-bottom: 0;
+.profile-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 18px;
+  background: rgba(8, 10, 18, 0.5);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px;
+}
+
+.profile-detail-column {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detail-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+}
+
+.detail-stat-label {
+  color: var(--text-muted);
+}
+
+.detail-stat-val {
+  color: var(--text-primary);
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.highlight-val {
+  color: var(--accent-amber);
+}
+
+.highlight-protein {
+  color: var(--accent-emerald);
+}
+
+@media (max-width: 640px) {
+  .team-container {
+    grid-template-columns: 1fr;
+  }
+  .profile-details-grid {
+    grid-template-columns: 1fr;
+  }
 }

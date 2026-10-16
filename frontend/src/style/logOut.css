@@ -1,4 +1,36 @@
 .log-out-btn {
-    background: none;
-    border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(244, 63, 94, 0.1);
+  border: 1px solid rgba(244, 63, 94, 0.25);
+  color: #fda4af;
+  padding: 7px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.log-out-btn:hover:not(:disabled) {
+  background: rgba(244, 63, 94, 0.2);
+  border-color: rgba(244, 63, 94, 0.5);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 0 12px rgba(244, 63, 94, 0.25);
+}
+
+.log-out-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.log-out-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.log-out-icon {
+  font-size: 0.95rem;
+  line-height: 1;
 }

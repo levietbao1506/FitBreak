@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import "../style/signUp.css"
+import { useState } from 'react';
+import "../style/signUp.css";
 
 const SignUp = ({ onSignUpSuccess, onGoToLogIn }) => {
-    const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
@@ -16,6 +16,7 @@ const SignUp = ({ onSignUpSuccess, onGoToLogIn }) => {
       [id]: value
     }));
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -49,48 +50,81 @@ const SignUp = ({ onSignUpSuccess, onGoToLogIn }) => {
 
   return (
     <div className="signup-fitbreak-signup-page">
-      <div className="signup-fitbreak-logo-section">
-        <h1 className="signup-fitbreak-logo">FitBreak</h1>
-      </div>
+      <div className="signup-fitbreak-content-wrapper">
+        <div className="signup-fitbreak-logo-section">
+          <div className="signup-badge-hero">NEW WARRIOR ENLISTMENT</div>
+          <h1 className="signup-fitbreak-logo">FitBreak</h1>
+          <p className="signup-hero-tagline">
+            Khởi đầu hành trình gamification thể chất của bạn. Rèn luyện mỗi ngày, nâng cấp nhân vật, và nhận phần thưởng thực tế.
+          </p>
+          <div className="signup-features-list">
+            <div className="signup-feature-item">
+              <span className="signup-feature-icon">🛡️</span>
+              <span>Tạo nhân vật Avatar pixel art độc bản</span>
+            </div>
+            <div className="signup-feature-item">
+              <span className="signup-feature-icon">📊</span>
+              <span>Tự động tính BMI, TDEE và chỉ số dinh dưỡng</span>
+            </div>
+            <div className="signup-feature-item">
+              <span className="signup-feature-icon">🏆</span>
+              <span>Tích lũy tiền vàng sắm vũ khí và giáp trụ</span>
+            </div>
+          </div>
+        </div>
 
-      <div className="signup-form-container">
-        <form className="signup-form" onSubmit={handleSubmit}>
-        {error && <p style={{ color: '#ff4d4d', fontSize: '0.85rem', marginBottom: '10px' }}>{error}</p>}
-          <div className="signup-form-group">
-            <label htmlFor="email" className="signup-form-label">Email</label>
-            <input 
-              type="email" 
-              id="email" 
-              className="signup-form-input" 
-              placeholder=""
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
+        <div className="signup-form-container">
+          <div className="signup-form-header">
+            <h2>Gia Nhập FitBreak</h2>
+            <p>Đăng ký tài khoản miễn phí để khởi tạo chiến binh của bạn</p>
           </div>
-          <div className="signup-form-group">
-            <label htmlFor="password" className="signup-form-label">Password</label>
-            <input 
-              type="password" 
-              id="password" 
-              className="signup-form-input" 
-              placeholder=""
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          
-          <div className="signup-form-actions">
-            <button type="submit" className="signup-text-button signup-btn" disabled={loading}>
-                {loading ? 'Processing...' : 'Sign Up'}
-            </button>
-            <hr className="signup-divider" />
-            <button type="button" className="signup-text-button login-btn" onClick={onGoToLogIn}>
-                Log In
-            </button>
-          </div>
-        </form>
+
+          <form className="signup-form" onSubmit={handleSubmit}>
+            {error && <div className="signup-error-alert">⚠️ {error}</div>}
+            
+            <div className="signup-form-group">
+              <label htmlFor="email" className="signup-form-label">Email</label>
+              <input 
+                type="email" 
+                id="email" 
+                className="signup-form-input" 
+                placeholder="tennguoidung@example.com"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="signup-form-group">
+              <label htmlFor="password" className="signup-form-label">Mật khẩu (Password)</label>
+              <input 
+                type="password" 
+                id="password" 
+                className="signup-form-input" 
+                placeholder="Tối thiểu 6 ký tự"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            
+            <div className="signup-form-actions">
+              <button type="submit" className="signup-submit-btn" disabled={loading}>
+                {loading ? 'Đang khởi tạo...' : 'Tạo Tài Khoản'}
+              </button>
+              
+              <div className="signup-divider-row">
+                <span className="divider-line"></span>
+                <span className="divider-text">Đã có tài khoản?</span>
+                <span className="divider-line"></span>
+              </div>
+
+              <button type="button" className="signup-switch-btn" onClick={onGoToLogIn}>
+                Đăng Nhập Ngay (Log In)
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

@@ -1,13 +1,21 @@
 .profile-banner {
+  width: 100%;
+  background: linear-gradient(180deg, rgba(16, 20, 36, 0.95) 0%, rgba(9, 11, 20, 0.9) 100%);
+  border-bottom: 1px solid var(--border-subtle);
+  position: relative;
+  overflow: visible;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+}
+
+.profile-banner-inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 28px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 35px 80px 35px 50px; /* Tăng padding để khung profile bự và cao hơn */
-  background-color: #0d0f17;
-  color: #ffffff;
+  gap: 32px;
   position: relative;
-  overflow: visible; /* Đảm bảo hình Boss không bị cắt khi nhô ra */
-  min-height: 140px;
 }
 
 .user-profile-group {
@@ -17,48 +25,172 @@
 }
 
 .avatar-box {
-  width: 90px; /* Phóng to avatar người chơi */
-  height: 90px;
-  background-color: #ffffff;
-  border-radius: 12px;
+  width: 120px;
+  height: 120px;
+  position: relative;
+  flex-shrink: 0;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(56, 189, 248, 0.1) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-normal);
 }
 
-.user-info h3 {
-  margin: 0 0 6px 0;
-  font-size: 24px;
-  font-weight: bold;
+.avatar-box:hover {
+  border-color: rgba(139, 92, 246, 0.6);
+  box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+  transform: translateY(-2px);
 }
 
-.user-info p {
-  margin: 0 0 14px 0;
-  color: #9aa0a6;
-  font-size: 15px;
+.avatar-rank-badge {
+  position: absolute;
+  bottom: -8px;
+  background: linear-gradient(135deg, var(--accent-purple) 0%, #6d28d9 100%);
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 10;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.user-name-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-name-row h3 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  margin: 0;
+}
+
+.user-team-badge {
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: var(--accent-cyan);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.04em;
+}
+
+.user-email-text {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  margin: 0 0 4px 0;
 }
 
 .user-stats-text {
   display: flex;
-  gap: 20px;
-  font-weight: 600;
-  font-size: 16px;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
 }
 
-/* --- KHUNG BOSS MỞ RỘNG --- */
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  font-weight: 700;
+  border: 1px solid var(--border-subtle);
+  background: rgba(22, 28, 51, 0.6);
+  backdrop-filter: blur(8px);
+}
+
+.stat-damage {
+  color: #fda4af;
+  border-color: rgba(244, 63, 94, 0.25);
+  background: rgba(244, 63, 94, 0.08);
+}
+
+.stat-coins {
+  color: #fef08a;
+  border-color: rgba(245, 158, 11, 0.25);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.stat-num {
+  font-size: 1rem;
+  font-family: var(--font-mono);
+  font-weight: 800;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.85;
+}
+
 .boss-section {
   position: relative;
   display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, rgba(26, 18, 38, 0.75) 0%, rgba(20, 24, 44, 0.85) 100%);
+  border: 1px solid rgba(244, 63, 94, 0.25);
+  border-radius: var(--radius-xl);
+  padding: 20px 140px 20px 24px;
+  min-width: 440px;
+  max-width: 540px;
+  box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(244, 63, 94, 0.05);
+  backdrop-filter: blur(12px);
+  transition: var(--transition-normal);
+}
+
+.boss-section:hover {
+  border-color: rgba(244, 63, 94, 0.45);
+  box-shadow: 0 12px 40px -4px rgba(0, 0, 0, 0.6), 0 0 25px rgba(244, 63, 94, 0.15);
+}
+
+.boss-tag-banner {
+  display: inline-flex;
   align-items: center;
-  background: #1b1e2b;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
-  padding: 24px 100px 24px 28px; /* Nhường thêm khoảng trống bên phải cho Boss bự */
-  min-width: 420px; /* Phóng to chiều rộng khung Boss */
-  margin-right: 75px; /* Đẩy lề phải để Boss bự không bị tràn khỏi màn hình */
+  gap: 6px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #fda4af;
+  margin-bottom: 8px;
+}
+
+.boss-tag-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full);
+  background: #f43f5e;
+  box-shadow: 0 0 8px #f43f5e;
+  animation: pulseDot 1.5s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
 }
 
 .boss-details {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
 }
 
@@ -66,19 +198,24 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 
 .boss-title {
-  font-weight: bold;
-  font-size: 18px;
+  font-weight: 800;
+  font-size: 1.15rem;
   color: #ffffff;
+  letter-spacing: -0.02em;
 }
 
 .boss-reward {
-  color: #ffc107;
-  font-weight: bold;
-  font-size: 16px;
+  color: #fbbf24;
+  font-weight: 800;
+  font-size: 0.88rem;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
 }
 
 .boss-hp-container {
@@ -89,47 +226,124 @@
 
 .boss-hp-bar {
   width: 100%;
-  height: 14px; /* Thanh máu dày và rõ hơn */
-  background-color: #2c3040;
-  border-radius: 7px;
+  height: 12px;
+  background: rgba(15, 23, 42, 0.8);
+  border-radius: var(--radius-full);
   overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
 }
 
 .boss-hp-fill {
   height: 100%;
-  background: linear-gradient(90deg, #ff4d4d, #f97316);
-  transition: width 0.3s ease;
+  background: linear-gradient(90deg, #f43f5e 0%, #fb923c 60%, #e11d48 100%);
+  border-radius: var(--radius-full);
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 12px rgba(244, 63, 94, 0.5);
+}
+
+.boss-hp-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+}
+
+.boss-hp-percent {
+  font-weight: 800;
+  color: #fda4af;
+  font-family: var(--font-mono);
 }
 
 .boss-hp-text {
-  font-size: 13px;
-  color: #a0a5b5;
-  text-align: right;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
   font-weight: 600;
 }
 
-/* --- HÌNH BOSS BỰ VƯỢT KHUNG --- */
 .boss-avatar {
   position: absolute;
-  right: -80px; /* Đẩy Boss nhô mạnh sang bên phải ngoài khung */
+  right: -30px;
   top: 50%;
   transform: translateY(-50%);
-  width: 170px; /* Phóng to kích thước hình Boss (từ 110px -> 170px) */
-  height: 170px;
+  width: 150px;
+  height: 150px;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10;
   pointer-events: none;
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.8));
+  animation: floatBoss 4s ease-in-out infinite;
+}
+
+@keyframes floatBoss {
+  0%, 100% { transform: translateY(-50%) translateY(0); }
+  50% { transform: translateY(-50%) translateY(-6px); }
 }
 
 .boss-avatar img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0px 10px 20px rgba(0, 0, 0, 0.75)); /* Đổ bóng nổi bật */
 }
 
 .boss-placeholder {
-  font-size: 80px;
+  font-size: 5rem;
+}
+
+.boss-section.boss-hit {
+  animation: hitShake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  border-color: #f43f5e;
+  box-shadow: 0 0 35px rgba(244, 63, 94, 0.5);
+}
+
+@keyframes hitShake {
+  10%, 90% { transform: translate3d(-2px, 0, 0); }
+  20%, 80% { transform: translate3d(3px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+@media (max-width: 1100px) {
+  .profile-banner-inner {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 24px 20px;
+  }
+  .boss-section {
+    min-width: unset;
+    max-width: 100%;
+    margin-right: 0;
+    padding-right: 120px;
+  }
+  .boss-avatar {
+    right: 10px;
+    width: 120px;
+    height: 120px;
+  }
+}
+
+@media (max-width: 640px) {
+  .user-profile-group {
+    flex-direction: column;
+    text-align: center;
+  }
+  .user-name-row {
+    justify-content: center;
+  }
+  .user-stats-text {
+    justify-content: center;
+  }
+  .boss-section {
+    padding: 20px;
+  }
+  .boss-avatar {
+    position: relative;
+    right: auto;
+    top: auto;
+    transform: none;
+    margin: 12px auto 0;
+    animation: none;
+  }
 }

@@ -4,12 +4,12 @@
   height: 100%;
   aspect-ratio: 1 / 1;
   overflow: hidden;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #252136; /* Đổi màu nền sáng cũ thành màu tối tiệp màu theme */
-  border: 2px solid #58488a;
+  background-color: #1a1e33;
+  border: 1px solid rgba(139, 92, 246, 0.35);
   box-sizing: border-box;
 }
 
@@ -25,12 +25,21 @@
   pointer-events: none;
 }
 
-/* Thứ tự hiển thị layer */
-.layer-bg     { z-index: 1; }
-.layer-skin   { z-index: 2; }
-.layer-head   { z-index: 3; }
+.layer-bg { 
+  z-index: 1; 
+  object-fit: cover !important; 
+  width: 100% !important;
+  height: 100% !important;
+}
 
-/* Căn áo CHÍNH GIỮA ngực nhân vật */
+.layer-skin { 
+  z-index: 2; 
+}
+
+.layer-head { 
+  z-index: 3; 
+}
+
 .layer-shirt {
   z-index: 4;
   width: 70% !important;
@@ -41,9 +50,10 @@
   object-fit: contain;
 }
 
-.layer-hair   { z-index: 5; }
+.layer-hair { 
+  z-index: 5; 
+}
 
-/* Vị trí vũ khí (nếu đeo) */
 .layer-weapon {
   z-index: 6;
   width: 60% !important;
