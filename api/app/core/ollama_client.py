@@ -54,7 +54,7 @@ async def generate_chat(
       """Generate a deterministic RAG answer with the configured Gemini model."""
       try:
             config = types.GenerateContentConfig(
-                  temperature=0.2,
+                  temperature=0.4,
                   response_mime_type=response_mime_type
                   if response_mime_type
                   else "text/plain",
