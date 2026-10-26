@@ -100,10 +100,23 @@ const FoodSuggest = () => {
         'Hải sản': 'seafood'
     };
 
-    const handleSubmit = async (e) => {
-        if (e) e.preventDefault();
+    const handleSubmit = async (e, isRefresh = false) => {
+        if (e && e.preventDefault) e.preventDefault();
         setError(null);
         setLoading(true);
+
+        // Nếu bấm "Đổi thực đơn khác", gom danh sách tên món cũ lại để gửi lên loại trừ
+        const currentDishes = [];
+        if (isRefresh && resultData?.meals) {
+            resultData.meals.forEach(m => {
+                if (m.name) {
+                    // Cắt bỏ phần cơm nếu có dạng "Tên món + 150g cơm"
+                    const baseName = m.name.split('+')[0].trim();
+                    currentDishes.push(baseName);
+                }
+            });
+        }
+
         setResultData(null);
 
         const rawAllergens = getAllergenArray(formData.allergen);
@@ -118,6 +131,7 @@ const FoodSuggest = () => {
             calories_need: Number(profile?.tdee) || Number(formData.calories_need) || 0,
             protein_need: Number(profile?.protein) || Number(formData.protein_need) || 0,
             daily_budget: Number(formData.daily_budget) || 0,
+            exclude_dishes: currentDishes,
         };
 
         try {
@@ -358,7 +372,7 @@ const FoodSuggest = () => {
                 </div>
 
                 <div className="food-result-actions">
-                    <button className="food-btn-refresh" onClick={handleSubmit}>
+                    <button className="food-btn-refresh" onClick={(e) => handleSubmit(e, true)}>
                         <span>🔄</span> Đổi thực đơn khác
                     </button>
                     <button className="food-btn-reset" onClick={handleReset}>

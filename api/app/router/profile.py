@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Request, Response, Form, Depends, HTTPException, status
 from app.schemas.createProfile import createProfile
 from app.schemas.updateProfile import updateProfile
+from app.schemas.medicalCheckup import MedicalCheckupRequest
+from app.services.medical_checkup import medical_checkup
 from app.core.calculate_user_stats import calculateBMI, calculateBMR, calculateTDEE, calculateProtein
 from app.core.token_authorization import tokenAuthorization, token_authorization
 
@@ -109,3 +111,31 @@ async def getProfileByEmail(email: str, token: tokenAuthorization = Depends(toke
         return None
     except Exception as e:
         return None
+
+@router.post("/profiles/medical-checkup")
+async def analyze_medical_checkup(data: MedicalCheckupRequest, token: tokenAuthorization = Depends(token_authorization)):
+    try:
+        # Neu weight va height khong duoc gui len tu form y te, lay tu profile
+        w = data.weight
+        h = data.height
+        if w is None or h is None:
+            user_prof = token.client.table("profiles").select("weight, height").eq("id", token.user_id).execute()
+            if user_prof.data and len(user_prof.data) > 0:
+                p = user_prof.data[0]
+                if w is None and p.get("weight"):
+                    w = float(p["weight"])
+                if h is None and p.get("height"):
+                    h = float(p["height"])
+
+        result = await medical_checkup(
+            weight=w,
+            height=h,
+            sys=data.sys,
+            dia=data.dia,
+            time=data.time,
+            glycemic_index=data.glycemic_index,
+            spo2_index=data.spo2_index
+        )
+        return {"success": True, "result": result}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

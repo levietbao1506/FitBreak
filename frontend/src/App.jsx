@@ -236,7 +236,7 @@ function App() {
             />
           )}
           {activeTab === 'profile' && (
-            <UpdateProfile onUpdateProfileSuccess={handleUpdateProfileSuccess} />
+            <UpdateProfile user={user} onUpdateProfileSuccess={handleUpdateProfileSuccess} />
           )}
           {activeTab === 'food' && <FoodSuggest />}
           {activeTab === 'schedule' && (

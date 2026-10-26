@@ -290,6 +290,14 @@ async def process_rag_pipeline(user_information: dict) -> str:
       if filtered_df.empty:
             raise NoMatchingFoodsError("Không tìm thấy món ăn phù hợp với chế độ ăn và dị ứng.")
 
+      # Neu co danh sach mon cu can doi (exclude_dishes), loai bo chung neu con du mon khac
+      exclude_dishes = get_user_value(user_information, 'exclude_dishes', [])
+      if exclude_dishes and isinstance(exclude_dishes, list):
+            norm_excludes = {normalize_text(d) for d in exclude_dishes if d}
+            remaining_df = filtered_df[~filtered_df['name'].apply(lambda n: normalize_text(n) in norm_excludes)]
+            if len(remaining_df) >= 3:
+                  filtered_df = remaining_df
+
       # Truyền filtered_df vào prompt_builder để LLM chỉ chọn trong danh sách này
       prompt = await prompt_builder(
             calories_need=get_user_value(user_information, "calories_need"),
