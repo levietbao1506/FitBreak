@@ -240,7 +240,10 @@ function App() {
           )}
           {activeTab === 'food' && <FoodSuggest />}
           {activeTab === 'schedule' && (
-            <TimeSelector onScheduleGenerated={handleScheduleGenerated} />
+            <TimeSelector 
+              scheduleData={workoutSchedule}
+              onScheduleGenerated={handleScheduleGenerated} 
+            />
           )}
           {activeTab === 'team' && <JoinTeam />}
           {activeTab === 'shop' && (
