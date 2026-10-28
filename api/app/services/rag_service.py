@@ -35,36 +35,74 @@ def get_user_value(user_information: dict, field: str, default=None):
       return getattr(user_information, field, default)
 
 
+ALLERGEN_SYNONYMS = {
+    'đậu nành': 'soy',
+    'dau nanh': 'soy',
+    'soy': 'soy',
+    'lactose': 'lactose',
+    'sữa': 'lactose',
+    'sua': 'lactose',
+    'hải sản': 'seafood',
+    'hai san': 'seafood',
+    'seafood': 'seafood',
+    'trứng': 'egg',
+    'trung': 'egg',
+    'egg': 'egg',
+    'đậu phộng': 'peanut',
+    'dau phong': 'peanut',
+    'peanut': 'peanut',
+}
+
+DIET_SYNONYMS = {
+    'ăn chay': 'vegetarian',
+    'anchay': 'vegetarian',
+    'vegetarian': 'vegetarian',
+    'eat clean': 'eatclean',
+    'eatclean': 'eatclean',
+    'eat_clean': 'eatclean',
+    'không kiêng': '',
+    'khong kieng': '',
+    'khongkieng': '',
+    'home_cooked': 'home_cooked',
+    'homecooked': 'home_cooked',
+    'none': '',
+    'all': '',
+}
+
+
 def _normalize_diet_key(value) -> str:
-    return re.sub(r"[\s_\-]+", "", str(value).strip().lower())
+    raw = str(value).strip().lower()
+    return DIET_SYNONYMS.get(raw, re.sub(r'[\s_\-]+', '', raw))
 
 
 def filter_foods(df: pd.DataFrame, user_diet: str, user_allergens) -> pd.DataFrame:
       if isinstance(user_allergens, str):
-            user_allergens = [
-                  a.strip().lower() for a in user_allergens.replace(",", ";").split(";") if a.strip()
+            raw_allergens = [
+                  a.strip().lower() for a in user_allergens.replace(',', ';').split(';') if a.strip()
             ]
       else:
-            user_allergens = [
+            raw_allergens = [
                   a.strip().lower() for a in (user_allergens or []) if a and a.strip()
             ]
+
+      mapped_allergens = [ALLERGEN_SYNONYMS.get(a, a) for a in raw_allergens]
 
       def has_allergen(item_allergens):
             if not item_allergens:
                   return False
-            item_list = [a.strip().lower() for a in str(item_allergens).split(";")]
-            return any(a in user_allergens for a in item_list)
+            item_list = [a.strip().lower() for a in str(item_allergens).split(';')]
+            return any(a in mapped_allergens for a in item_list)
 
       # 1. Lọc dị ứng
-      valid_df = df[~df["allergens"].apply(has_allergen)].copy()
+      valid_df = df[~df['allergens'].apply(has_allergen)].copy()
 
       # 2. Lọc chế độ ăn
-      if user_diet:
-        norm_user_diet = _normalize_diet_key(user_diet)
+      norm_user_diet = _normalize_diet_key(user_diet)
+      if norm_user_diet and norm_user_diet != 'home_cooked':
         valid_df = valid_df[
-            valid_df["diet_type"].apply(
+            valid_df['diet_type'].apply(
                 lambda diets: norm_user_diet in {
-                    _normalize_diet_key(d) for d in str(diets).split(";")
+                    _normalize_diet_key(d) for d in str(diets).split(';')
                 }
             )
         ]
@@ -251,6 +289,14 @@ async def process_rag_pipeline(user_information: dict) -> str:
       filtered_df = filter_foods(DF_FOODS, diet_type, allergen)
       if filtered_df.empty:
             raise NoMatchingFoodsError("Không tìm thấy món ăn phù hợp với chế độ ăn và dị ứng.")
+
+      # Neu co danh sach mon cu can doi (exclude_dishes), loai bo chung neu con du mon khac
+      exclude_dishes = get_user_value(user_information, 'exclude_dishes', [])
+      if exclude_dishes and isinstance(exclude_dishes, list):
+            norm_excludes = {normalize_text(d) for d in exclude_dishes if d}
+            remaining_df = filtered_df[~filtered_df['name'].apply(lambda n: normalize_text(n) in norm_excludes)]
+            if len(remaining_df) >= 3:
+                  filtered_df = remaining_df
 
       # Truyền filtered_df vào prompt_builder để LLM chỉ chọn trong danh sách này
       prompt = await prompt_builder(
