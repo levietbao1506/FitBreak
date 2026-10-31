@@ -41,6 +41,54 @@ const markExerciseCompletedToday = (exerciseId) => {
   } catch (e) {}
 };
 
+
+const formatDayTimeRanges = (day) => {
+  try {
+    const saved = localStorage.getItem('selectedTimeSlots');
+    if (!saved) return '';
+    const slotsArray = JSON.parse(saved);
+    const dayPrefix = `${day}-`;
+    const daySlots = slotsArray.filter(s => s.startsWith(dayPrefix));
+    if (daySlots.length === 0) return '';
+
+    const minutesList = daySlots.map(s => {
+      const parts = s.split('-');
+      const h = parseInt(parts[1], 10);
+      const m = parseInt(parts[2], 10);
+      return h * 60 + m;
+    });
+
+    const sortedMinutes = Array.from(new Set(minutesList)).sort((a, b) => a - b);
+    if (sortedMinutes.length === 0) return '';
+
+    const intervals = [];
+    let start = sortedMinutes[0];
+    let prev = start;
+
+    for (let i = 1; i < sortedMinutes.length; i++) {
+      const current = sortedMinutes[i];
+      if (current === prev + 30) {
+        prev = current;
+      } else {
+        intervals.push([start, prev + 30]);
+        start = current;
+        prev = current;
+      }
+    }
+    intervals.push([start, prev + 30]);
+
+    const fmt = (min) => {
+      const h = Math.floor(min / 60);
+      const m = min % 60;
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    };
+
+    return intervals.map(([s, e]) => `${fmt(s)} - ${fmt(e)}`).join(', ');
+  } catch (e) {
+    return '';
+  }
+};
+
 const TaskBoard = ({ scheduleData, onUpdateCoins, onUpdateSchedule }) => {
   const [todaySchedule, setTodaySchedule] = useState([]);
   const [todayName, setTodayName] = useState('');
@@ -309,7 +357,14 @@ const TaskBoard = ({ scheduleData, onUpdateCoins, onUpdateSchedule }) => {
                     <span className="block-title-icon">⚔️</span>
                     <h3>Chủ đề: <span className="highlight-type">{(slot.day_type || '').replace('_', ' ').toUpperCase()}</span></h3>
                   </div>
-                  <span className="block-time-badge">⏱ {slot.total_time} / {slot.slot_budget} phút</span>
+                  {(() => {
+                    const timeRange = formatDayTimeRanges(todayName);
+                    return timeRange ? (
+                      <span className="block-time-badge">🕒 {timeRange}</span>
+                    ) : (
+                      <span className="block-time-badge">⏱ {slot.total_time} / {slot.slot_budget} phút</span>
+                    );
+                  })()}
                 </div>
 
                 <div className="exercise-list">

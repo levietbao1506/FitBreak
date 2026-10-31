@@ -538,3 +538,5 @@
   background: rgba(255, 255, 255, 0.05);
   color: #94a3b8;
 }
+
+.notion-slot-time-range { color: #38bdf8 !important; font-weight: 700 !important; background: rgba(56, 189, 248, 0.1); padding: 2px 7px; border-radius: 4px; border: 1px solid rgba(56, 189, 248, 0.2); font-family: var(--font-mono, monospace); font-size: 0.72rem; }

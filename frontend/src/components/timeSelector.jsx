@@ -21,8 +21,57 @@ const dayTypeLabels = {
   Rest: { label: 'Nghỉ Ngơi', color: 'badge-rest' }
 };
 
+
+const formatDayTimeRanges = (slotsArray, day) => {
+  if (!slotsArray || slotsArray.length === 0) return '';
+  const dayPrefix = `${day}-`;
+  const daySlots = slotsArray.filter(s => s.startsWith(dayPrefix));
+  if (daySlots.length === 0) return '';
+
+  const minutesList = daySlots.map(s => {
+    const parts = s.split('-');
+    const h = parseInt(parts[1], 10);
+    const m = parseInt(parts[2], 10);
+    return h * 60 + m;
+  });
+
+  const sortedMinutes = Array.from(new Set(minutesList)).sort((a, b) => a - b);
+  if (sortedMinutes.length === 0) return '';
+
+  const intervals = [];
+  let start = sortedMinutes[0];
+  let prev = start;
+
+  for (let i = 1; i < sortedMinutes.length; i++) {
+    const current = sortedMinutes[i];
+    if (current === prev + 30) {
+      prev = current;
+    } else {
+      intervals.push([start, prev + 30]);
+      start = current;
+      prev = current;
+    }
+  }
+  intervals.push([start, prev + 30]);
+
+  const fmt = (min) => {
+    const h = Math.floor(min / 60);
+    const m = min % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  };
+
+  return intervals.map(([s, e]) => `${fmt(s)} - ${fmt(e)}`).join(', ');
+};
+
 const TimeSelector = ({ scheduleData, onScheduleGenerated }) => {
-  const [selectedSlots, setSelectedSlots] = useState(new Set());
+  const [selectedSlots, setSelectedSlots] = useState(() => {
+    try {
+      const saved = localStorage.getItem('selectedTimeSlots');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch (e) {
+      return new Set();
+    }
+  });
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [isSelecting, setIsSelecting] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -99,6 +148,7 @@ const TimeSelector = ({ scheduleData, onScheduleGenerated }) => {
       }
 
       localStorage.setItem('workoutSchedule', JSON.stringify(data));
+      localStorage.setItem('selectedTimeSlots', JSON.stringify(Array.from(selectedSlots)));
 
       if (onScheduleGenerated) {
         onScheduleGenerated(data);
@@ -185,16 +235,24 @@ const TimeSelector = ({ scheduleData, onScheduleGenerated }) => {
                 </div>
 
                 <div className="notion-col-content">
-                  {daySlots.length === 0 || !hasExercises ? (
-                    <div className="notion-rest-card">
-                      <span className="rest-icon">☕</span>
-                      <p className="rest-text">Ngày nghỉ ngơi hồi phục cơ bắp</p>
-                    </div>
-                  ) : (
-                    daySlots.map((slot, sIdx) => (
+                  {(() => {
+                    const timeRange = formatDayTimeRanges(Array.from(selectedSlots), day);
+                    if (daySlots.length === 0 || !hasExercises) {
+                      return (
+                        <div className="notion-rest-card">
+                          <span className="rest-icon">☕</span>
+                          <p className="rest-text">Ngày nghỉ ngơi hồi phục cơ bắp</p>
+                        </div>
+                      );
+                    }
+                    return daySlots.map((slot, sIdx) => (
                       <div key={sIdx} className="notion-slot-group">
                         <div className="notion-slot-meta">
-                          <span>⏱ {slot.total_time || 0} phút</span>
+                          {timeRange ? (
+                            <span className="notion-slot-time-range">🕒 {timeRange}</span>
+                          ) : (
+                            <span>⏱ {slot.total_time || 0} phút</span>
+                          )}
                           <span>•</span>
                           <span>{slot.exercises?.length || 0} bài tập</span>
                         </div>
@@ -214,8 +272,8 @@ const TimeSelector = ({ scheduleData, onScheduleGenerated }) => {
                           ))}
                         </div>
                       </div>
-                    ))
-                  )}
+                    ));
+                  })()}
                 </div>
               </div>
             );
