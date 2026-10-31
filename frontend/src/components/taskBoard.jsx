@@ -12,6 +12,35 @@ const MINI_TASKS = [
   "Giãn cơ vai và lưng 5 phút"
 ];
 
+
+const getTodayDateKey = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const getCompletedExercisesToday = () => {
+  try {
+    const key = `completed_exercises_${getTodayDateKey()}`;
+    return JSON.parse(localStorage.getItem(key) || '[]');
+  } catch (e) {
+    return [];
+  }
+};
+
+const markExerciseCompletedToday = (exerciseId) => {
+  try {
+    const key = `completed_exercises_${getTodayDateKey()}`;
+    const list = getCompletedExercisesToday();
+    if (!list.includes(exerciseId)) {
+      list.push(exerciseId);
+      localStorage.setItem(key, JSON.stringify(list));
+    }
+  } catch (e) {}
+};
+
 const TaskBoard = ({ scheduleData, onUpdateCoins, onUpdateSchedule }) => {
   const [todaySchedule, setTodaySchedule] = useState([]);
   const [todayName, setTodayName] = useState('');
@@ -110,8 +139,9 @@ const TaskBoard = ({ scheduleData, onUpdateCoins, onUpdateSchedule }) => {
     const taskId = `${slotIndex}-${exIndex}`;
     setRemovingTasks((prev) => ({ ...prev, [taskId]: true }));
 
-    const rewardCoins = exerciseItem.reward_coins || 10;
-    const safeExerciseId = String(exerciseItem.id || exerciseItem.exercise || exerciseItem.name || "0");
+    const safeExerciseId = String(exerciseItem.id || exerciseItem.exercise || exerciseItem.name || '0');
+    const alreadyRewardedToday = getCompletedExercisesToday().includes(safeExerciseId);
+    const rewardCoins = alreadyRewardedToday ? 0 : (exerciseItem.reward_coins || 10);
 
     try {
       const token = localStorage.getItem('token');
@@ -130,7 +160,11 @@ const TaskBoard = ({ scheduleData, onUpdateCoins, onUpdateSchedule }) => {
 
       if (response.ok) {
         const data = await response.json();
-        if (onUpdateCoins) onUpdateCoins(data.new_coins);
+        markExerciseCompletedToday(safeExerciseId);
+
+        if (rewardCoins > 0 && onUpdateCoins) {
+          onUpdateCoins(data.new_coins);
+        }
 
         setTimeout(() => {
           let fullSchedule = scheduleData ? JSON.parse(JSON.stringify(scheduleData)) : {};
@@ -146,13 +180,15 @@ const TaskBoard = ({ scheduleData, onUpdateCoins, onUpdateSchedule }) => {
           
           setTodaySchedule(fullSchedule[currentDayKey] || []);
 
-          window.dispatchEvent(new CustomEvent('raid:boss-updated', { detail: data.boss }));
+          if (data.boss) {
+            window.dispatchEvent(new CustomEvent('raid:boss-updated', { detail: data.boss }));
+          }
         }, 300);
       } else {
         setRemovingTasks((prev) => ({ ...prev, [taskId]: false }));
       }
     } catch (error) {
-      console.error("Lỗi khi gửi dữ liệu hoàn thành:", error);
+      console.error('Lỗi khi gửi dữ liệu hoàn thành:', error);
       setRemovingTasks((prev) => ({ ...prev, [taskId]: false }));
     }
   };
@@ -307,7 +343,15 @@ const TaskBoard = ({ scheduleData, onUpdateCoins, onUpdateSchedule }) => {
                             <span className="exercise-meta-separator">•</span>
                             <span className="exercise-level">Cấp độ: <span className="level-text">{level}</span></span>
                             <span className="exercise-meta-separator">•</span>
-                            <span className="exercise-reward-tag">+{item.reward_coins || 10} Coins</span>
+                            {(() => {
+                                const safeExId = String(item.id || item.exercise || item.name || '0');
+                                const isDoneToday = getCompletedExercisesToday().includes(safeExId);
+                                return isDoneToday ? (
+                                  <span className="exercise-reward-tag exercise-reward-claimed" title="Đã nhận thưởng hôm nay">✓ Đã nhận thưởng</span>
+                                ) : (
+                                  <span className="exercise-reward-tag">+{item.reward_coins || 10} Coins</span>
+                                );
+                              })()}
                           </div>
                         </div>
                       </div>

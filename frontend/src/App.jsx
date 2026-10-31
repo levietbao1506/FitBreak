@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import Header from './components/header';
 import ProfileBanner from './components/profileBanner';
 import LogIn from "./components/logIn";
@@ -32,7 +32,7 @@ function App() {
       const saved = localStorage.getItem(key);
       return saved ? JSON.parse(saved) : null;
     } catch (e) {
-      console.error("Lỗi parse lịch tập:", e);
+      console.error("Lá»—i parse lá»‹ch táº­p:", e);
       return null;
     }
   };
@@ -59,7 +59,7 @@ function App() {
       }
       return null;
     } catch (error) {
-      console.error("Lỗi khi lấy thông tin profile:", error);
+      console.error("Lá»—i khi láº¥y thÃ´ng tin profile:", error);
       return null;
     }
   };
@@ -80,7 +80,7 @@ function App() {
       }
       return null;
     } catch (error) {
-      console.error("Lỗi khi lấy thông tin stats:", error);
+      console.error("Lá»—i khi láº¥y thÃ´ng tin stats:", error);
       return null;
     }
   };
@@ -199,7 +199,7 @@ function App() {
     setWorkoutSchedule(newSchedule);
     const key = getScheduleKey(user);
     if (key) localStorage.setItem(key, JSON.stringify(newSchedule));
-    setActiveTab('tasks');
+    setActiveTab('schedule');
   };
 
   const handleLogout = () => {

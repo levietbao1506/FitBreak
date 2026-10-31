@@ -559,3 +559,4 @@
     position: static;
   }
 }
+.exercise-reward-claimed { background: rgba(148, 163, 184, 0.2) !important; color: #94a3b8 !important; border: 1px dashed rgba(148, 163, 184, 0.4) !important; }

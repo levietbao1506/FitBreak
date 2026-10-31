@@ -27,19 +27,23 @@ async def exercisesLog(request: Request, data: exerciseLog,
             raise HTTPException(status_code=404, detail="Stats record not found")
 
         current_coins = stat.get("coins") or 0
-        final_coins = current_coins + data.reward_coins
-
-        token.client.table("stats").update({
-            "coins": final_coins
-        }).eq("user_id", token.user_id).execute()
-
-        # ---- Trừ máu boss dựa trên team + damage của user ----
+        final_coins = current_coins
         boss_result = None
-        team = stat.get("team")
-        damage = stat.get("damage") or stat.get("str") or 0
 
-        if team and damage > 0:
-            boss_result = apply_boss_damage(token.client, team, damage)
+        # Chỉ cộng coins và trừ máu Boss nếu bài tập này có thưởng (> 0 coins)
+        # Giúp ngăn chặn việc lạm dụng reset / tạo lại lịch để farm vô hạn coins và boss damage
+        if data.reward_coins > 0:
+            final_coins = current_coins + data.reward_coins
+            token.client.table("stats").update({
+                "coins": final_coins
+            }).eq("user_id", token.user_id).execute()
+
+            # ---- Trừ máu boss dựa trên team + damage của user ----
+            team = stat.get("team")
+            damage = stat.get("damage") or stat.get("str") or 0
+
+            if team and damage > 0:
+                boss_result = apply_boss_damage(token.client, team, damage)
 
         return {
             "message": "Success",
