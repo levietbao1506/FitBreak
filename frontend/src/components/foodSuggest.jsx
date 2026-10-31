@@ -110,8 +110,9 @@ const FoodSuggest = () => {
         if (isRefresh && resultData?.meals) {
             resultData.meals.forEach(m => {
                 if (m.name) {
-                    // Cắt bỏ phần cơm nếu có dạng "Tên món + 150g cơm"
-                    const baseName = m.name.split('+')[0].trim();
+                    // Cắt bỏ phần cơm và hệ số khẩu phần (VD: "Phở bò (x1.5 phần) + 150g cơm" -> "Phở bò")
+                    let baseName = m.name.split('+')[0].trim();
+                    baseName = baseName.replace(/\s*\(x[0-9.]+\s*phần\)/i, '').trim();
                     currentDishes.push(baseName);
                 }
             });
