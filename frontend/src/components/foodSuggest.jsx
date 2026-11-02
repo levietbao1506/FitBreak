@@ -23,14 +23,33 @@ const FoodSuggest = () => {
         const fetchUserProfile = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch('http://localhost:8000/profile', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
+                const userObj = JSON.parse(localStorage.getItem('user') || '{}');
+                const email = userObj?.email;
 
-                if (response.ok) {
-                    const data = await response.json();
+                let data = null;
+                if (email) {
+                    const res = await fetch(`http://localhost:8000/profiles/get-profile-by-email/${email}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                        },
+                    });
+                    if (res.ok) {
+                        data = await res.json();
+                    }
+                }
+
+                if (!data) {
+                    const fallbackRes = await fetch('http://localhost:8000/profile', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                        },
+                    });
+                    if (fallbackRes.ok) {
+                        data = await fallbackRes.json();
+                    }
+                }
+
+                if (data) {
                     setProfile(data);
                     
                     if (data.goal) {
@@ -133,6 +152,7 @@ const FoodSuggest = () => {
             protein_need: Number(profile?.protein) || Number(formData.protein_need) || 0,
             daily_budget: Number(formData.daily_budget) || 0,
             exclude_dishes: currentDishes,
+            food_recommendation: profile?.food_recommendation || "",
         };
 
         try {
@@ -174,11 +194,21 @@ const FoodSuggest = () => {
         </header>
 
         {profile && (
-            <div className="food-profile-sync-badge">
-                <span className="food-sync-icon">💡</span>
-                <span className="food-sync-text">
-                    Chỉ số từ hồ sơ: <strong>{profile.tdee} kcal/ngày</strong> • <strong>{profile.protein}g protein/ngày</strong>
-                </span>
+            <div className="food-profile-sync-wrapper">
+                <div className="food-profile-sync-badge">
+                    <span className="food-sync-icon">💡</span>
+                    <span className="food-sync-text">
+                        Chỉ số từ hồ sơ: <strong>{profile.tdee} kcal/ngày</strong> • <strong>{profile.protein}g protein/ngày</strong>
+                    </span>
+                </div>
+                {profile.food_recommendation && (
+                    <div className="food-recommendation-pill">
+                        <span className="food-rec-icon">🩺</span>
+                        <span className="food-rec-text">
+                            <strong>Lưu ý sức khỏe / Y tế:</strong> {profile.food_recommendation}
+                        </span>
+                    </div>
+                )}
             </div>
         )}
 
@@ -304,6 +334,16 @@ const FoodSuggest = () => {
                         </div>
                     </div>
                 </div>
+
+                {resultData.nutrition_note && (
+                    <div className="food-nutrition-note-card">
+                        <div className="food-nutrition-note-header">
+                            <span className="food-nutrition-note-icon">💡</span>
+                            <span className="food-nutrition-note-title">Phân tích & Lý do gợi ý thực đơn</span>
+                        </div>
+                        <p className="food-nutrition-note-content">{resultData.nutrition_note}</p>
+                    </div>
+                )}
 
                 <div className="food-daily-stats">
                     <div className="food-stat-card">

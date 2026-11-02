@@ -159,6 +159,7 @@ class MealsPlan(BaseModel):
 
 class LLMMealResponse(BaseModel):
       estimated_total_cost: Optional[float] = 0
+      nutrition_note: Optional[str] = Field(default="", description="Lưu ý/giải thích ngắn gọn về lý do chọn thực đơn này")
       meals: MealsPlan
 
 
@@ -270,12 +271,15 @@ def format_meal_summary(response: str, df_pool: pd.DataFrame, user_information: 
       total_fat = bf_fat + lu_total_fat + dn_total_fat
       total_cost = bf_cost + lu_total_cost + dn_total_cost
 
+      nutrition_note = getattr(meal_plan, "nutrition_note", "") or ""
+
       return {
             "total_calories": round(total_cal),
             "total_protein": round(total_pro, 1),
             "total_carbs": round(total_carb, 1),
             "total_fat": round(total_fat, 1),
             "total_cost": round(total_cost),
+            "nutrition_note": nutrition_note.strip(),
             "meals": [
                   {
                         "type": "Bữa sáng",
@@ -342,6 +346,8 @@ async def process_rag_pipeline(user_information: dict) -> str:
                   filtered_df = remaining_df
 
       # Truyền filtered_df vào prompt_builder để LLM chỉ chọn trong danh sách này
+      food_rec = get_user_value(user_information, "food_recommendation", None)
+
       prompt = await prompt_builder(
             calories_need=get_user_value(user_information, "calories_need"),
             daily_budget=get_user_value(user_information, "daily_budget"),
@@ -350,6 +356,7 @@ async def process_rag_pipeline(user_information: dict) -> str:
             diet_type=diet_type,
             allergen=allergen,
             filtered_food=filtered_df,
+            food_recommendation=food_rec,
       )
 
       response = await generate_chat(prompt, response_format=LLMMealResponse.model_json_schema())

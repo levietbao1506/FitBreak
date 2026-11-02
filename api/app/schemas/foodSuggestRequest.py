@@ -9,3 +9,4 @@ class FoodSuggestRequest(BaseModel):
     diet_type: str = Field(..., description="Chế độ ăn: vegetarian / eatclean / home_cooked")
     allergen: Optional[str] = Field("", description="Dị ứng, phân cách bằng ;")
     exclude_dishes: Optional[List[str]] = Field(default_factory=list, description="Danh sách món cũ cần loại bỏ để đổi món mới")
+    food_recommendation: Optional[str] = Field(None, description="Lời khuyên dinh dưỡng y tế từ hồ sơ/khám sức khỏe")

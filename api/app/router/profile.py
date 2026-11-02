@@ -6,6 +6,19 @@ from app.services.medical_checkup import medical_checkup
 from app.core.calculate_user_stats import calculateBMI, calculateBMR, calculateTDEE, calculateProtein
 from app.core.token_authorization import tokenAuthorization, token_authorization
 
+
+def _generate_diet_recommendation_from_bmi(weight: float, height: float) -> str:
+    if not weight or not height or height <= 0:
+        return None
+    bmi = weight / ((height / 100) ** 2)
+    if bmi < 18.5:
+        return "Thể trạng nhẹ cân: Cần bổ sung thêm calo thặng dư giàu dinh dưỡng (các loại hạt, quả bơ, thực phẩm giàu đạm) để hỗ trợ tăng cân và tăng cơ an toàn."
+    elif bmi >= 25.0:
+        return "Thể trạng thừa cân / béo phì: Ưu tiên thực đơn giảm thâm hụt calo nhẹ, tăng tỷ trọng protein nạc và rau xanh nhiều chất xơ, hạn chế đồ chiên xào nhiều dầu mỡ."
+    elif bmi >= 23.0:
+        return "Thể trạng tiền béo phì: Cần kiểm soát lượng tinh bột tinh chế và dầu mỡ, ưu tiên protein nạc và rau củ để duy trì vóc dáng săn chắc."
+    return "Thể trạng cân đối: Duy trì chế độ ăn đa dạng dưỡng chất, phân bổ đều đặn Protein, Carb phức hợp và chất béo lành mạnh."
+
 router = APIRouter()
 
 @router.post("/profiles/create-profile")
@@ -16,6 +29,7 @@ async def createProfile(request: Request, data: createProfile,
         bmr = calculateBMR(data.weight, data.height, data.age, data.gender)
         tdee = calculateTDEE(bmr, data.activity_frequency)
         protein = calculateProtein(data.weight, data.activity_frequency)
+        food_rec = _generate_diet_recommendation_from_bmi(data.weight, data.height)
 
         token.client.table("profiles").insert({
             "id": token.user_id,
@@ -30,7 +44,8 @@ async def createProfile(request: Request, data: createProfile,
             "bmi": bmi,
             "bmr": bmr,
             "tdee": tdee,
-            "protein": protein
+            "protein": protein,
+            "food_recommendation": food_rec
         }).execute()
 
         team_response = token.client.table("stats").select("team").order("team", desc=True).limit(1).execute()
@@ -83,7 +98,8 @@ async def updateProfile(request: Request, data: updateProfile,
         bmr = calculateBMR(data.weight, data.height, data.age, data.gender)
         tdee = calculateTDEE(bmr, data.activity_frequency)
         protein = calculateProtein(data.weight, data.activity_frequency)
-        token.client.table("profiles").update({
+
+        update_payload = {
             "id" : token.user_id,
             "email" : token.user_email,
             "name" : data.name,
@@ -97,7 +113,15 @@ async def updateProfile(request: Request, data: updateProfile,
             "bmr" : bmr,
             "tdee" : tdee,
             "protein": protein
-        }).eq("id", token.user_id).execute()
+        }
+
+        # Kiểm tra xem hồ sơ đã có food_recommendation từ medical checkup chưa, nếu chưa thì cập nhật theo BMI mới
+        current_prof = token.client.table("profiles").select("food_recommendation").eq("id", token.user_id).execute()
+        has_existing_rec = current_prof.data and current_prof.data[0].get("food_recommendation")
+        if not has_existing_rec:
+            update_payload["food_recommendation"] = _generate_diet_recommendation_from_bmi(data.weight, data.height)
+
+        token.client.table("profiles").update(update_payload).eq("id", token.user_id).execute()
         return {"message": "Cập nhật profile thành công"}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -136,6 +160,18 @@ async def analyze_medical_checkup(data: MedicalCheckupRequest, token: tokenAutho
             glycemic_index=data.glycemic_index,
             spo2_index=data.spo2_index
         )
+
+        # Lấy danh sách lời khuyên dinh dưỡng từ kết quả khám sức khỏe
+        diet_advices = result.get("recommendations", {}).get("diet_advice", [])
+        if diet_advices:
+            joined_advice = "; ".join(diet_advices)
+            try:
+                token.client.table("profiles").update({
+                    "food_recommendation": joined_advice
+                }).eq("id", token.user_id).execute()
+            except Exception as save_err:
+                print(f"[WARN] Không thể cập nhật food_recommendation vào profiles: {save_err}")
+
         return {"success": True, "result": result}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
