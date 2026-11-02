@@ -8,13 +8,20 @@ DF_EXERCISES_CACHE = pd.read_csv(DATA_PATH)
 
 
 def filter_exercises(user_information: dict) -> pd.DataFrame:
-    """Lọc danh sách bài tập theo level thể chất của user."""
-    lv_mapping = {0: "heavy", 1: "medium", 2: "light"}
-    exercise_lv_vn = user_information.get("level_of_physical_activity")
-    exercise_lv_en = lv_mapping.get(exercise_lv_vn, "medium")
-    return DF_EXERCISES_CACHE[
-        DF_EXERCISES_CACHE["level of physical activity"] == exercise_lv_en
+    """Lọc danh sách bài tập theo level thể chất của user ('heavy', 'medium', 'light')."""
+    raw_lv = user_information.get("level_of_physical_activity")
+    if isinstance(raw_lv, str):
+        target_lv = raw_lv.strip().lower()
+    else:
+        lv_mapping = {0: "heavy", 1: "medium", 2: "light"}
+        target_lv = lv_mapping.get(raw_lv, "medium")
+
+    matched = DF_EXERCISES_CACHE[
+        DF_EXERCISES_CACHE["level of physical activity"].str.lower() == target_lv
     ]
+    if matched.empty:
+        return DF_EXERCISES_CACHE[DF_EXERCISES_CACHE["level of physical activity"] == "medium"]
+    return matched
 
 
 def get_min_duration(aim: int, block_type: str, user_lv: int) -> int:
@@ -145,7 +152,13 @@ def pick_block_with_recovery(
 
 async def schedule_maker(user_information: dict) -> dict:
     aim = user_information.get("aim", 0)
-    user_lv = user_information.get("level_of_physical_activity", 1)
+    raw_lv = user_information.get("level_of_physical_activity")
+    if isinstance(raw_lv, str):
+        str_to_int = {"heavy": 0, "medium": 1, "light": 2}
+        user_lv = str_to_int.get(raw_lv.lower(), 1)
+    else:
+        user_lv = raw_lv if raw_lv in [0, 1, 2] else 1
+
     timetable = user_information.get("timetable", {})
     valid_exercises = filter_exercises(user_information)
 

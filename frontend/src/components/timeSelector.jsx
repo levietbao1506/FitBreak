@@ -1,4 +1,4 @@
-import { useState, Fragment } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import "../style/timeSelector.css";
 
 const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -76,6 +76,29 @@ const TimeSelector = ({ scheduleData, onScheduleGenerated }) => {
   const [isSelecting, setIsSelecting] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [userProfile, setUserProfile] = useState(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const userObj = JSON.parse(localStorage.getItem('user') || '{}');
+        const email = userObj?.email;
+        if (!email || !token) return;
+
+        const res = await fetch(`http://localhost:8000/profiles/get-profile-by-email/${email}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUserProfile(data);
+        }
+      } catch (err) {
+        console.error("Lỗi khi tải profile cho lịch tập:", err);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   // Nếu đã có scheduleData thì mặc định mở chế độ xem thời khóa biểu Notion
   const [isEditing, setIsEditing] = useState(!scheduleData);
@@ -279,6 +302,46 @@ const TimeSelector = ({ scheduleData, onScheduleGenerated }) => {
             );
           })}
         </div>
+
+        {/* NOTION EXERCISE NOTE BLOCK (LƯU Ý LUYỆN TẬP DỰA TRÊN THỂ TRẠNG & SỨC KHỎE) */}
+        {(() => {
+          const physLevel = userProfile?.level_of_physical_activity || 'medium';
+          const levelLabels = {
+            heavy: {
+              title: "Cường độ Thể chất: NẶNG (Heavy)",
+              badge: "level-heavy",
+              desc: "Tình trạng thể chất & dinh dưỡng tốt (BMI 18.5 - 22.9, các chỉ số tim mạch/đường huyết ổn định). Bạn có thể thực hiện các bài tập kháng lực với cường độ cao và bài tập cardio cường độ cao (HIIT) để tối ưu phát triển cơ bắp và đốt mỡ."
+            },
+            medium: {
+              title: "Cường độ Thể chất: VỪA PHẢI (Medium)",
+              badge: "level-medium",
+              desc: "Thể trạng thuộc nhóm Tiền béo phì (BMI 23.0 - 24.9) hoặc đang thích nghi vận động. Các bài tập được phân bổ vừa sức, kết hợp cardio nhẹ/vừa (LISS) và kháng lực có kiểm soát để bảo vệ khớp xương và tim mạch."
+            },
+            light: {
+              title: "Cường độ Thể chất: NHẸ NHÀNG (Light - Ưu tiên an toàn)",
+              badge: "level-light",
+              desc: "Hệ thống phát hiện thể trạng cần chú ý đặc biệt (Nhẹ cân < 18.5, Béo phì >= 25.0, hoặc có chỉ số cảnh báo về huyết áp/đường huyết/SpO2). Lịch tập ưu tiên các bài tập cardio ít tác động khớp (đi bộ, giãn cơ, pilates nhẹ), tránh nín thở gánh nặng để bảo đảm an toàn sức khỏe tuyệt đối."
+            }
+          };
+
+          const currentMeta = levelLabels[physLevel] || levelLabels.medium;
+
+          return (
+            <div className="notion-exercise-note-card">
+              <div className="notion-exercise-note-header">
+                <span className="notion-note-icon">🛡️</span>
+                <div className="notion-note-title-wrap">
+                  <h4>Ghi chú luyện tập cá nhân hóa</h4>
+                  <span className={`notion-level-badge ${currentMeta.badge}`}>{currentMeta.title}</span>
+                </div>
+              </div>
+              <p className="notion-note-desc">{currentMeta.desc}</p>
+              <div className="notion-note-footer">
+                <span>💡 <strong>Lời khuyên:</strong> Hãy lắng nghe cơ thể, khởi động kỹ 5 phút trước mỗi buổi tập và bù nước điện giải đầy đủ.</span>
+              </div>
+            </div>
+          );
+        })()}
       </div>
     );
   }

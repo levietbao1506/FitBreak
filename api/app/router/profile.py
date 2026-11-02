@@ -7,6 +7,55 @@ from app.core.calculate_user_stats import calculateBMI, calculateBMR, calculateT
 from app.core.token_authorization import tokenAuthorization, token_authorization
 
 
+
+def _classify_level_of_physical_activity(
+    weight: float,
+    height: float,
+    sys_val: int = None,
+    dia_val: int = None,
+    time_val: int = None,
+    glycemic_val: int = None,
+    spo2_val: int = None,
+) -> str:
+    """
+    Quy tắc phân loại cường độ luyện tập (level_of_physical_activity):
+    - Tình trạng dinh dưỡng bình thường (BMI 18.5 - 22.9): 'heavy'
+    - Tiền béo phì (BMI 23.0 - 24.9): 'medium'
+    - Còn lại (nhẹ cân < 18.5, béo phì >= 25.0, hoặc có chỉ số nguy cơ cao về tim mạch/đường huyết/SpO2): 'light'
+    """
+    # 1. Kiểm tra các rủi ro y tế cấp tính (nếu có đo đạc tại nhà)
+    # Huyết áp cao (độ 1, độ 2) hoặc tụt huyết áp
+    if sys_val is not None and dia_val is not None:
+        if sys_val >= 140 or dia_val >= 90 or sys_val < 90 or dia_val < 60:
+            return "light"
+
+    # Đường huyết cao (tiểu đường) hoặc tụt đường huyết nguy hiểm
+    if glycemic_val is not None and time_val is not None:
+        if glycemic_val < 70:
+            return "light"
+        if time_val == 0 and glycemic_val >= 125:
+            return "light"
+        elif time_val == 1 and glycemic_val >= 200:
+            return "light"
+        elif time_val == 2 and glycemic_val >= 140:
+            return "light"
+
+    # Nồng độ oxy trong máu SpO2 dưới mức chuẩn (< 94%)
+    if spo2_val is not None and spo2_val <= 93:
+        return "light"
+
+    # 2. Phân loại theo BMI (Bảng chuẩn thể trạng dinh dưỡng)
+    if weight and height and height > 0:
+        bmi = weight / ((height / 100) ** 2)
+        if 18.5 <= bmi < 23.0:
+            return "heavy"
+        elif 23.0 <= bmi < 25.0:
+            return "medium"
+        else:
+            return "light"
+
+    return "medium"
+
 def _generate_diet_recommendation_from_bmi(weight: float, height: float) -> str:
     if not weight or not height or height <= 0:
         return None
@@ -30,6 +79,7 @@ async def createProfile(request: Request, data: createProfile,
         tdee = calculateTDEE(bmr, data.activity_frequency)
         protein = calculateProtein(data.weight, data.activity_frequency)
         food_rec = _generate_diet_recommendation_from_bmi(data.weight, data.height)
+        phys_level = _classify_level_of_physical_activity(data.weight, data.height)
 
         token.client.table("profiles").insert({
             "id": token.user_id,
@@ -45,7 +95,8 @@ async def createProfile(request: Request, data: createProfile,
             "bmr": bmr,
             "tdee": tdee,
             "protein": protein,
-            "food_recommendation": food_rec
+            "food_recommendation": food_rec,
+            "level_of_physical_activity": phys_level
         }).execute()
 
         team_response = token.client.table("stats").select("team").order("team", desc=True).limit(1).execute()
@@ -99,6 +150,8 @@ async def updateProfile(request: Request, data: updateProfile,
         tdee = calculateTDEE(bmr, data.activity_frequency)
         protein = calculateProtein(data.weight, data.activity_frequency)
 
+        phys_level = _classify_level_of_physical_activity(data.weight, data.height)
+
         update_payload = {
             "id" : token.user_id,
             "email" : token.user_email,
@@ -112,7 +165,8 @@ async def updateProfile(request: Request, data: updateProfile,
             "bmi" : bmi,
             "bmr" : bmr,
             "tdee" : tdee,
-            "protein": protein
+            "protein": protein,
+            "level_of_physical_activity": phys_level
         }
 
         # Kiểm tra xem hồ sơ đã có food_recommendation từ medical checkup chưa, nếu chưa thì cập nhật theo BMI mới
@@ -161,16 +215,28 @@ async def analyze_medical_checkup(data: MedicalCheckupRequest, token: tokenAutho
             spo2_index=data.spo2_index
         )
 
-        # Lấy danh sách lời khuyên dinh dưỡng từ kết quả khám sức khỏe
+        # Cập nhật lời khuyên dinh dưỡng & level_of_physical_activity vào profiles
+        update_data = {}
         diet_advices = result.get("recommendations", {}).get("diet_advice", [])
         if diet_advices:
-            joined_advice = "; ".join(diet_advices)
-            try:
-                token.client.table("profiles").update({
-                    "food_recommendation": joined_advice
-                }).eq("id", token.user_id).execute()
-            except Exception as save_err:
-                print(f"[WARN] Không thể cập nhật food_recommendation vào profiles: {save_err}")
+            update_data["food_recommendation"] = "; ".join(diet_advices)
+
+        # Tính toán mức độ vận động phù hợp dựa trên kết quả kiểm tra sức khỏe
+        computed_phys_level = _classify_level_of_physical_activity(
+            weight=w,
+            height=h,
+            sys_val=data.sys,
+            dia_val=data.dia,
+            time_val=data.time,
+            glycemic_val=data.glycemic_index,
+            spo2_val=data.spo2_index,
+        )
+        update_data["level_of_physical_activity"] = computed_phys_level
+
+        try:
+            token.client.table("profiles").update(update_data).eq("id", token.user_id).execute()
+        except Exception as save_err:
+            print(f"[WARN] Không thể cập nhật thông tin y tế vào profiles: {save_err}")
 
         return {"success": True, "result": result}
     except Exception as e:
