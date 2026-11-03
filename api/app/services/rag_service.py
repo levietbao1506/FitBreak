@@ -148,9 +148,14 @@ class Breakfast(BaseModel):
       portion_multiplier: float = Field(default=1.0, ge=0.5, le=3.0, description="Hệ số khẩu phần món ăn (VD: 1.0, 1.2, 1.5)")
 
 class MainMeal(BaseModel):
-      main_dish: str
+      dish_name: Optional[str] = None
+      main_dish: Optional[str] = None
       portion_multiplier: float = Field(default=1.0, ge=0.5, le=3.0, description="Hệ số khẩu phần món ăn (VD: 1.0, 1.2, 1.5)")
       rice_grams: int = Field(default=0, ge=0, le=300, description="Số gram cơm (tối đa 300g)")
+
+      @property
+      def target_dish_name(self) -> str:
+            return self.dish_name or self.main_dish or ""
 
 class MealsPlan(BaseModel):
       breakfast: Breakfast
@@ -211,7 +216,7 @@ def format_meal_summary(response: str, df_pool: pd.DataFrame, user_information: 
       # 2. Bữa trưa
       lu = meal_plan.meals.lunch
       lu_mult = max(0.5, min(float(getattr(lu, "portion_multiplier", 1.0) or 1.0), 3.0))
-      lu_main = get_dish_info(lu.main_dish, df_pool)
+      lu_main = get_dish_info(getattr(lu, "target_dish_name", lu.main_dish), df_pool)
       lu_dish_cal = lu_main["calories"] * lu_mult
       lu_dish_pro = lu_main["protein"] * lu_mult
       lu_dish_carb = lu_main["carbs"] * lu_mult
@@ -239,7 +244,7 @@ def format_meal_summary(response: str, df_pool: pd.DataFrame, user_information: 
       # 3. Bữa tối
       dn = meal_plan.meals.dinner
       dn_mult = max(0.5, min(float(getattr(dn, "portion_multiplier", 1.0) or 1.0), 3.0))
-      dn_main = get_dish_info(dn.main_dish, df_pool)
+      dn_main = get_dish_info(getattr(dn, "target_dish_name", dn.main_dish), df_pool)
       dn_dish_cal = dn_main["calories"] * dn_mult
       dn_dish_pro = dn_main["protein"] * dn_mult
       dn_dish_carb = dn_main["carbs"] * dn_mult
